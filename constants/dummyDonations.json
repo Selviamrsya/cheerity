@@ -1,0 +1,32 @@
+[
+  {
+    "title": "Baju Anak SD Layak Pakai",
+    "institutionName": "Lembaga Kasih Ibu",
+    "category": "shirt",
+    "description": "Banyak anak masih menggunakan seragam yang sudah kekecilan, lusuh, bahkan rusak karena keterbatasan ekonomi keluarga mereka. Lembaga sosial Kasih Ibu saat ini membuka kebutuhan donasi berupa seragam sekolah dasar layak pakai untuk anak-anak usia 7-12 tahun.\n\nLembaga membutuhkan sekitar 50 set seragam SD lengkap yang terdiri dari atasan putih dan bawahan merah dengan kondisi bersih, tidak robek, dan masih nyaman digunakan.\n\nBarang yang diterima akan disalurkan langsung kepada anak-anak yang telah terdata oleh lembaga sosial dan akan didokumentasikan sebagai bentuk transparansi kepada donatur.",
+    "target": 50,
+    "deliveryMethods": ["self_delivery", "pickup_by_institution", "third_party_courier"],
+    "hasPickupService": true,
+    "pickupMaxDistanceKm": 5
+  },
+  {
+    "title": "Buku Pelajaran SMP Bekas",
+    "institutionName": "Yayasan Tunas Bangsa",
+    "category": "school_supplies",
+    "description": "Yayasan Tunas Bangsa membutuhkan buku pelajaran SMP bekas dalam kondisi layak baca untuk disalurkan ke sekolah-sekolah di daerah terpencil. Buku yang dibutuhkan meliputi Matematika, IPA, IPS, Bahasa Indonesia, dan Bahasa Inggris untuk kelas 7-9.",
+    "target": 100,
+    "deliveryMethods": ["self_delivery", "third_party_courier"],
+    "hasPickupService": false,
+    "pickupMaxDistanceKm": null
+  },
+  {
+    "title": "Mainan Anak Kondisi Baik",
+    "institutionName": "Panti Asuhan Harapan Jaya",
+    "category": "toys",
+    "description": "Panti Asuhan Harapan Jaya menerima donasi mainan anak-anak dalam kondisi baik dan bersih. Mainan edukatif seperti puzzle, lego, buku mewarnai, dan alat menggambar sangat dibutuhkan untuk mendukung perkembangan anak-anak di panti.",
+    "target": 30,
+    "deliveryMethods": ["self_delivery", "pickup_by_institution"],
+    "hasPickupService": true,
+    "pickupMaxDistanceKm": 3
+  }
+]

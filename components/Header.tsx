@@ -4,13 +4,25 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Session } from "next-auth";
-import { Bell, LogIn, Menu, X } from "lucide-react";
-import React, { useState, useEffect } from "react";
+import { Bell, LogIn, Check } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { getNotifications, markNotificationRead } from "@/lib/actions/donation";
+
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  isRead: boolean;
+  createdAt: Date | null;
+}
 
 const Header = ({ session }: { session: Session | null }) => {
   const pathname = usePathname();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const notifRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -18,74 +30,117 @@ const Header = ({ session }: { session: Session | null }) => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Close notification dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setNotifOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Fetch notifications when user opens the dropdown
+  const handleNotifToggle = async () => {
+    setNotifOpen((prev) => !prev);
+    if (!notifOpen && session?.user?.id) {
+      const role = session.user.role;
+      const type = role === "INSTITUTION" ? "INSTITUTION" : "USER";
+      const data = await getNotifications(session.user.id, type as "USER" | "INSTITUTION");
+      setNotifications(data as Notification[]);
+    }
+  };
+
+  const handleMarkRead = async (id: string) => {
+    await markNotificationRead(id);
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+    );
+  };
+
   const isActive = (path: string) => {
     if (path === "/") return pathname === "/";
     return pathname.startsWith(path);
   };
 
-  // Navigation items (default: user)
   const navItems = [
     { label: "Home", href: "/" },
     { label: "Find a Donation", href: "/donate" },
-    { label: "History", href: "/history" },
+    { label: "History", href: session ? "/history" : "/sign-in" },
   ];
+
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
     <header className={`navbar ${scrolled ? "scrolled" : ""}`}>
-      <nav className="navbar-inner">
-        {/* Logo */}
+      <nav className="navbar-inner flex items-center justify-between">
+        {/* Logo left */}
         <Link href="/" className="navbar-logo">
-          <Image
-            src="/assets/logo.png"
-            alt="Cheerity"
-            width={140}
-            height={36}
-            priority
-          />
+          <Image src="/assets/logo.png" alt="Cheerity" width={140} height={36} priority />
         </Link>
 
-        {/* Desktop Nav Links */}
-        <ul className={`navbar-links ${isMobileMenuOpen ? "mobile-open" : ""}`}>
-          {navItems.map((item) => (
-            <li key={item.href}>
-              <Link
-                href={item.href}
-                className={`navbar-link ${isActive(item.href) ? "active" : ""}`}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {item.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
+        {/* Right section: Navbar links placed left of notification & profile */}
+        <div className="flex items-center gap-4 sm:gap-6">
+          {/* Navbar Links */}
+          <ul className="flex items-center gap-1 sm:gap-3 list-none">
+            {navItems.map((item) => (
+              <li key={item.label}>
+                <Link
+                  href={item.href}
+                  className={`navbar-link ${isActive(item.href) ? "active" : ""}`}
+                >
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
 
-        {/* Right actions */}
-        <div className="navbar-actions">
-          {/* Notification */}
-          <button className="navbar-icon-btn" aria-label="Notifications">
-            <Bell className="h-5 w-5" />
-            <span className="notification-dot" />
-          </button>
+          {/* Notification Bell */}
+          <div className="relative" ref={notifRef}>
+            <button
+              className="navbar-icon-btn"
+              aria-label="Notifications"
+              onClick={handleNotifToggle}
+            >
+              <Bell className="h-5 w-5" />
+              {unreadCount > 0 && <span className="notification-dot" />}
+            </button>
 
-          {/* Auth */}
+            {/* Notification dropdown */}
+            {notifOpen && (
+              <div className="notif-dropdown">
+                <div className="notif-header">
+                  <span className="font-semibold text-sm">Notifications</span>
+                  {unreadCount > 0 && (
+                    <span className="notif-badge">{unreadCount} new</span>
+                  )}
+                </div>
+                <div className="notif-list">
+                  {notifications.length === 0 ? (
+                    <p className="notif-empty">No notifications yet</p>
+                  ) : (
+                    notifications.map((n) => (
+                      <div
+                        key={n.id}
+                        className={`notif-item ${!n.isRead ? "unread" : ""}`}
+                        onClick={() => handleMarkRead(n.id)}
+                      >
+                        <div className="notif-item-title">{n.title}</div>
+                        <div className="notif-item-message">{n.message}</div>
+                        {n.isRead && <Check className="notif-read-icon h-3 w-3" />}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Auth / Profile section */}
           {session ? (
             <Link href="/my-profile">
-              <div
-                className="navbar-avatar"
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: "50%",
-                  background: "var(--color-primary-100)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "var(--color-primary)",
-                  fontWeight: 700,
-                  fontSize: 14,
-                  fontFamily: "var(--font-poppins)",
-                }}
-              >
+              <div className="navbar-avatar flex items-center justify-center font-bold text-sm bg-green-100 text-green-800">
                 {session.user?.name?.charAt(0)?.toUpperCase() || "U"}
               </div>
             </Link>
@@ -95,19 +150,6 @@ const Header = ({ session }: { session: Session | null }) => {
               <span>Sign In</span>
             </Link>
           )}
-
-          {/* Mobile toggle */}
-          <button
-            className="navbar-mobile-toggle"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="Menu"
-          >
-            {isMobileMenuOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
-          </button>
         </div>
       </nav>
     </header>

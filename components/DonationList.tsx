@@ -5,12 +5,13 @@ interface Donation {
   id: string;
   title: string;
   institutionName: string;
-  institutionLogo: string;
-  coverImage: string;
-  location: string;
-  distance: string;
-  currentAmount: number;
-  targetAmount: number;
+  cover: string | null;
+  institutionCity: string | null;
+  institutionState: string | null;
+  distanceKm: number | null;
+  collected: number;
+  target: number;
+  category: string;
 }
 
 interface DonationListProps {
@@ -32,6 +33,7 @@ const DonationList: React.FC<DonationListProps> = ({
         <h2 className="section-title">{title}</h2>
         {subtitle && <p className="section-subtitle">{subtitle}</p>}
       </div>
+
       <div className="donation-grid">
         {donations.map((donation, index) => (
           <div

@@ -9,6 +9,7 @@ interface Donation {
   distance: string;
   currentAmount: number;
   targetAmount: number;
+  createdAt: Date|null;
 }
 
 // ─── Auth Credentials ─────────────────────────────────────
@@ -44,4 +45,13 @@ interface InstitutionSignUpCredentials {
 interface SignInCredentials {
   email: string;
   password: string;
+}
+
+interface DonationParams{
+  title: string;
+  category: string;
+  donationRequired: number;
+  deliveryMethods: string;
+  description: string;
+  donationCover: string;
 }

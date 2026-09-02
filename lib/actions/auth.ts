@@ -8,6 +8,8 @@ import { hash } from "bcryptjs";
 import ratelimit from "@/lib/ratelimit";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+import { geocodeAddress } from "@/lib/geocoding";
+import { sendEmail, emailTemplates } from "@/lib/workflow";
 
 export const signInWithCredentials = async (params: {
   email: string;
@@ -31,7 +33,7 @@ export const signInWithCredentials = async (params: {
     }
     return { success: true };
   } catch (error) {
-    console.log(error, "Signin error");
+    console.error("Signin error:", error);
     return { success: false, error: "Invalid email or password." };
   }
 };
@@ -47,21 +49,10 @@ export const signUpUser = async (params: {
   address: string;
   password: string;
 }) => {
-  const {
-    name,
-    birthdate,
-    phonenumber,
-    email,
-    city,
-    state,
-    zipCode,
-    address,
-    password,
-  } = params;
+  const { name, birthdate, phonenumber, email, city, state, zipCode, address, password } = params;
 
   const ip = (await headers()).get("x-forwarded-for") || "127.0.0.1";
   const { success } = await ratelimit.limit(ip);
-
   if (!success) return redirect("/too-fast");
 
   const existingUser = await db
@@ -76,6 +67,9 @@ export const signUpUser = async (params: {
 
   const hashedPassword = await hash(password, 10);
 
+  // Geocode address to coordinates for distance calculation
+  const coords = await geocodeAddress(address, city, state);
+
   try {
     await db.insert(users).values({
       fullName: name,
@@ -87,12 +81,19 @@ export const signUpUser = async (params: {
       state,
       zipCode,
       address,
+      latitude: coords?.lat ?? null,
+      longitude: coords?.lng ?? null,
     });
 
+    // Send welcome email (non-blocking)
+    const template = emailTemplates.welcomeUser(name);
+    await sendEmail({ email, ...template });
+
+    // Auto sign in after registration
     await signInWithCredentials({ email, password });
     return { success: true };
   } catch (error) {
-    console.log(error, "Signup error");
+    console.error("Signup error:", error);
     return { success: false, error: "An error occurred during sign up." };
   }
 };
@@ -106,7 +107,6 @@ export const signUpInstitution = async (params: {
   zipCode: string;
   address: string;
   verificationEvidence: string;
-  hasPickupService: string;
   websiteOrSocial?: string;
   description: string;
   password: string;
@@ -120,7 +120,6 @@ export const signUpInstitution = async (params: {
     zipCode,
     address,
     verificationEvidence,
-    hasPickupService,
     websiteOrSocial,
     description,
     password,
@@ -128,7 +127,6 @@ export const signUpInstitution = async (params: {
 
   const ip = (await headers()).get("x-forwarded-for") || "127.0.0.1";
   const { success } = await ratelimit.limit(ip);
-
   if (!success) return redirect("/too-fast");
 
   const existingInstitution = await db
@@ -146,6 +144,9 @@ export const signUpInstitution = async (params: {
 
   const hashedPassword = await hash(password, 10);
 
+  // Geocode institution address
+  const coords = await geocodeAddress(address, city, state);
+
   try {
     await db.insert(institutions).values({
       institutionName,
@@ -157,15 +158,20 @@ export const signUpInstitution = async (params: {
       zipCode,
       address,
       verificationEvidence,
-      hasPickupService: hasPickupService === "yes",
       websiteOrSocial: websiteOrSocial || null,
       description,
+      latitude: coords?.lat ?? null,
+      longitude: coords?.lng ?? null,
     });
 
-    // Don't auto-login institutions — they need admin approval first
+    // Send confirmation email to institution
+    const template = emailTemplates.institutionApplicationReceived(institutionName);
+    await sendEmail({ email, ...template });
+
+    // Institution must wait for admin approval before logging in
     return { success: true };
   } catch (error) {
-    console.log(error, "Institution signup error");
+    console.error("Institution signup error:", error);
     return { success: false, error: "An error occurred during registration." };
   }
 };

@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { MapPin } from "lucide-react";
 import React from "react";
@@ -7,50 +6,62 @@ interface DonationCardProps {
   id: string;
   title: string;
   institutionName: string;
-  institutionLogo: string;
-  coverImage: string;
-  location: string;
-  distance: string;
-  currentAmount: number;
-  targetAmount: number;
+  cover: string | null;
+  institutionCity: string | null;
+  institutionState: string | null;
+  distanceKm: number | null;
+  collected: number;
+  target: number;
+  category: string;
 }
 
 const DonationCard: React.FC<DonationCardProps> = ({
   id,
   title,
   institutionName,
-  institutionLogo,
-  coverImage,
-  location,
-  distance,
-  currentAmount,
-  targetAmount,
+  cover,
+  institutionCity,
+  institutionState,
+  distanceKm,
+  collected,
+  target,
 }) => {
-  const progress = Math.min((currentAmount / targetAmount) * 100, 100);
+  const progress = target > 0 ? Math.min((collected / target) * 100, 100) : 0;
+  const location = [institutionCity, institutionState].filter(Boolean).join(", ");
 
   return (
-    <div className="donation-card">
-      {/* Cover Image */}
+    <Link href={`/donations/${id}`} className="donation-card block text-inherit no-underline">
+      {/* Cover image */}
       <div className="donation-card_cover">
-        <Image
-          src={coverImage}
-          alt={title}
-          fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="object-cover"
-        />
+        {cover ? (
+          <img src={cover} alt={title} className="object-cover w-full h-full" />
+        ) : (
+          <div
+            className="w-full h-full flex items-center justify-center"
+            style={{ background: "var(--color-primary-50)" }}
+          >
+            <span style={{ color: "var(--color-primary-200)", fontSize: 40 }}>
+              &#9673;
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="donation-card_body">
         {/* Institution info */}
         <div className="donation-card_institution">
-          <Image
-            src={institutionLogo}
-            alt={institutionName}
-            width={28}
-            height={28}
-            className="rounded-full object-cover"
-          />
+          <div
+            className="flex items-center justify-center rounded-full text-xs font-bold"
+            style={{
+              width: 28,
+              height: 28,
+              background: "var(--color-primary-100)",
+              color: "var(--color-primary)",
+              flexShrink: 0,
+            }}
+          >
+            {institutionName.charAt(0).toUpperCase()}
+          </div>
           <span>{institutionName}</span>
         </div>
 
@@ -61,9 +72,11 @@ const DonationCard: React.FC<DonationCardProps> = ({
         <div className="donation-card_location">
           <div className="donation-card_location-left">
             <MapPin />
-            <span>{location}</span>
+            <span>{location || "Location not set"}</span>
           </div>
-          <span className="donation-card_distance">{distance}</span>
+          <span className="donation-card_distance">
+            {distanceKm != null ? `${distanceKm} km away` : "N/A"}
+          </span>
         </div>
 
         {/* Progress bar */}
@@ -75,16 +88,16 @@ const DonationCard: React.FC<DonationCardProps> = ({
             />
           </div>
           <p className="donation-card_progress-text">
-            <strong>{currentAmount}</strong> / {targetAmount} items
+            <strong>{collected}</strong> / {target} items collected
           </p>
         </div>
 
-        {/* Donate Now Button */}
-        <Link href={`/donate/${id}`} className="donation-card_btn">
+        {/* Donate button span */}
+        <span className="donation-card_btn inline-block text-center w-full">
           Donate Now
-        </Link>
+        </span>
       </div>
-    </div>
+    </Link>
   );
 };
 
