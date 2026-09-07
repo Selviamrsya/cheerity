@@ -399,40 +399,52 @@ export const getUserDonationHistory = async (userId: string) => {
 
 // Get donation requests for an institution
 export const getInstitutionDonationHistory = async (institutionId: string) => {
-  return db
-    .select({
-      id: donateRecords.id,
-      status: donateRecords.status,
-      donorName: donateRecords.donorName,
-      isAnonymous: donateRecords.isAnonymous,
-      phoneNumber: donateRecords.phoneNumber,
-      city: donateRecords.city,
-      quantity: donateRecords.quantity,
-      deliveryMethod: donateRecords.deliveryMethod,
-      notes: donateRecords.notes,
-      donorPhoto: donateRecords.donorPhoto,
-      estimatedPickupDate: donateRecords.estimatedPickupDate,
-      estimatedPickupTime: donateRecords.estimatedPickupTime,
-      requestDate: donateRecords.requestDate,
-      approvalDate: donateRecords.approvalDate,
-      arrivalProofPhoto: donateRecords.arrivalProofPhoto,
-      rejectionReason: donateRecords.rejectionReason,
-      donationTitle: donations.title,
-      donationCategory: donations.category,
-    })
-    .from(donateRecords)
-    .innerJoin(donations, eq(donateRecords.donationId, donations.id))
-    .where(eq(donations.institutionId, institutionId))
-    .orderBy(desc(donateRecords.requestDate));
+  try {
+    if (!institutionId) return [];
+    return await db
+      .select({
+        id: donateRecords.id,
+        status: donateRecords.status,
+        donorName: donateRecords.donorName,
+        isAnonymous: donateRecords.isAnonymous,
+        phoneNumber: donateRecords.phoneNumber,
+        city: donateRecords.city,
+        quantity: donateRecords.quantity,
+        deliveryMethod: donateRecords.deliveryMethod,
+        notes: donateRecords.notes,
+        donorPhoto: donateRecords.donorPhoto,
+        estimatedPickupDate: donateRecords.estimatedPickupDate,
+        estimatedPickupTime: donateRecords.estimatedPickupTime,
+        requestDate: donateRecords.requestDate,
+        approvalDate: donateRecords.approvalDate,
+        arrivalProofPhoto: donateRecords.arrivalProofPhoto,
+        rejectionReason: donateRecords.rejectionReason,
+        donationTitle: donations.title,
+        donationCategory: donations.category,
+      })
+      .from(donateRecords)
+      .innerJoin(donations, eq(donateRecords.donationId, donations.id))
+      .where(eq(donations.institutionId, institutionId))
+      .orderBy(desc(donateRecords.requestDate));
+  } catch (error) {
+    console.error("Error fetching institution donation history:", error);
+    return [];
+  }
 };
 
 // Get donations uploaded by a specific institution
 export const getInstitutionDonations = async (institutionId: string) => {
-  return db
-    .select()
-    .from(donations)
-    .where(eq(donations.institutionId, institutionId))
-    .orderBy(desc(donations.createdAt));
+  try {
+    if (!institutionId) return [];
+    return await db
+      .select()
+      .from(donations)
+      .where(eq(donations.institutionId, institutionId))
+      .orderBy(desc(donations.createdAt));
+  } catch (error) {
+    console.error("Error fetching institution donations:", error);
+    return [];
+  }
 };
 
 // Get notifications for a user or institution

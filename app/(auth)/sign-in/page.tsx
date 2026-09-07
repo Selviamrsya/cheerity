@@ -1,7 +1,8 @@
-"use client";
-
+import React from "react";
 import AuthForm from "@/components/AuthForm";
 
-const Page = () => <AuthForm type="SIGN_IN" />;
+const Page = () => {
+  return <AuthForm type="SIGN_IN" />;
+};
 
 export default Page;

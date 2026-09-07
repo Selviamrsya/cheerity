@@ -54,7 +54,7 @@ const DonationOverview: React.FC<DonationOverviewProps> = ({
           <img src={cover} alt={title} className="donation-overview-img" />
         ) : (
           <div className="donation-overview-placeholder">
-            <Package className="h-16 w-16" style={{ color: "var(--color-primary-200)" }} />
+            <Package className="h-16 w-16" style={{ color: "var(--color-surface)" }} />
           </div>
         )}
         {/* Category badge overlaid top-left */}

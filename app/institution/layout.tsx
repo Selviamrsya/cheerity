@@ -1,7 +1,7 @@
 import React from "react";
 import { redirect } from "next/navigation";
 import { auth } from "@/app/auth";
-import InstitutionSidebar from "@/components/institution/layout";
+import InstitutionNavbar from "@/components/institution/Navbar";
 
 const InstitutionLayout = async ({ children }: { children: React.ReactNode }) => {
   const session = await auth();
@@ -15,9 +15,11 @@ const InstitutionLayout = async ({ children }: { children: React.ReactNode }) =>
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <InstitutionSidebar session={session} />
-      <main className="flex-1 ml-64 p-8">{children}</main>
+    <div className="institution-layout">
+      <InstitutionNavbar session={session} />
+      <main className="institution-page-container">
+        {children}
+      </main>
     </div>
   );
 };

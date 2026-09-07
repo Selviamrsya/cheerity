@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -17,6 +17,7 @@ import {
 } from "@/lib/validations";
 import { signInWithCredentials, signUpUser, signUpInstitution } from "@/lib/actions/auth";
 import VerificationUpload from "./VerificationUpload";
+import LocationFields from "./LocationFields";
 
 interface AuthFormProps {
   type: "SIGN_IN" | "SIGN_UP";
@@ -31,6 +32,17 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const cardEl = document.querySelector(".auth-card");
+    if (cardEl) {
+      if (!isSignIn) {
+        cardEl.classList.add("auth-card-wide");
+      } else {
+        cardEl.classList.remove("auth-card-wide");
+      }
+    }
+  }, [isSignIn]);
 
   const signInForm = useForm<SignInInput>({
     resolver: zodResolver(signInSchema),
@@ -61,8 +73,13 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
     try {
       const result = await signInWithCredentials(data);
       if (result?.success) {
-        // Redirect handled by next-auth callbackUrl or default
-        router.push("/");
+        if (result.role === "ADMIN") {
+          router.push("/admin");
+        } else if (result.role === "INSTITUTION") {
+          router.push("/institution");
+        } else {
+          router.push("/");
+        }
         router.refresh();
       } else {
         setFormError(result?.error || "Invalid email or password.");
@@ -138,20 +155,15 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-3">
       <div className="auth-logo">
-        <Image src="/assets/logo.png" alt="Cheerity" width={160} height={40} priority />
+        <Image src="/assets/logo.png" alt="Cheerity" width={110} height={28} priority />
       </div>
 
-      <div className="text-center">
+      <div className="text-center mb-5">
         <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "var(--font-poppins)", color: "var(--color-on-surface)" }}>
           {isSignIn ? "Welcome Back!" : "Create an Account"}
         </h1>
-        <p className="mt-1 text-sm" style={{ color: "var(--color-on-surface-variant)" }}>
-          {isSignIn
-            ? "Sign in to manage your donations and explore campaigns."
-            : "Join Cheerity as an individual donor or a registered institution."}
-        </p>
       </div>
 
       {/* Role Toggle - Sign Up only */}
@@ -159,7 +171,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
         <div className="role-toggle">
           <button type="button" onClick={() => setRole("user")} className={`role-toggle-btn ${role === "user" ? "active" : ""}`}>
             <User className="h-4 w-4" />
-            <span>User (Donor)</span>
+            <span>User</span>
           </button>
           <button type="button" onClick={() => setRole("institution")} className={`role-toggle-btn ${role === "institution" ? "active" : ""}`}>
             <Building2 className="h-4 w-4" />
@@ -179,8 +191,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
       {isSignIn && (
         <form onSubmit={signInForm.handleSubmit(handleSignInSubmit)} className="flex flex-col gap-4">
           <div className="form-group">
-            <label className="form-label">Email Address</label>
-            <input type="email" placeholder="name@example.com" {...signInForm.register("email")} className="form-input" />
+            <label className="form-label">Email</label>
+            <input type="email" placeholder="Enter your email address" {...signInForm.register("email")} className="form-input" />
             {signInForm.formState.errors.email && <p className="form-error">{signInForm.formState.errors.email.message}</p>}
           </div>
           <div className="form-group">
@@ -209,47 +221,43 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
       {!isSignIn && role === "user" && (
         <form onSubmit={userSignUpForm.handleSubmit(handleUserSignUpSubmit)} className="flex flex-col gap-4">
           <div className="form-group">
-            <label className="form-label">Full Name</label>
-            <input type="text" placeholder="Enter your name" {...userSignUpForm.register("name")} className="form-input" />
+            <label className="form-label">Name</label>
+            <input type="text" placeholder="Enter your full name" {...userSignUpForm.register("name")} className="form-input" />
             {userSignUpForm.formState.errors.name && <p className="form-error">{userSignUpForm.formState.errors.name.message}</p>}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="form-group">
-              <label className="form-label">Date of Birth</label>
-              <input type="date" {...userSignUpForm.register("birthdate")} className="form-input" />
-              {userSignUpForm.formState.errors.birthdate && <p className="form-error">{userSignUpForm.formState.errors.birthdate.message}</p>}
-            </div>
-            <div className="form-group">
-              <label className="form-label">Phone Number</label>
-              <input type="tel" placeholder="e.g. 081234567890" {...userSignUpForm.register("phonenumber")} className="form-input" />
-              {userSignUpForm.formState.errors.phonenumber && <p className="form-error">{userSignUpForm.formState.errors.phonenumber.message}</p>}
-            </div>
+          <div className="form-group">
+            <label className="form-label">Date of Birth</label>
+            <input type="date" {...userSignUpForm.register("birthdate")} className="form-input" />
+            {userSignUpForm.formState.errors.birthdate && <p className="form-error">{userSignUpForm.formState.errors.birthdate.message}</p>}
           </div>
 
           <div className="form-group">
-            <label className="form-label">Email Address</label>
-            <input type="email" placeholder="name@example.com" {...userSignUpForm.register("email")} className="form-input" />
+            <label className="form-label">Phone Number</label>
+            <input type="tel" placeholder="e.g. 081234567890" {...userSignUpForm.register("phonenumber")} className="form-input" />
+            {userSignUpForm.formState.errors.phonenumber && <p className="form-error">{userSignUpForm.formState.errors.phonenumber.message}</p>}
+          </div>
+
+
+          <div className="form-group">
+            <label className="form-label">Email</label>
+            <input type="email" placeholder="Enter your email address" {...userSignUpForm.register("email")} className="form-input" />
             {userSignUpForm.formState.errors.email && <p className="form-error">{userSignUpForm.formState.errors.email.message}</p>}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="form-group">
-              <label className="form-label">City</label>
-              <input type="text" placeholder="City" {...userSignUpForm.register("city")} className="form-input" />
-              {userSignUpForm.formState.errors.city && <p className="form-error">{userSignUpForm.formState.errors.city.message}</p>}
-            </div>
-            <div className="form-group">
-              <label className="form-label">State / Province</label>
-              <input type="text" placeholder="State" {...userSignUpForm.register("state")} className="form-input" />
-              {userSignUpForm.formState.errors.state && <p className="form-error">{userSignUpForm.formState.errors.state.message}</p>}
-            </div>
-            <div className="form-group">
-              <label className="form-label">Zip Code</label>
-              <input type="text" placeholder="Zip" {...userSignUpForm.register("zipCode")} className="form-input" />
-              {userSignUpForm.formState.errors.zipCode && <p className="form-error">{userSignUpForm.formState.errors.zipCode.message}</p>}
-            </div>
-          </div>
+          <LocationFields
+            stateValue={userSignUpForm.watch("state")}
+            cityValue={userSignUpForm.watch("city")}
+            zipCodeValue={userSignUpForm.watch("zipCode")}
+            onStateChange={(val) => userSignUpForm.setValue("state", val, { shouldValidate: true })}
+            onCityChange={(val) => userSignUpForm.setValue("city", val, { shouldValidate: true })}
+            onZipCodeChange={(val) => userSignUpForm.setValue("zipCode", val, { shouldValidate: true })}
+            errors={{
+              state: userSignUpForm.formState.errors.state?.message,
+              city: userSignUpForm.formState.errors.city?.message,
+              zipCode: userSignUpForm.formState.errors.zipCode?.message,
+            }}
+          />
 
           <div className="form-group">
             <label className="form-label">Full Address</label>
@@ -257,27 +265,25 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
             {userSignUpForm.formState.errors.address && <p className="form-error">{userSignUpForm.formState.errors.address.message}</p>}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="form-group">
-              <label className="form-label">Password</label>
-              <div className="relative">
-                <input type={showPassword ? "text" : "password"} placeholder="Min 6 characters" {...userSignUpForm.register("password")} className="form-input" style={{ paddingRight: "44px" }} />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="pw-toggle-btn">
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              {userSignUpForm.formState.errors.password && <p className="form-error">{userSignUpForm.formState.errors.password.message}</p>}
+          <div className="form-group">
+            <label className="form-label">Password</label>
+            <div className="relative">
+              <input type={showPassword ? "text" : "password"} placeholder="Enter your password (min 6 characters)" {...userSignUpForm.register("password")} className="form-input" style={{ paddingRight: "44px" }} />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="pw-toggle-btn">
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
             </div>
-            <div className="form-group">
-              <label className="form-label">Confirm Password</label>
-              <div className="relative">
-                <input type={showConfirmPassword ? "text" : "password"} placeholder="Re-enter password" {...userSignUpForm.register("confirmPassword")} className="form-input" style={{ paddingRight: "44px" }} />
-                <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="pw-toggle-btn">
-                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              {userSignUpForm.formState.errors.confirmPassword && <p className="form-error">{userSignUpForm.formState.errors.confirmPassword.message}</p>}
+            {userSignUpForm.formState.errors.password && <p className="form-error">{userSignUpForm.formState.errors.password.message}</p>}
+          </div>
+          <div className="form-group">
+            <label className="form-label">Confirm Password</label>
+            <div className="relative">
+              <input type={showConfirmPassword ? "text" : "password"} placeholder="Enter your password again" {...userSignUpForm.register("confirmPassword")} className="form-input" style={{ paddingRight: "44px" }} />
+              <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="pw-toggle-btn">
+                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
             </div>
+            {userSignUpForm.formState.errors.confirmPassword && <p className="form-error">{userSignUpForm.formState.errors.confirmPassword.message}</p>}
           </div>
 
           <button type="submit" className="btn-primary" disabled={isSubmitting}>
@@ -295,36 +301,31 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
             {institutionSignUpForm.formState.errors.institutionName && <p className="form-error">{institutionSignUpForm.formState.errors.institutionName.message}</p>}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="form-group">
-              <label className="form-label">Institution Email</label>
-              <input type="email" placeholder="official@institution.com" {...institutionSignUpForm.register("email")} className="form-input" />
-              {institutionSignUpForm.formState.errors.email && <p className="form-error">{institutionSignUpForm.formState.errors.email.message}</p>}
-            </div>
-            <div className="form-group">
-              <label className="form-label">Phone Number</label>
-              <input type="tel" placeholder="e.g. 021-12345678" {...institutionSignUpForm.register("phoneNumber")} className="form-input" />
-              {institutionSignUpForm.formState.errors.phoneNumber && <p className="form-error">{institutionSignUpForm.formState.errors.phoneNumber.message}</p>}
-            </div>
+          <div className="form-group">
+            <label className="form-label">Institution Email</label>
+            <input type="email" placeholder="official@institution.com" {...institutionSignUpForm.register("email")} className="form-input" />
+            {institutionSignUpForm.formState.errors.email && <p className="form-error">{institutionSignUpForm.formState.errors.email.message}</p>}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="form-group">
-              <label className="form-label">City</label>
-              <input type="text" placeholder="City" {...institutionSignUpForm.register("city")} className="form-input" />
-              {institutionSignUpForm.formState.errors.city && <p className="form-error">{institutionSignUpForm.formState.errors.city.message}</p>}
-            </div>
-            <div className="form-group">
-              <label className="form-label">State / Province</label>
-              <input type="text" placeholder="State" {...institutionSignUpForm.register("state")} className="form-input" />
-              {institutionSignUpForm.formState.errors.state && <p className="form-error">{institutionSignUpForm.formState.errors.state.message}</p>}
-            </div>
-            <div className="form-group">
-              <label className="form-label">Zip Code</label>
-              <input type="text" placeholder="Zip" {...institutionSignUpForm.register("zipCode")} className="form-input" />
-              {institutionSignUpForm.formState.errors.zipCode && <p className="form-error">{institutionSignUpForm.formState.errors.zipCode.message}</p>}
-            </div>
+          <div className="form-group">
+            <label className="form-label">Phone Number</label>
+            <input type="tel" placeholder="e.g. 021-12345678" {...institutionSignUpForm.register("phoneNumber")} className="form-input" />
+            {institutionSignUpForm.formState.errors.phoneNumber && <p className="form-error">{institutionSignUpForm.formState.errors.phoneNumber.message}</p>}
           </div>
+
+          <LocationFields
+            stateValue={institutionSignUpForm.watch("state")}
+            cityValue={institutionSignUpForm.watch("city")}
+            zipCodeValue={institutionSignUpForm.watch("zipCode")}
+            onStateChange={(val) => institutionSignUpForm.setValue("state", val, { shouldValidate: true })}
+            onCityChange={(val) => institutionSignUpForm.setValue("city", val, { shouldValidate: true })}
+            onZipCodeChange={(val) => institutionSignUpForm.setValue("zipCode", val, { shouldValidate: true })}
+            errors={{
+              state: institutionSignUpForm.formState.errors.state?.message,
+              city: institutionSignUpForm.formState.errors.city?.message,
+              zipCode: institutionSignUpForm.formState.errors.zipCode?.message,
+            }}
+          />
 
           <div className="form-group">
             <label className="form-label">Institution Address</label>
@@ -357,7 +358,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
           <div className="form-group">
             <label className="form-label">Short Description</label>
             <textarea
-              rows={3}
+              rows={4}
               placeholder="Describe your institution's mission and programs..."
               {...institutionSignUpForm.register("description")}
               className="form-input form-textarea"
@@ -365,27 +366,25 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
             {institutionSignUpForm.formState.errors.description && <p className="form-error">{institutionSignUpForm.formState.errors.description.message}</p>}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="form-group">
-              <label className="form-label">Password</label>
-              <div className="relative">
-                <input type={showPassword ? "text" : "password"} placeholder="Min 6 characters" {...institutionSignUpForm.register("password")} className="form-input" style={{ paddingRight: "44px" }} />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="pw-toggle-btn">
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              {institutionSignUpForm.formState.errors.password && <p className="form-error">{institutionSignUpForm.formState.errors.password.message}</p>}
+          <div className="form-group">
+            <label className="form-label">Password</label>
+            <div className="relative">
+              <input type={showPassword ? "text" : "password"} placeholder="Enter your password (min 6 characters)" {...institutionSignUpForm.register("password")} className="form-input" style={{ paddingRight: "44px" }} />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="pw-toggle-btn">
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
             </div>
-            <div className="form-group">
-              <label className="form-label">Confirm Password</label>
-              <div className="relative">
-                <input type={showConfirmPassword ? "text" : "password"} placeholder="Re-enter password" {...institutionSignUpForm.register("confirmPassword")} className="form-input" style={{ paddingRight: "44px" }} />
-                <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="pw-toggle-btn">
-                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              {institutionSignUpForm.formState.errors.confirmPassword && <p className="form-error">{institutionSignUpForm.formState.errors.confirmPassword.message}</p>}
+            {institutionSignUpForm.formState.errors.password && <p className="form-error">{institutionSignUpForm.formState.errors.password.message}</p>}
+          </div>
+          <div className="form-group">
+            <label className="form-label">Confirm Password</label>
+            <div className="relative">
+              <input type={showConfirmPassword ? "text" : "password"} placeholder="Enter your password again" {...institutionSignUpForm.register("confirmPassword")} className="form-input" style={{ paddingRight: "44px" }} />
+              <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="pw-toggle-btn">
+                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
             </div>
+            {institutionSignUpForm.formState.errors.confirmPassword && <p className="form-error">{institutionSignUpForm.formState.errors.confirmPassword.message}</p>}
           </div>
 
           <button type="submit" className="btn-primary" disabled={isSubmitting}>

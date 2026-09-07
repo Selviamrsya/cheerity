@@ -16,8 +16,9 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
         <div className="site-footer-inner">
           <div className="site-footer-logo">
             <Image src="/assets/logo.png" alt="Cheerity" width={120} height={30} />
-            <p className="site-footer-tagline">Bring Cheer</p>
+            <p className="site-footer-tagline">Cheerity bring Cheer</p>
           </div>
+          <div className="horizontal-line"></div>
           <p className="site-footer-copy">
             &copy; 2026 Cheerity &mdash; All rights reserved
           </p>

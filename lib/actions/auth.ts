@@ -31,7 +31,29 @@ export const signInWithCredentials = async (params: {
     if (result?.error) {
       return { success: false, error: result.error };
     }
-    return { success: true };
+
+    // Check role to return for proper client redirect
+    const userResult = await db
+      .select({ role: users.role })
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
+
+    if (userResult.length > 0) {
+      return { success: true, role: userResult[0].role };
+    }
+
+    const instResult = await db
+      .select({ id: institutions.id })
+      .from(institutions)
+      .where(eq(institutions.email, email))
+      .limit(1);
+
+    if (instResult.length > 0) {
+      return { success: true, role: "INSTITUTION" };
+    }
+
+    return { success: true, role: "USER" };
   } catch (error) {
     console.error("Signin error:", error);
     return { success: false, error: "Invalid email or password." };

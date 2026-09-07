@@ -1,87 +1,120 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { Session } from "next-auth";
-import { LayoutDashboard, ShieldCheck, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 
-interface AdminSidebarProps {
+interface AdminNavbarProps {
   session: Session | null;
 }
 
-const AdminSidebar: React.FC<AdminSidebarProps> = ({ session }) => {
+const AdminNavbar: React.FC<AdminNavbarProps> = ({ session }) => {
   const pathname = usePathname();
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
 
-  const navItems = [
-    { label: "Home", href: "/admin", icon: LayoutDashboard },
-    { label: "Verify Institution", href: "/admin/institutions", icon: ShieldCheck },
-  ];
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const adminInitial = session?.user?.name
+    ? session.user.name.trim().charAt(0).toUpperCase()
+    : "A";
+
+  const isHomeActive = pathname === "/admin";
+  const isVerifyActive = pathname.startsWith("/admin/institutions");
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-56 bg-white border-r border-gray-100 flex flex-col justify-between p-6 z-40">
-      <div className="space-y-8">
-        {/* Logo */}
-        <Link href="/admin" className="block">
-          <Image src="/assets/logo.png" alt="Cheerity" width={130} height={32} priority />
-          <span className="text-xs text-green-800 font-bold tracking-wider block mt-1">
-            ADMIN PANEL
-          </span>
+    <header className="navbar scrolled">
+      <nav className="navbar-inner flex items-center justify-between">
+        {/* Left: Logo with subtle Admin indicator */}
+        <Link href="/admin" className="navbar-logo flex items-center gap-2.5">
+          <Image src="/assets/logo.png" alt="Cheerity" width={140} height={36} priority />
         </Link>
 
-        {/* Nav Links */}
-        <nav className="space-y-2">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive =
-              item.href === "/admin"
-                ? pathname === "/admin"
-                : pathname.startsWith(item.href);
-
-            return (
+        {/* Right: Text-only links (Home & Verify Institution) + Profile avatar */}
+        <div className="flex items-center gap-4 sm:gap-6">
+          <ul className="flex items-center gap-1 sm:gap-3 list-none">
+            <li>
               <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${
-                  isActive
-                    ? "bg-green-800 text-white shadow-sm font-semibold"
-                    : "text-gray-600 hover:bg-green-50 hover:text-green-800"
-                }`}
+                href="/admin"
+                className={`navbar-link ${isHomeActive ? "active" : ""}`}
               >
-                <Icon className="w-5 h-5" />
-                <span>{item.label}</span>
+                Home
               </Link>
-            );
-          })}
-        </nav>
-      </div>
+            </li>
+            <li>
+              <Link
+                href="/admin/institutions"
+                className={`navbar-link ${isVerifyActive ? "active" : ""}`}
+              >
+                Verify Institution
+              </Link>
+            </li>
+          </ul>
 
-      {/* User Info & Logout */}
-      <div className="pt-6 border-t border-gray-100 space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-green-100 text-green-800 flex items-center justify-center font-bold text-sm flex-shrink-0">
-            A
-          </div>
-          <div className="overflow-hidden">
-            <p className="font-semibold text-xs text-gray-900 truncate">
-              {session?.user?.name || "Admin"}
-            </p>
-            <p className="text-xs text-gray-400 truncate">{session?.user?.email}</p>
+          {/* Profile Dropdown Popup */}
+          <div className="relative" ref={profileRef}>
+            <button
+              type="button"
+              onClick={() => setProfileOpen(!profileOpen)}
+              className="navbar-avatar flex items-center justify-center font-bold text-sm bg-green-800 text-white cursor-pointer"
+              aria-label="Admin Profile Menu"
+            >
+              {adminInitial}
+            </button>
+
+            {profileOpen && (
+              <div className="profile-dropdown">
+                {/* User info header */}
+                <div className="profile-dropdown-header">
+                  <div className="profile-dropdown-info">
+                    <p className="profile-dropdown-name">
+                      {session?.user?.name || "Admin Cheerity"}
+                    </p>
+                    <p className="profile-dropdown-email">{session?.user?.email}</p>
+                  </div>
+                </div>
+
+                {/* Quick link to public site */}
+                <div className="profile-dropdown-menu">
+                  <Link
+                    href="/"
+                    onClick={() => setProfileOpen(false)}
+                    className="profile-dropdown-item"
+                  >
+                    <span>Go to the public web</span>
+                  </Link>
+                </div>
+
+                {/* Sign Out */}
+                <div className="profile-dropdown-footer">
+                  <button
+                    type="button"
+                    onClick={() => signOut({ callbackUrl: "/sign-in" })}
+                    className="profile-dropdown-signout"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-
-        <button
-          onClick={() => signOut({ callbackUrl: "/sign-in" })}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 hover:bg-red-50 hover:text-red-700 text-gray-700 text-xs font-medium rounded-xl transition-colors"
-        >
-          <LogOut className="w-3.5 h-3.5" />
-          <span>Sign Out</span>
-        </button>
-      </div>
-    </aside>
+      </nav>
+    </header>
   );
 };
 
-export default AdminSidebar;
+export default AdminNavbar;

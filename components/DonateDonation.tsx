@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { donationRequestSchema, DonationRequestInput } from "@/lib/validations";
 import { submitDonationRequest } from "@/lib/actions/donation";
 import LocalImageUpload from "./LocalImageUpload";
+import LocationFields from "./LocationFields";
 import { DELIVERY_METHOD_LABELS } from "@/constants";
 
 interface DonateDonationProps {
@@ -183,23 +184,19 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
               )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="form-group">
-                <label className="form-label">City</label>
-                <input type="text" {...form.register("city")} className="form-input" />
-                {form.formState.errors.city && <p className="form-error">{form.formState.errors.city.message}</p>}
-              </div>
-              <div className="form-group">
-                <label className="form-label">State</label>
-                <input type="text" {...form.register("state")} className="form-input" />
-                {form.formState.errors.state && <p className="form-error">{form.formState.errors.state.message}</p>}
-              </div>
-              <div className="form-group">
-                <label className="form-label">Zip Code</label>
-                <input type="text" {...form.register("zipCode")} className="form-input" />
-                {form.formState.errors.zipCode && <p className="form-error">{form.formState.errors.zipCode.message}</p>}
-              </div>
-            </div>
+            <LocationFields
+              stateValue={form.watch("state")}
+              cityValue={form.watch("city")}
+              zipCodeValue={form.watch("zipCode")}
+              onStateChange={(val) => form.setValue("state", val, { shouldValidate: true })}
+              onCityChange={(val) => form.setValue("city", val, { shouldValidate: true })}
+              onZipCodeChange={(val) => form.setValue("zipCode", val, { shouldValidate: true })}
+              errors={{
+                state: form.formState.errors.state?.message,
+                city: form.formState.errors.city?.message,
+                zipCode: form.formState.errors.zipCode?.message,
+              }}
+            />
 
             <div className="form-group">
               <label className="form-label">Full Address</label>

@@ -40,7 +40,7 @@ const DonationCard: React.FC<DonationCardProps> = ({
             className="w-full h-full flex items-center justify-center"
             style={{ background: "var(--color-primary-50)" }}
           >
-            <span style={{ color: "var(--color-primary-200)", fontSize: 40 }}>
+            <span style={{ color: "var(--color-surface)", fontSize: 40 }}>
               &#9673;
             </span>
           </div>

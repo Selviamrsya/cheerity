@@ -1,9 +1,7 @@
 import React from "react";
 import { redirect } from "next/navigation";
 import { auth } from "@/app/auth";
-import AdminSidebar from "@/components/admin/Navbar";
-import AdminHeader from "@/components/admin/Header";
-// import "@/styles/admin.css";
+import AdminNavbar from "@/components/admin/Navbar";
 
 const AdminLayout = async ({ children }: { children: React.ReactNode }) => {
   const session = await auth();
@@ -17,14 +15,11 @@ const AdminLayout = async ({ children }: { children: React.ReactNode }) => {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <AdminSidebar session={session} />
-      <div className="flex-1 ml-56">
-        <div className="p-8">
-          <AdminHeader session={session} />
-          {children}
-        </div>
-      </div>
+    <div className="admin-layout">
+      <AdminNavbar session={session} />
+      <main className="admin-page-container">
+        {children}
+      </main>
     </div>
   );
 };

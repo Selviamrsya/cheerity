@@ -1,0 +1,241 @@
+"use client";
+
+import React, { useState } from "react";
+
+interface DataPoint {
+  label: string;
+  count: number;
+  fullDate?: string;
+}
+
+interface DonationsActivityChartProps {
+  data: {
+    weekly: DataPoint[];
+    monthly: DataPoint[];
+    yearly: DataPoint[];
+  };
+}
+
+export default function DonationsActivityChart({ data }: DonationsActivityChartProps) {
+  const [period, setPeriod] = useState<"weekly" | "monthly" | "yearly">("monthly");
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  const currentData = data[period] || [];
+  const counts = currentData.map((d) => d.count);
+  const totalCount = counts.reduce((acc, c) => acc + c, 0);
+
+  // Calculate Y-axis scale and ticks: 0, 1, 2, 3, 4, 5
+  const rawMax = Math.max(...counts, 0);
+  let scaleMax = 5;
+  let yTicks: number[] = [0, 1, 2, 3, 4, 5];
+
+  if (rawMax <= 5) {
+    scaleMax = 5;
+    yTicks = [0, 1, 2, 3, 4, 5];
+  } else {
+    const roughStep = Math.ceil(rawMax / 5);
+    const magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)));
+    const normalized = roughStep / magnitude;
+    let step = 1;
+    if (normalized <= 1) step = 1 * magnitude;
+    else if (normalized <= 2) step = 2 * magnitude;
+    else if (normalized <= 5) step = 5 * magnitude;
+    else step = 10 * magnitude;
+
+    scaleMax = step * 5;
+    while (scaleMax < rawMax) {
+      scaleMax += step;
+    }
+    yTicks = [];
+    for (let val = 0; val <= scaleMax; val += step) {
+      yTicks.push(val);
+    }
+  }
+
+  // SVG dimensions
+  const width = 800;
+  const height = 240;
+  const paddingTop = 25;
+  const paddingBottom = 40;
+  const paddingLeft = 45; // Space for Y-axis numbers
+  const paddingRight = 35;
+
+  const chartHeight = height - paddingTop - paddingBottom;
+  const lineX1 = paddingLeft;
+  const lineX2 = width - paddingRight;
+
+  // Space out the first data point from 0 and the Y-axis
+  const startX = paddingLeft + 35; // Generous distance between 0 and the first point
+  const endX = width - paddingRight - 20;
+  const pointsWidth = endX - startX;
+
+  // Generate coordinates
+  const points = currentData.map((item, index) => {
+    const x = startX + (index / (currentData.length - 1 || 1)) * pointsWidth;
+    const y = paddingTop + chartHeight - (item.count / scaleMax) * chartHeight;
+    return { x, y, ...item };
+  });
+
+  // Generate SVG path string with smooth curve
+  const pathD = points.reduce((acc, p, i, arr) => {
+    if (i === 0) return `M ${p.x} ${p.y}`;
+    const prev = arr[i - 1];
+    const cpX1 = prev.x + (p.x - prev.x) / 2;
+    const cpY1 = prev.y;
+    const cpX2 = prev.x + (p.x - prev.x) / 2;
+    const cpY2 = p.y;
+    return `${acc} C ${cpX1} ${cpY1}, ${cpX2} ${cpY2}, ${p.x} ${p.y}`;
+  }, "");
+
+  // Area path for gradient fill
+  const areaD =
+    points.length > 0
+      ? `${pathD} L ${points[points.length - 1].x} ${paddingTop + chartHeight} L ${points[0].x} ${
+          paddingTop + chartHeight
+        } Z`
+      : "";
+
+  const getPeriodLabel = () => {
+    switch (period) {
+      case "weekly":
+        return "Total donations in the last 7 days";
+      case "monthly":
+        return "Monthly donation amount";
+      case "yearly":
+        return "Annual donation amount over one year";
+    }
+  };
+
+  return (
+    <div className="chart-card">
+      {/* Header with Title & Filter Buttons */}
+      <div className="chart-header">
+        <div>
+          <h2 className="chart-title">
+            Donations Activity
+          </h2>
+          <p className="chart-subtitle">
+            {getPeriodLabel()} &bull; Total: <strong>{totalCount} donasi</strong>
+          </p>
+        </div>
+
+        {/* Filter Tabs: Weekly | Monthly | Yearly */}
+        <div className="chart-filter-group">
+          {(["weekly", "monthly", "yearly"] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => {
+                setPeriod(tab);
+                setHoveredIndex(null);
+              }}
+              className={`chart-filter-btn ${period === tab ? "active" : ""}`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Interactive SVG Chart */}
+      <div className="chart-svg-container">
+        <svg
+          viewBox={`0 0 ${width} ${height}`}
+          className="chart-svg"
+          preserveAspectRatio="none"
+        >
+          <defs>
+            <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="var(--color-primary-800)" stopOpacity="0.25" />
+              <stop offset="100%" stopColor="var(--color-primary-800)" stopOpacity="0.0" />
+            </linearGradient>
+          </defs>
+
+          {/* Horizontal Grid lines on 0, 1, 2, 3, 4, 5 */}
+          {yTicks.map((tick, i) => {
+            const y = paddingTop + chartHeight - (tick / scaleMax) * chartHeight;
+            return (
+              <g key={i}>
+                <line
+                  x1={lineX1}
+                  y1={y}
+                  x2={lineX2}
+                  y2={y}
+                  className="chart-grid-line"
+                  strokeDasharray={i === 0 ? "0" : "4 4"}
+                />
+                <text
+                  x={lineX1 - 12}
+                  y={y + 4}
+                  textAnchor="end"
+                  className="chart-grid-text"
+                >
+                  {tick}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* Gradient Area Fill */}
+          {areaD && <path d={areaD} fill="url(#chartGradient)" />}
+
+          {/* Smooth Line */}
+          {pathD && (
+            <path
+              d={pathD}
+              className="chart-line"
+            />
+          )}
+
+          {/* Data Points and Interactivity */}
+          {points.map((p, idx) => (
+            <g
+              key={idx}
+              onMouseEnter={() => setHoveredIndex(idx)}
+              onMouseLeave={() => setHoveredIndex(null)}
+              className="cursor-pointer"
+            >
+              {/* Invisible bigger hover area */}
+              <circle cx={p.x} cy={p.y} r="16" fill="transparent" />
+
+              {/* Point Circle */}
+              <circle
+                cx={p.x}
+                cy={p.y}
+                r={hoveredIndex === idx ? 6 : 4}
+                className={`chart-point ${hoveredIndex === idx ? "active" : ""}`}
+              />
+
+              {/* X-axis Label */}
+              <text
+                x={p.x}
+                y={height - 12}
+                textAnchor="middle"
+                className={`chart-axis-label ${hoveredIndex === idx ? "active" : ""}`}
+              >
+                {p.label}
+              </text>
+            </g>
+          ))}
+        </svg>
+
+        {/* Hover Tooltip Popup */}
+        {hoveredIndex !== null && points[hoveredIndex] && (
+          <div
+            className="chart-tooltip"
+            style={{
+              left: `${(points[hoveredIndex].x / width) * 100}%`,
+              top: `${(points[hoveredIndex].y / height) * 100}%`,
+            }}
+          >
+            <div className="chart-tooltip-count">
+              {points[hoveredIndex].count} donasi
+            </div>
+            <div className="chart-tooltip-date">
+              {points[hoveredIndex].fullDate || points[hoveredIndex].label}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
