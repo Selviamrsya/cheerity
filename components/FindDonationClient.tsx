@@ -69,7 +69,7 @@ const FindDonationClient: React.FC<FindDonationClientProps> = ({
   };
 
   return (
-    <div>
+    <div className="page-container">
       {/* Page header */}
       <div className="find-donation-header">
         <h1 className="find-donation-title">Find a Donation</h1>
@@ -134,7 +134,7 @@ const FindDonationClient: React.FC<FindDonationClientProps> = ({
       ) : (
         <div className="donation-grid">
           {filtered.map((donation, index) => (
-            <div key={donation.id} className={`fade-in stagger-${(index % 3) + 1}`}>
+            <div key={donation.id} className={`fade-in stagger-${(index % 4) + 1}`}>
               <DonationCard
                 id={donation.id}
                 title={donation.title}

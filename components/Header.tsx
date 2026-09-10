@@ -70,13 +70,11 @@ const Header = ({ session }: { session: Session | null }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Fetch notifications when user opens the dropdown
+  // Fetch notifications when user opens the dropdown (only for USER role)
   const handleNotifToggle = async () => {
     setNotifOpen((prev) => !prev);
-    if (!notifOpen && session?.user?.id) {
-      const role = session.user.role;
-      const type = role === "INSTITUTION" ? "INSTITUTION" : "USER";
-      const data = await getNotifications(session.user.id, type as "USER" | "INSTITUTION");
+    if (!notifOpen && session?.user?.id && session.user.role === "USER") {
+      const data = await getNotifications(session.user.id, "USER");
       setNotifications(data as Notification[]);
     }
   };
@@ -99,11 +97,7 @@ const Header = ({ session }: { session: Session | null }) => {
   const navItems = [
     { label: "Home", href: "/" },
     { label: "Find a Donation", href: "/donate" },
-    ...(session?.user?.role === "ADMIN"
-      ? [{ label: "Admin Panel", href: "/admin" }]
-      : session?.user?.role === "INSTITUTION"
-      ? [{ label: "Institution Panel", href: "/institution" }]
-      : [{ label: "History", href: session ? "/history" : "/sign-in" }]),
+    ...(session?.user?.role === "USER" ? [{ label: "History", href: "/history" }] : []),
   ];
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
@@ -140,46 +134,48 @@ const Header = ({ session }: { session: Session | null }) => {
               ))}
             </ul>
 
-            {/* Notification Bell */}
-            <div className="relative" ref={notifRef}>
-              <button
-                className="navbar-icon-btn"
-                aria-label="Notifications"
-                onClick={handleNotifToggle}
-              >
-                <Bell className="h-5 w-5" />
-                {unreadCount > 0 && <span className="notification-dot" />}
-              </button>
+            {/* Notification Bell - Only for USER role */}
+            {session?.user?.role === "USER" && (
+              <div className="relative" ref={notifRef}>
+                <button
+                  className="navbar-icon-btn"
+                  aria-label="Notifications"
+                  onClick={handleNotifToggle}
+                >
+                  <Bell className="h-5 w-5" />
+                  {unreadCount > 0 && <span className="notification-dot" />}
+                </button>
 
-              {/* Notification dropdown */}
-              {notifOpen && (
-                <div className="notif-dropdown">
-                  <div className="notif-header">
-                    <span className="font-semibold text-sm">Notifications</span>
-                    {unreadCount > 0 && (
-                      <span className="notif-badge">{unreadCount} new</span>
-                    )}
+                {/* Notification dropdown */}
+                {notifOpen && (
+                  <div className="notif-dropdown">
+                    <div className="notif-header">
+                      <span className="font-semibold text-sm">Notifications</span>
+                      {unreadCount > 0 && (
+                        <span className="notif-badge">{unreadCount} new</span>
+                      )}
+                    </div>
+                    <div className="notif-list">
+                      {notifications.length === 0 ? (
+                        <p className="notif-empty">No notifications yet</p>
+                      ) : (
+                        notifications.map((n) => (
+                          <div
+                            key={n.id}
+                            className={`notif-item ${!n.isRead ? "unread" : ""}`}
+                            onClick={() => handleMarkRead(n.id)}
+                          >
+                            <div className="notif-item-title">{n.title}</div>
+                            <div className="notif-item-message">{n.message}</div>
+                            {n.isRead && <Check className="notif-read-icon h-3 w-3" />}
+                          </div>
+                        ))
+                      )}
+                    </div>
                   </div>
-                  <div className="notif-list">
-                    {notifications.length === 0 ? (
-                      <p className="notif-empty">No notifications yet</p>
-                    ) : (
-                      notifications.map((n) => (
-                        <div
-                          key={n.id}
-                          className={`notif-item ${!n.isRead ? "unread" : ""}`}
-                          onClick={() => handleMarkRead(n.id)}
-                        >
-                          <div className="notif-item-title">{n.title}</div>
-                          <div className="notif-item-message">{n.message}</div>
-                          {n.isRead && <Check className="notif-read-icon h-3 w-3" />}
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
 
             {/* Auth / Profile section with interactive Popup Dropdown */}
             {session ? (
@@ -187,7 +183,7 @@ const Header = ({ session }: { session: Session | null }) => {
                 <button
                   type="button"
                   onClick={() => setProfileOpen(!profileOpen)}
-                  className="navbar-avatar flex items-center justify-center font-bold text-sm bg-green-100 text-green-800 border-2 border-green-200 hover:border-green-600 transition-all cursor-pointer"
+                  className="navbar-avatar flex items-center justify-center font-bold text-sm bg-green-800 text-white cursor-pointer"
                   aria-label="Profile Menu"
                 >
                   {userInitial}
@@ -198,17 +194,11 @@ const Header = ({ session }: { session: Session | null }) => {
                   <div className="profile-dropdown">
                     {/* User info header */}
                     <div className="profile-dropdown-header">
-                      <div className="profile-dropdown-avatar">
-                        {userInitial}
-                      </div>
                       <div className="profile-dropdown-info">
                         <p className="profile-dropdown-name">
                           {session.user?.name}
                         </p>
                         <p className="profile-dropdown-email">{session.user?.email}</p>
-                        <span className="profile-dropdown-badge">
-                          {session.user?.role || "USER"}
-                        </span>
                       </div>
                     </div>
 
@@ -223,14 +213,6 @@ const Header = ({ session }: { session: Session | null }) => {
                           >
                             <LayoutDashboard className="w-4 h-4 text-green-700" />
                             <span>Admin Dashboard</span>
-                          </Link>
-                          <Link
-                            href="/admin/institutions"
-                            onClick={() => setProfileOpen(false)}
-                            className="profile-dropdown-item"
-                          >
-                            <ShieldCheck className="w-4 h-4 text-green-700" />
-                            <span>Verify Institutions</span>
                           </Link>
                         </>
                       )}

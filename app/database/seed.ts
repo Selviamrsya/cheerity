@@ -3,6 +3,7 @@ import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import { hash } from "bcryptjs";
 import dummyDonations from "../../constants/dummyDonations.json";
+import { CATEGORY_IMAGES } from "../../constants";
 import { users, institutions, donations } from "./schema";
 
 config({ path: ".env.local" });
@@ -58,14 +59,14 @@ const seed = async () => {
 
     console.log("Dummy institution inserted.");
 
-    // Insert dummy donations (cover photo left empty for now)
+    // Insert dummy donations with cover photos from assets folder
     for (const donation of dummyDonations) {
       await db.insert(donations).values({
         institutionId: dummyInstitution.id,
         title: donation.title,
         category: donation.category,
         description: donation.description,
-        cover: null,
+        cover: CATEGORY_IMAGES[donation.category] || "/assets/donation-school.png",
         target: donation.target,
         collected: 0,
         deliveryMethods: donation.deliveryMethods,

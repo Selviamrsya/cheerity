@@ -78,7 +78,7 @@ const LocationFields: React.FC<LocationFieldsProps> = ({
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
       {/* State / Province */}
-      <div className="form-group">
+      <div className="form-login-group">
         <label className="form-label">State / Province</label>
         <SearchableSelect
           value={stateValue}
@@ -91,7 +91,7 @@ const LocationFields: React.FC<LocationFieldsProps> = ({
       </div>
 
       {/* City */}
-      <div className="form-group">
+      <div className="form-login-group">
         <label className="form-label">City</label>
         <SearchableSelect
           value={cityValue}

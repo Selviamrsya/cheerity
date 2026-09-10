@@ -5,23 +5,27 @@ import {
   getAdminDashboardStats,
   getInstitutions,
   getDonationActivityStats,
+  getDonationCategoriesStats,
 } from "@/lib/actions/admin";
 import DonationsActivityChart from "@/components/admin/DonationsActivityChart";
+import PieChart from "@/components/admin/PieChart";
+import { CATEGORY_LABELS } from "@/constants";
 import {
   ArrowRight,
   Clock,
-  CheckCircle2,
   XCircle,
+  CheckCircle2,
   Eye,
 } from "lucide-react";
 
 const AdminDashboardPage = async () => {
   const session = await auth();
 
-  const [stats, institutionsList, activityStats] = await Promise.all([
+  const [stats, institutionsList, activityStats, categoryStats] = await Promise.all([
     getAdminDashboardStats(),
     getInstitutions(),
     getDonationActivityStats(),
+    getDonationCategoriesStats(),
   ]);
 
   // Prioritize pending institutions
@@ -108,8 +112,41 @@ const AdminDashboardPage = async () => {
         </div>
       </div>
 
-      {/* Donations Activity Chart (Weekly | Monthly | Yearly) */}
-      <DonationsActivityChart data={activityStats} />
+      {/* Charts Grid: Line Chart + Pie Chart */}
+      <div className="flex flex-col lg:flex-row gap-4 items-stretch">
+        {/* Donations Activity Chart (Weekly | Monthly | Yearly) */}
+        <div className="flex-1 min-w-0">
+          <DonationsActivityChart data={activityStats} />
+        </div>
+
+        {/* Donation Categories Pie Chart */}
+        <div className="w-full lg:w-[40%]">
+          {categoryStats.length > 0 ? (
+            <PieChart
+              compact
+              data={categoryStats.map((cat) => ({
+                label: CATEGORY_LABELS[cat.category] || cat.category,
+                value: cat.count,
+                percentage: cat.percentage,
+              }))}
+              title="Donation Categories"
+              subtitle="By category percentage"
+            />
+          ) : (
+            <div className="chart-card">
+              <div className="chart-header">
+                <div>
+                  <h2 className="chart-title">Donation Categories</h2>
+                  <p className="chart-subtitle">By category percentage</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-center h-80 text-gray-400">
+                <p className="text-sm">No donation data yet</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Institution Verification Requests Table */}
       <div className="admin-table-card">
@@ -137,15 +174,17 @@ const AdminDashboardPage = async () => {
         </div>
 
         {displayInstitutions.length === 0 ? (
-          <div className="py-16 text-center text-gray-400 space-y-2">
-            <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto" />
-            <p className="font-semibold text-sm text-gray-700">
-              All institutional applications have completed review.
-            </p>
-            <p className="text-xs text-gray-400">
-              There are no institutions awaiting verification at this time.
-            </p>
-          </div>
+        <div 
+          className="flex flex-col items-center justify-center text-center gap-2 w-full"
+          style={{ minHeight: "150px" }} 
+        >
+          <p className="font-semibold text-sm text-gray-700">
+            All institutional applications have completed review.
+          </p>
+          <p className="text-xs text-gray-400">
+            There are no institutions awaiting verification at this time.
+          </p>
+        </div>
         ) : (
           <div className="admin-table-wrapper">
             <table className="admin-table">

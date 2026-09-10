@@ -1,6 +1,6 @@
 "use server";
 
-import { eq, sql, desc, and } from "drizzle-orm";
+import { eq, sql, desc, and, count } from "drizzle-orm";
 import { db } from "@/app/database/drizzle";
 import {
   donations,
@@ -447,10 +447,160 @@ export const getInstitutionDonations = async (institutionId: string) => {
   }
 };
 
+// Get donor location distribution for institution pie chart
+export const getDonorLocationStats = async (institutionId: string) => {
+  try {
+    if (!institutionId) return [];
+    
+    const locationStats = await db
+      .select({
+        city: donateRecords.city,
+        count: count(),
+      })
+      .from(donateRecords)
+      .innerJoin(donations, eq(donateRecords.donationId, donations.id))
+      .where(eq(donations.institutionId, institutionId))
+      .groupBy(donateRecords.city);
+
+    // Calculate percentage
+    const total = locationStats.reduce((sum, loc) => sum + loc.count, 0);
+    
+    return locationStats
+      .map((loc) => ({
+        city: loc.city || "Unknown",
+        count: loc.count,
+        percentage: total > 0 ? Math.round((loc.count / total) * 100) : 0,
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10); // Top 10 cities
+  } catch (error) {
+    console.error("Error in getDonorLocationStats:", error);
+    return [];
+  }
+};
+
+// Get donation activity for institution chart (weekly, monthly, yearly)
+export const getInstitutionDonationActivityStats = async (institutionId: string) => {
+  try {
+    if (!institutionId) {
+      return {
+        weekly: [],
+        monthly: [],
+        yearly: [],
+      };
+    }
+
+    const records = await db
+      .select({
+        id: donateRecords.id,
+        requestDate: donateRecords.requestDate,
+        quantity: donateRecords.quantity,
+      })
+      .from(donateRecords)
+      .innerJoin(donations, eq(donateRecords.donationId, donations.id))
+      .where(eq(donations.institutionId, institutionId));
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    // 1. Weekly: Past 7 days (exact count per day)
+    const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const weekly: { label: string; fullDate: string; count: number }[] = [];
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(now.getDate() - i);
+      d.setHours(0, 0, 0, 0);
+      const nextD = new Date(d);
+      nextD.setDate(d.getDate() + 1);
+
+      const actualCount = records.filter((r) => {
+        if (!r.requestDate) return false;
+        const rDate = new Date(r.requestDate);
+        return rDate >= d && rDate < nextD;
+      }).length;
+
+      weekly.push({
+        label: daysOfWeek[d.getDay()],
+        fullDate: d.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        count: actualCount,
+      });
+    }
+
+    // 2. Monthly: Activity within this month (weeks of current month)
+    const daysInCurrentMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const currentMonthName = now.toLocaleDateString("en-US", { month: "short" });
+
+    const monthWeeks = [
+      { label: "Week 1", start: 1, end: 7 },
+      { label: "Week 2", start: 8, end: 14 },
+      { label: "Week 3", start: 15, end: 21 },
+      { label: "Week 4", start: 22, end: 28 },
+    ];
+    if (daysInCurrentMonth > 28) {
+      monthWeeks.push({ label: "Week 5", start: 29, end: daysInCurrentMonth });
+    }
+
+    const monthly: { label: string; fullDate: string; count: number }[] = monthWeeks.map((w) => {
+      const actualCount = records.filter((r) => {
+        if (!r.requestDate) return false;
+        const rDate = new Date(r.requestDate);
+        return (
+          rDate.getFullYear() === currentYear &&
+          rDate.getMonth() === currentMonth &&
+          rDate.getDate() >= w.start &&
+          rDate.getDate() <= w.end
+        );
+      }).length;
+
+      return {
+        label: w.label,
+        fullDate: `${currentMonthName} ${w.start}-${w.end}`,
+        count: actualCount,
+      };
+    });
+
+    // 3. Yearly: Activity throughout this year (12 months of current year)
+    const monthNames = [
+      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    ];
+    const yearly: { label: string; fullDate: string; count: number }[] = [];
+
+    for (let m = 0; m < 12; m++) {
+      const actualCount = records.filter((r) => {
+        if (!r.requestDate) return false;
+        const rDate = new Date(r.requestDate);
+        return rDate.getFullYear() === currentYear && rDate.getMonth() === m;
+      }).length;
+
+      yearly.push({
+        label: monthNames[m],
+        fullDate: `${monthNames[m]} ${currentYear}`,
+        count: actualCount,
+      });
+    }
+
+    return {
+      weekly,
+      monthly,
+      yearly,
+    };
+  } catch (error) {
+    console.error("Error in getInstitutionDonationActivityStats:", error);
+    return {
+      weekly: [],
+      monthly: [],
+      yearly: [],
+    };
+  }
+};
+
 // Get notifications for a user or institution
 export const getNotifications = async (
   recipientId: string,
-  recipientType: "USER" | "INSTITUTION"
+  recipientType: "USER" | "INSTITUTION" | "ADMIN"
 ) => {
   return db
     .select()

@@ -6,7 +6,17 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { Session } from "next-auth";
-import { LogOut } from "lucide-react";
+import { LogOut, Bell, Check } from "lucide-react";
+import { getNotifications, markNotificationRead } from "@/lib/actions/donation";
+
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  isRead: boolean;
+  createdAt: Date | null;
+}
 
 interface AdminNavbarProps {
   session: Session | null;
@@ -15,17 +25,41 @@ interface AdminNavbarProps {
 const AdminNavbar: React.FC<AdminNavbarProps> = ({ session }) => {
   const pathname = usePathname();
   const [profileOpen, setProfileOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const profileRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
         setProfileOpen(false);
       }
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setNotifOpen(false);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Fetch notifications when user opens the dropdown
+  const handleNotifToggle = async () => {
+    setNotifOpen((prev) => !prev);
+    if (!notifOpen && session?.user?.id) {
+      const data = await getNotifications(session.user.id, "ADMIN");
+      setNotifications(data as Notification[]);
+    }
+  };
+
+  const handleMarkRead = async (id: string) => {
+    await markNotificationRead(id);
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+    );
+  };
+
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const adminInitial = session?.user?.name
     ? session.user.name.trim().charAt(0).toUpperCase()
@@ -50,7 +84,7 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ session }) => {
                 href="/admin"
                 className={`navbar-link ${isHomeActive ? "active" : ""}`}
               >
-                Home
+                Dashboard
               </Link>
             </li>
             <li>
@@ -62,6 +96,47 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ session }) => {
               </Link>
             </li>
           </ul>
+
+          {/* Notification Bell */}
+          <div className="relative" ref={notifRef}>
+            <button
+              className="navbar-icon-btn"
+              aria-label="Notifications"
+              onClick={handleNotifToggle}
+            >
+              <Bell className="h-5 w-5" />
+              {unreadCount > 0 && <span className="notification-dot" />}
+            </button>
+
+            {/* Notification dropdown */}
+            {notifOpen && (
+              <div className="notif-dropdown">
+                <div className="notif-header">
+                  <span className="font-semibold text-sm">Notifications</span>
+                  {unreadCount > 0 && (
+                    <span className="notif-badge">{unreadCount} new</span>
+                  )}
+                </div>
+                <div className="notif-list">
+                  {notifications.length === 0 ? (
+                    <p className="notif-empty">No notifications yet</p>
+                  ) : (
+                    notifications.map((n) => (
+                      <div
+                        key={n.id}
+                        className={`notif-item ${!n.isRead ? "unread" : ""}`}
+                        onClick={() => handleMarkRead(n.id)}
+                      >
+                        <div className="notif-item-title">{n.title}</div>
+                        <div className="notif-item-message">{n.message}</div>
+                        {n.isRead && <Check className="notif-read-icon h-3 w-3" />}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Profile Dropdown Popup */}
           <div className="relative" ref={profileRef}>
@@ -80,7 +155,7 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ session }) => {
                 <div className="profile-dropdown-header">
                   <div className="profile-dropdown-info">
                     <p className="profile-dropdown-name">
-                      {session?.user?.name || "Admin Cheerity"}
+                      {session?.user?.name || "Admin"}
                     </p>
                     <p className="profile-dropdown-email">{session?.user?.email}</p>
                   </div>

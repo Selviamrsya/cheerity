@@ -110,7 +110,7 @@ const DonationOverview: React.FC<DonationOverviewProps> = ({
 
         {/* Delivery methods */}
         <div className="donation-overview-delivery">
-          <p className="text-sm font-semibold mb-1" style={{ color: "var(--color-on-surface)" }}>
+          <p className="text-sm font-semibold mb-2" style={{ color: "var(--color-on-surface)" }}>
             Delivery Methods
           </p>
           <div className="flex flex-wrap gap-2">
@@ -121,17 +121,6 @@ const DonationOverview: React.FC<DonationOverviewProps> = ({
             ))}
           </div>
         </div>
-
-        {/* Donate button */}
-        {userId ? (
-          <Link href={`/donations/${id}/request`} className="btn-primary" style={{ marginTop: 8 }}>
-            Donate Now
-          </Link>
-        ) : (
-          <Link href="/sign-in" className="btn-primary" style={{ marginTop: 8 }}>
-            Sign In to Donate
-          </Link>
-        )}
       </div>
     </section>
   );

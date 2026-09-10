@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "../styles/admin.css";
+@import "../styles/institution.css";
 
 :root {
   --font-poppins: "Poppins", sans-serif;
@@ -7,7 +8,6 @@
 
   --color-primary: #37772F;
   --color-primary-dark: #14532d;
-  --color-primary-light: #22c55e;
   --color-primary-50: #f0fdf4;
   --color-primary-100: #dcfce7;
   --color-primary-500: #22c55e;
@@ -53,7 +53,6 @@
 
   --color-primary: #166534;
   --color-primary-dark: #14532d;
-  --color-primary-light: #22c55e;
   --color-primary-50: #D8E0DA;
   --color-primary-100: #A2C5AE;
   --color-surface: #86B998;
@@ -169,8 +168,8 @@ h1, h2, h3, h4, h5, h6 {
   gap: 8px;
   background: #f3f4f6;
   padding: 4px;
-  border-radius: var(--radius-lg);
-  margin-bottom: 24px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 9px;
 }
 
 .role-toggle-btn {
@@ -185,7 +184,7 @@ h1, h2, h3, h4, h5, h6 {
   color: #4b5563;
   background: transparent;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.2s ease;
   user-select: none;
@@ -223,7 +222,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .navbar-inner {
-  max-width: 1280px;
+  max-width: 1380px;
   margin: 0 auto;
   padding: 0 24px;
   display: flex;
@@ -386,10 +385,6 @@ h1, h2, h3, h4, h5, h6 {
   transition: all 0.2s ease;
 }
 
-.navbar-avatar:hover {
-  border-color: var(--color-primary);
-}
-
 /* Mobile menu */
 .navbar-mobile-toggle {
   display: none;
@@ -512,7 +507,7 @@ h1, h2, h3, h4, h5, h6 {
   flex-direction: column;
   justify-content: center;
   height: 100%;
-  max-width: 1280px;
+  max-width: 1320px;
   margin: 0 auto;
   padding: 48px 32px;
 }
@@ -577,6 +572,9 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ─── Role Description & Cards Section ──────────────────────────────── */
 .role-description {
+  max-width: 1380px;
+  margin: 0 auto;
+  padding: 0 24px;
   text-align: center;
   margin-bottom: 64px;
 }
@@ -605,13 +603,6 @@ h1, h2, h3, h4, h5, h6 {
   gap: 24px;
   margin-top: 36px;
 }
-
-/* @media (max-width: 768px) {
-  .role-cards-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-} */
 
 .role-card {
   display: flex;
@@ -657,18 +648,29 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ─── Tutorial Section (How It Works) ──────────────────────────────── */
 .tutorial-section {
+  max-width: 1380px;
+  margin: 0 auto;
   background: var(--color-primary);
   border-radius: var(--radius-2xl);
   padding: 48px 36px;
   margin-bottom: 64px;
   text-align: center;
-  
 }
 
 @media (max-width: 768px) {
   .tutorial-section {
     padding: 36px 20px;
     border-radius: var(--radius-sm);
+  }
+  .discover-donations-section {
+    padding: 0 16px;
+  }
+  .role-description {
+    padding: 0 16px;
+  }
+  .role-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
 }
 
@@ -737,6 +739,13 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ─── discover donation section Headers ──────────────────────────────── */
 
+.discover-donations-section {
+  max-width: 1380px;
+  margin: 0 auto;
+  padding: 0 24px;
+  margin-bottom: 64px;
+}
+
 .section-header {
   text-align: center;
   margin-bottom: 25px;
@@ -752,23 +761,28 @@ h1, h2, h3, h4, h5, h6 {
 
 
 /* ─── Donation Card ────────────────────────────────── */
-
 .donation-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 24px;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
   .donation-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
+  .donation-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (max-width: 480px) {
   .donation-grid {
     grid-template-columns: 1fr;
-    gap: 20px;
   }
 }
 
@@ -849,7 +863,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .donation-card_location-left svg {
-  color: var(--color-primary-600);
+  color: var(--color-primary);
   width: 14px;
   height: 14px;
   flex-shrink: 0;
@@ -870,6 +884,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .donation-card_progress-bar {
   height: 8px;
+  margin-left:5px;
   width: 100%;
   background: var(--color-surface-container);
   border-radius: var(--radius-full);
@@ -891,13 +906,7 @@ h1, h2, h3, h4, h5, h6 {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.3) 50%,
-    transparent 100%
-  );
-  animation: progressShimmer 2s infinite;
+  background: var(--color-primary)
 }
 
 @keyframes progressShimmer {
@@ -909,36 +918,12 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 13px;
   color: var(--color-on-surface-variant);
   margin-top: 6px;
+  margin-left:5px;
 }
 
 .donation-card_progress-text strong {
   color: var(--color-primary);
   font-weight: 600;
-}
-
-.donation-card_btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding: 11px 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: white;
-  background: var(--color-primary);
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.2s ease;
-}
-
-.donation-card_btn:hover {
-  background: var(--color-primary-dark);
-}
-
-.donation-card_btn:active {
-  transform: scale(0.98);
 }
 
 /* How it work section */
@@ -1032,11 +1017,17 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ─── Form Inputs ──────────────────────────────────── */
+.form-login-group{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 
 .form-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  margin-bottom:20px;
 }
 
 .form-label {
@@ -1054,7 +1045,7 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--color-on-surface);
   background: var(--color-surface);
   border: 1.5px solid var(--color-outline);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   outline: none;
   transition: all 0.2s ease;
 }
@@ -1094,19 +1085,16 @@ input:-webkit-autofill:active {
 }
 
 /* ─── Page Container ───────────────────────────────── */
-
 .page-container {
-  max-width: 1280px;
+  max-width: 1380px;
   margin: 0 auto;
-  padding: 0 24px;
-  padding-top: 96px;
-  padding-bottom: 64px;
+  padding: 56px 24px 56px 24px;
 }
 
 /* ─── Find Donation Page ───────────────────────────── */
 
 .find-donation-header {
-  margin-bottom: 40px;
+  margin-bottom: 9px;
 }
 
 .find-donation-title {
@@ -1169,8 +1157,8 @@ input:-webkit-autofill:active {
 /* ─── Upload Area ───────────────────────────────────── */
 .upload-area {
   border: 2px dashed #d1d5db;
-  border-radius: var(--radius-lg);
-  padding: 24px;
+  border-radius: var(--radius-sm);
+  padding: 84px;
   text-align: center;
   background: #f9fafb;
   transition: all 0.2s ease;
@@ -1422,18 +1410,6 @@ input:-webkit-autofill:active {
   margin-top: 2px;
 }
 
-.profile-dropdown-badge {
-  display: inline-block;
-  margin-top: 6px;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 2px 8px;
-  border-radius: var(--radius-full);
-  background-color: var(--color-primary-50);
-  color: var(--color-primary-800);
-}
 
 .profile-dropdown-menu {
   padding: 4px 0;
@@ -1496,7 +1472,7 @@ input:-webkit-autofill:active {
   padding: 36px 0px 45px 60px;
 }
 .site-footer-inner {
-  max-width: 1280px;
+  max-width: 1320px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -1563,7 +1539,7 @@ input:-webkit-autofill:active {
 .find-donation-count {
   font-size: 14px;
   color: #6b7280;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 .find-donation-empty {
   text-align: center;
@@ -1573,23 +1549,45 @@ input:-webkit-autofill:active {
 
 /* ─── Donation Overview Section ─────────────────────── */
 .donation-overview-section {
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 24px;
-  background: white;
-  border-radius: var(--radius-2xl);
-  padding: 24px;
-  border: 1px solid var(--color-outline);
 }
+
+@media (max-width: 640px) {
+  .donation-overview-section {
+    padding: 16px;
+  }
+}
+
 @media (min-width: 768px) {
   .donation-overview-section {
     flex-direction: row;
   }
 }
+
+/* ─── Donation Detail Tabs Section ─────────────────────── */
+.donation-detail-tabs-section {
+  width: 100%;
+  margin-top: 28px;
+}
+
+@media (max-width: 640px) {
+  .donation-detail-tabs-section {
+    padding: 16px;
+  }
+}
+
+.donation-detail-tabs-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
 .donation-overview-cover {
   position: relative;
   width: 100%;
-  height: 300px;
+  height: 250px;
   border-radius: var(--radius-sm);
   overflow: hidden;
   background: #f3f4f6;
@@ -1597,8 +1595,8 @@ input:-webkit-autofill:active {
 }
 @media (min-width: 768px) {
   .donation-overview-cover {
-    width: 380px;
-    height: 360px;
+    width: 320px;
+    height: 280px;
   }
 }
 .donation-overview-img {
@@ -1616,8 +1614,8 @@ input:-webkit-autofill:active {
 }
 .donation-overview-category-badge {
   position: absolute;
-  top: 16px;
-  left: 16px;
+  top: 20px;
+  left: 18px;
   background: rgba(22, 101, 52, 0.9);
   color: white;
   padding: 4px 12px;
@@ -1646,8 +1644,8 @@ input:-webkit-autofill:active {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #dcfce7;
-  color: #166534;
+  background: var(--color-primary);
+  color: var(--color-surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1662,13 +1660,19 @@ input:-webkit-autofill:active {
 .donation-overview-location {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   font-size: 13px;
   color: #4b5563;
+  margin-left:2px;
 }
+.donation-overview-delivery{
+  margin-left:5px;
+}
+
 .delivery-badge {
+  margin-top:8px;
   font-size: 12px;
-  padding: 4px 10px;
+  padding: 5px 10px;
   background: #f3f4f6;
   border-radius: 999px;
   color: #374151;

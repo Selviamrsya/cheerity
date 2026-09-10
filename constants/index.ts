@@ -43,6 +43,15 @@ export const CATEGORY_LABELS: Record<string, string> = {
   home_supplies: "Home Supplies",
 };
 
+// Default images for donation categories
+export const CATEGORY_IMAGES: Record<string, string> = {
+  shirt: "/assets/donation-clothes.png",
+  school_supplies: "/assets/donation-books.png",
+  toys: "/assets/donation-school.png",
+  electronics: "/assets/donation-school.png",
+  home_supplies: "/assets/donation-school.png",
+};
+
 // Aliases for backwards compatibility with any old imports
 export const categoryLabels = CATEGORY_LABELS;
 export const adminNavLinks = adminNavbarLinks;

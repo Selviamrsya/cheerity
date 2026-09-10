@@ -54,7 +54,7 @@ const DonationDetailPage = async ({
   }
 
   return (
-    <div className="max-w-5xl mx-auto py-6">
+    <div className="page-container">
       <DonationDetailClient
         donation={donation}
         user={userProfile}

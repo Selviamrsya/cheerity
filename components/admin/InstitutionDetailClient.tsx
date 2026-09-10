@@ -114,7 +114,7 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
         className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-green-800 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
-        <span>Back to dashboard</span>
+        <span>Home</span>
       </Link>
 
       {errorMsg && (

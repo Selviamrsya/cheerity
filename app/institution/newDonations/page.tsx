@@ -9,20 +9,21 @@ const NewDonationPage = async () => {
   const institutionId = session?.user?.id as string;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <Link
-        href="/institution/donations"
-        className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        <span>Go back to Manage Donations</span>
-      </Link>
-
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Add New Donation</h1>
-        <p className="text-gray-500 text-sm mt-1">
-          Fill out the details below to create a new donation campaign.
-        </p>
+    <div className="space-y-8">
+      <div className="institution-header">
+        <div>
+          <Link
+            href="/institution/donations"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors mb-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Go back to Manage Donations</span>
+          </Link>
+          <h1 className="institution-title">Add New Donation</h1>
+          <p className="institution-subtitle">
+            Fill out the details below to create a new donation campaign.
+          </p>
+        </div>
       </div>
 
       <DonationUploadForm institutionId={institutionId} />

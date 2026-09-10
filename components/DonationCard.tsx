@@ -55,8 +55,8 @@ const DonationCard: React.FC<DonationCardProps> = ({
             style={{
               width: 28,
               height: 28,
-              background: "var(--color-primary-100)",
-              color: "var(--color-primary)",
+              background: "var(--color-primary)",
+              color: "var(--color-surface)",
               flexShrink: 0,
             }}
           >
@@ -91,11 +91,6 @@ const DonationCard: React.FC<DonationCardProps> = ({
             <strong>{collected}</strong> / {target} items collected
           </p>
         </div>
-
-        {/* Donate button span */}
-        <span className="donation-card_btn inline-block text-center w-full">
-          Donate Now
-        </span>
       </div>
     </Link>
   );

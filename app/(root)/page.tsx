@@ -28,7 +28,7 @@ const Home = async () => {
   const donations = await getDonationsWithDistance({
     userLat,
     userLng,
-    limit: 3,
+    limit: 4,
   });
 
   return (
@@ -99,7 +99,7 @@ const Home = async () => {
       </section>
 
       {/* Discover Donations Section */}
-      <section style={{ marginBottom: "64px" }}>
+      <section className="discover-donations-section">
         <div className="section-header">
           <h2 className="section-title">
             Discover Donations Inspired by What You Care About
@@ -113,7 +113,7 @@ const Home = async () => {
         ) : (
           <div className="donation-grid">
             {donations.map((donation, index) => (
-              <div key={donation.id} className={`fade-in stagger-${(index % 3) + 1}`}>
+              <div key={donation.id} className={`fade-in stagger-${(index % 4) + 1}`}>
                 <DonationCard
                   id={donation.id}
                   title={donation.title}

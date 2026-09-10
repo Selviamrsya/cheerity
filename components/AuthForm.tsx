@@ -134,7 +134,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
         >
           <Check className="h-8 w-8" />
         </div>
-        <h2 className="text-2xl font-bold mb-2" style={{ fontFamily: "var(--font-poppins)" }}>
+        <h2 className="text-2xl font-bold mb-2" style={{ fontFamily: "var(--font-poppins)", marginTop:"8px", marginBottom:"12px" }}>
           {role === "institution" ? "Application Submitted!" : "Account Created!"}
         </h2>
         <p className="text-sm max-w-md mb-6" style={{ color: "var(--color-on-surface-variant)" }}>
@@ -145,7 +145,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
         <Link
           href={role === "institution" ? "/sign-in" : "/"}
           className="btn-primary"
-          style={{ width: "auto", padding: "12px 28px", borderRadius: "9999px", gap: "8px" }}
+          style={{ width: "auto", padding: "12px 64px", borderRadius: "var(--radius-sm)", gap: "8px", marginTop:"18px", }}
         >
           <span>{role === "institution" ? "Go to Sign In" : "Go to Homepage"}</span>
           <ArrowRight className="h-4 w-4" />
@@ -161,7 +161,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
       </div>
 
       <div className="text-center mb-5">
-        <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "var(--font-poppins)", color: "var(--color-on-surface)" }}>
+        <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "var(--font-poppins)", color: "var(--color-on-surface)", marginBottom:"18px", }}>
           {isSignIn ? "Welcome Back!" : "Create an Account"}
         </h1>
       </div>
@@ -190,12 +190,12 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
       {/* Sign In Form */}
       {isSignIn && (
         <form onSubmit={signInForm.handleSubmit(handleSignInSubmit)} className="flex flex-col gap-4">
-          <div className="form-group">
+          <div className="form-login-group">
             <label className="form-label">Email</label>
             <input type="email" placeholder="Enter your email address" {...signInForm.register("email")} className="form-input" />
             {signInForm.formState.errors.email && <p className="form-error">{signInForm.formState.errors.email.message}</p>}
           </div>
-          <div className="form-group">
+          <div className="form-login-group">
             <label className="form-label">Password</label>
             <div className="relative">
               <input
@@ -211,7 +211,12 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
             </div>
             {signInForm.formState.errors.password && <p className="form-error">{signInForm.formState.errors.password.message}</p>}
           </div>
-          <button type="submit" className="btn-primary" disabled={isSubmitting}>
+          <button type="submit" className="btn-primary" 
+            disabled={isSubmitting}
+            style={{
+              marginTop:"9px",
+            }}
+          >
             {isSubmitting ? "Signing in..." : "Login"}
           </button>
         </form>
@@ -220,26 +225,26 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
       {/* Sign Up - User / Donor */}
       {!isSignIn && role === "user" && (
         <form onSubmit={userSignUpForm.handleSubmit(handleUserSignUpSubmit)} className="flex flex-col gap-4">
-          <div className="form-group">
+          <div className="form-login-group">
             <label className="form-label">Name</label>
             <input type="text" placeholder="Enter your full name" {...userSignUpForm.register("name")} className="form-input" />
             {userSignUpForm.formState.errors.name && <p className="form-error">{userSignUpForm.formState.errors.name.message}</p>}
           </div>
 
-          <div className="form-group">
+          <div className="form-login-group">
             <label className="form-label">Date of Birth</label>
             <input type="date" {...userSignUpForm.register("birthdate")} className="form-input" />
             {userSignUpForm.formState.errors.birthdate && <p className="form-error">{userSignUpForm.formState.errors.birthdate.message}</p>}
           </div>
 
-          <div className="form-group">
+          <div className="form-login-group">
             <label className="form-label">Phone Number</label>
             <input type="tel" placeholder="e.g. 081234567890" {...userSignUpForm.register("phonenumber")} className="form-input" />
             {userSignUpForm.formState.errors.phonenumber && <p className="form-error">{userSignUpForm.formState.errors.phonenumber.message}</p>}
           </div>
 
 
-          <div className="form-group">
+          <div className="form-login-group">
             <label className="form-label">Email</label>
             <input type="email" placeholder="Enter your email address" {...userSignUpForm.register("email")} className="form-input" />
             {userSignUpForm.formState.errors.email && <p className="form-error">{userSignUpForm.formState.errors.email.message}</p>}
@@ -259,13 +264,13 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
             }}
           />
 
-          <div className="form-group">
+          <div className="form-login-group">
             <label className="form-label">Full Address</label>
             <input type="text" placeholder="Street, number, area" {...userSignUpForm.register("address")} className="form-input" />
             {userSignUpForm.formState.errors.address && <p className="form-error">{userSignUpForm.formState.errors.address.message}</p>}
           </div>
 
-          <div className="form-group">
+          <div className="form-login-group">
             <label className="form-label">Password</label>
             <div className="relative">
               <input type={showPassword ? "text" : "password"} placeholder="Enter your password (min 6 characters)" {...userSignUpForm.register("password")} className="form-input" style={{ paddingRight: "44px" }} />
@@ -275,7 +280,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
             </div>
             {userSignUpForm.formState.errors.password && <p className="form-error">{userSignUpForm.formState.errors.password.message}</p>}
           </div>
-          <div className="form-group">
+          <div className="form-login-group">
             <label className="form-label">Confirm Password</label>
             <div className="relative">
               <input type={showConfirmPassword ? "text" : "password"} placeholder="Enter your password again" {...userSignUpForm.register("confirmPassword")} className="form-input" style={{ paddingRight: "44px" }} />
@@ -295,19 +300,19 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
       {/* Sign Up - Institution */}
       {!isSignIn && role === "institution" && (
         <form onSubmit={institutionSignUpForm.handleSubmit(handleInstitutionSignUpSubmit)} className="flex flex-col gap-4">
-          <div className="form-group">
+          <div className="form-login-group">
             <label className="form-label">Institution Name</label>
             <input type="text" placeholder="Enter institution name" {...institutionSignUpForm.register("institutionName")} className="form-input" />
             {institutionSignUpForm.formState.errors.institutionName && <p className="form-error">{institutionSignUpForm.formState.errors.institutionName.message}</p>}
           </div>
 
-          <div className="form-group">
+          <div className="form-login-group">
             <label className="form-label">Institution Email</label>
             <input type="email" placeholder="official@institution.com" {...institutionSignUpForm.register("email")} className="form-input" />
             {institutionSignUpForm.formState.errors.email && <p className="form-error">{institutionSignUpForm.formState.errors.email.message}</p>}
           </div>
 
-          <div className="form-group">
+          <div className="form-login-group">
             <label className="form-label">Phone Number</label>
             <input type="tel" placeholder="e.g. 021-12345678" {...institutionSignUpForm.register("phoneNumber")} className="form-input" />
             {institutionSignUpForm.formState.errors.phoneNumber && <p className="form-error">{institutionSignUpForm.formState.errors.phoneNumber.message}</p>}
@@ -327,13 +332,13 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
             }}
           />
 
-          <div className="form-group">
+          <div className="form-login-group">
             <label className="form-label">Institution Address</label>
             <input type="text" placeholder="Full address" {...institutionSignUpForm.register("address")} className="form-input" />
             {institutionSignUpForm.formState.errors.address && <p className="form-error">{institutionSignUpForm.formState.errors.address.message}</p>}
           </div>
 
-          <div className="form-group">
+          <div className="form-login-group">
             <label className="form-label flex items-center justify-between">
               <span>Verification Evidence</span>
               <span className="text-xs font-normal flex items-center gap-1" style={{ color: "var(--color-primary-700)" }}>
@@ -347,7 +352,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
             />
           </div>
 
-          <div className="form-group">
+          <div className="form-login-group">
             <label className="form-label">
               Official Website{" "}
               <span style={{ color: "var(--color-on-surface-variant)", fontWeight: 400 }}>(Optional)</span>
@@ -355,7 +360,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
             <input type="text" placeholder="https://your-institution.org" {...institutionSignUpForm.register("websiteOrSocial")} className="form-input" />
           </div>
 
-          <div className="form-group">
+          <div className="form-login-group">
             <label className="form-label">Short Description</label>
             <textarea
               rows={4}
@@ -366,7 +371,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
             {institutionSignUpForm.formState.errors.description && <p className="form-error">{institutionSignUpForm.formState.errors.description.message}</p>}
           </div>
 
-          <div className="form-group">
+          <div className="form-login-group">
             <label className="form-label">Password</label>
             <div className="relative">
               <input type={showPassword ? "text" : "password"} placeholder="Enter your password (min 6 characters)" {...institutionSignUpForm.register("password")} className="form-input" style={{ paddingRight: "44px" }} />
@@ -376,7 +381,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
             </div>
             {institutionSignUpForm.formState.errors.password && <p className="form-error">{institutionSignUpForm.formState.errors.password.message}</p>}
           </div>
-          <div className="form-group">
+          <div className="form-login-group">
             <label className="form-label">Confirm Password</label>
             <div className="relative">
               <input type={showConfirmPassword ? "text" : "password"} placeholder="Enter your password again" {...institutionSignUpForm.register("confirmPassword")} className="form-input" style={{ paddingRight: "44px" }} />

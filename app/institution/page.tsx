@@ -4,16 +4,18 @@ import { auth } from "@/app/auth";
 import {
   getInstitutionDonations,
   getInstitutionDonationHistory,
+  getDonorLocationStats,
+  getInstitutionDonationActivityStats,
 } from "@/lib/actions/donation";
 import { DELIVERY_METHOD_LABELS } from "@/constants";
+import DonationsActivityChart from "@/components/admin/DonationsActivityChart";
+import PieChart from "@/components/admin/PieChart";
 import {
-  Plus,
-  CheckCircle2,
   Clock,
   Truck,
   XCircle,
+  CheckCircle2,
   Eye,
-  Inbox,
   ArrowRight,
 } from "lucide-react";
 
@@ -21,9 +23,11 @@ const InstitutionDashboardPage = async () => {
   const session = await auth();
   const institutionId = session?.user?.id as string;
 
-  const [uploadedDonations, donationHistory] = await Promise.all([
+  const [uploadedDonations, donationHistory, locationStats, activityStats] = await Promise.all([
     getInstitutionDonations(institutionId),
     getInstitutionDonationHistory(institutionId),
+    getDonorLocationStats(institutionId),
+    getInstitutionDonationActivityStats(institutionId),
   ]);
 
   const totalUploaded = uploadedDonations.length;
@@ -53,13 +57,13 @@ const InstitutionDashboardPage = async () => {
     switch (status) {
       case "PENDING":
         return (
-          <span className="admin-badge admin-badge-pending">
+          <span className="institution-badge institution-badge-pending">
             <Clock className="w-3 h-3" /> Pending Review
           </span>
         );
       case "APPROVED":
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-blue-50 text-blue-800 border border-blue-200">
+          <span className="institution-badge institution-badge-approved">
             <CheckCircle2 className="w-3 h-3" /> Approved
           </span>
         );
@@ -72,13 +76,13 @@ const InstitutionDashboardPage = async () => {
       case "ARRIVED":
       case "COMPLETED":
         return (
-          <span className="admin-badge admin-badge-approved">
+          <span className="institution-badge institution-badge-approved">
             <CheckCircle2 className="w-3 h-3" /> {status === "ARRIVED" ? "Arrived" : "Completed"}
           </span>
         );
       case "REJECTED":
         return (
-          <span className="admin-badge admin-badge-rejected">
+          <span className="institution-badge institution-badge-rejected">
             <XCircle className="w-3 h-3" /> Rejected
           </span>
         );
@@ -99,10 +103,6 @@ const InstitutionDashboardPage = async () => {
             Welcome back to the Cheerity Dashboard Social Institution.
           </p>
         </div>
-
-        <div className="institution-date-badge">
-          📅 {currentDate}
-        </div>
       </div>
 
       {/* 4 Stat Cards Grid */}
@@ -112,10 +112,7 @@ const InstitutionDashboardPage = async () => {
           <div className="institution-stat-header">
             <span className="institution-stat-label">Total Campaigns</span>
           </div>
-          <div>
-            <div className="institution-stat-value">{totalUploaded}</div>
-            <p className="institution-stat-desc">Kampanye donasi aktif dibuat</p>
-          </div>
+          <div className="institution-stat-value">{totalUploaded}</div>
         </div>
 
         {/* 2. Today Requests */}
@@ -123,10 +120,7 @@ const InstitutionDashboardPage = async () => {
           <div className="institution-stat-header">
             <span className="institution-stat-label">Today Requests</span>
           </div>
-          <div>
-            <div className="institution-stat-value">{todayRequests}</div>
-            <p className="institution-stat-desc">Permohonan donasi hari ini</p>
-          </div>
+          <div className="institution-stat-value">{todayRequests}</div>
         </div>
 
         {/* 3. Total Requests Received */}
@@ -134,10 +128,7 @@ const InstitutionDashboardPage = async () => {
           <div className="institution-stat-header">
             <span className="institution-stat-label">Total Requests</span>
           </div>
-          <div>
-            <div className="institution-stat-value">{totalDonationsCount}</div>
-            <p className="institution-stat-desc">Total permohonan donasi masuk</p>
-          </div>
+          <div className="institution-stat-value">{totalDonationsCount}</div>
         </div>
 
         {/* 4. Total Items Collected */}
@@ -145,63 +136,74 @@ const InstitutionDashboardPage = async () => {
           <div className="institution-stat-header">
             <span className="institution-stat-label">Items Collected</span>
           </div>
-          <div>
-            <div className="institution-stat-value">{totalCollected}</div>
-            <p className="institution-stat-desc">Total barang yang telah tiba</p>
-          </div>
+          <div className="institution-stat-value">{totalCollected}</div>
         </div>
       </div>
 
-      {/* Action Banner matching Admin Style */}
-      <div className="institution-action-banner">
-        <div>
-          <h3 className="institution-banner-title">
-            Buka Program Donasi Baru
-          </h3>
-          <p className="institution-banner-desc">
-            Buat kampanye donasi baru agar para donatur dapat mulai menyalurkan bantuan barang yang dibutuhkan oleh yayasan atau panti Anda.
-          </p>
+      {/* Charts Grid: Line Chart + Pie Chart */}
+      <div className="flex flex-col lg:flex-row gap-4 items-stretch">
+        {/* Donations Activity Chart (Weekly | Monthly | Yearly) */}
+        <div className="flex-1 min-w-0">
+          <DonationsActivityChart data={activityStats} />
         </div>
-        <Link
-          href="/institution/newDonations"
-          className="institution-banner-btn"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Tambah Donasi Baru</span>
-        </Link>
+
+        {/* Donor Location Pie Chart */}
+        <div className="w-full lg:w-[40%]">
+          {locationStats.length > 0 ? (
+            <PieChart
+              compact
+              data={locationStats.map((loc) => ({
+                label: loc.city,
+                value: loc.count,
+                percentage: loc.percentage,
+              }))}
+              title="Donor Locations"
+              subtitle="Top donor cities"
+            />
+          ) : (
+            <div className="chart-card">
+              <div className="chart-header">
+                <div>
+                  <h2 className="chart-title">Donor Locations</h2>
+                  <p className="chart-subtitle">Top cities</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-center h-80 text-gray-400">
+                <p className="text-sm">No donation request yet</p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Recent Donation Requests Table */}
       <div className="institution-table-card">
         <div className="institution-table-header">
-          <div>
-            <h2 className="institution-table-title">
-              Recent Donation Requests
-            </h2>
-            <p className="institution-table-subtitle">
-              Daftar permohonan donasi terbaru dari para donatur yang masuk ke institusi Anda.
-            </p>
-          </div>
+          <h2 className="institution-table-title">
+            Recent Donation Requests
+          </h2>
 
           <Link
             href="/institution/history"
-            className="text-xs font-bold text-green-800 hover:text-green-900 flex items-center gap-1 self-start sm:self-auto hover:underline"
+            className="text-xs font-bold --text-green-300 hover:text-green-900 flex items-center gap-1 self-start sm:self-auto"
           >
-            <span>Lihat Semua Riwayat</span>
+            <span>See All</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
         {latestFiveRequests.length === 0 ? (
-          <div className="py-16 text-center text-gray-400 space-y-2">
-            <Inbox className="w-10 h-10 text-gray-300 mx-auto" />
-            <p className="font-semibold text-sm text-gray-700">
-              Belum ada permohonan donasi yang masuk.
-            </p>
-            <p className="text-xs text-gray-400">
-              Saat donatur mengajukan bantuan pada kampanye Anda, rincian permohonan akan muncul di sini.
-            </p>
-          </div>
+        <div 
+          className="flex flex-col items-center justify-center text-center gap-2 w-full"
+          style={{ minHeight: "150px" }} 
+        >
+          <p className="font-semibold text-sm text-gray-700">
+            All institutional applications have completed review.
+          </p>
+          <p className="text-xs text-gray-400">
+            There are no donation request at this time.
+          </p>
+        </div>
         ) : (
           <div className="institution-table-wrapper">
             <table className="institution-table">

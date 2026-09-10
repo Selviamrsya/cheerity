@@ -47,6 +47,31 @@ export const getAdminDashboardStats = async () => {
   }
 };
 
+// Get donation categories distribution for pie chart
+export const getDonationCategoriesStats = async () => {
+  try {
+    const categoryStats = await db
+      .select({
+        category: donations.category,
+        count: count(),
+      })
+      .from(donations)
+      .groupBy(donations.category);
+
+    // Group by category and calculate percentage
+    const total = categoryStats.reduce((sum, cat) => sum + cat.count, 0);
+    
+    return categoryStats.map((cat) => ({
+      category: cat.category,
+      count: cat.count,
+      percentage: total > 0 ? Math.round((cat.count / total) * 100) : 0,
+    }));
+  } catch (error) {
+    console.error("Error in getDonationCategoriesStats:", error);
+    return [];
+  }
+};
+
 // Get donation activity for chart (weekly, monthly, yearly)
 export const getDonationActivityStats = async () => {
   try {

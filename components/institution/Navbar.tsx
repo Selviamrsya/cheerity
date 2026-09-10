@@ -6,7 +6,17 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { Session } from "next-auth";
-import { LogOut, PlusCircle, ExternalLink } from "lucide-react";
+import { LogOut, ExternalLink, Bell, Check } from "lucide-react";
+import { getNotifications, markNotificationRead } from "@/lib/actions/donation";
+
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  isRead: boolean;
+  createdAt: Date | null;
+}
 
 interface InstitutionNavbarProps {
   session: Session | null;
@@ -15,17 +25,41 @@ interface InstitutionNavbarProps {
 const InstitutionNavbar: React.FC<InstitutionNavbarProps> = ({ session }) => {
   const pathname = usePathname();
   const [profileOpen, setProfileOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const profileRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
         setProfileOpen(false);
       }
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setNotifOpen(false);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Fetch notifications when user opens the dropdown
+  const handleNotifToggle = async () => {
+    setNotifOpen((prev) => !prev);
+    if (!notifOpen && session?.user?.id) {
+      const data = await getNotifications(session.user.id, "INSTITUTION");
+      setNotifications(data as Notification[]);
+    }
+  };
+
+  const handleMarkRead = async (id: string) => {
+    await markNotificationRead(id);
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+    );
+  };
+
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const institutionInitial = session?.user?.name
     ? session.user.name.trim().charAt(0).toUpperCase()
@@ -41,9 +75,6 @@ const InstitutionNavbar: React.FC<InstitutionNavbarProps> = ({ session }) => {
         {/* Left: Logo with Institution indicator badge */}
         <Link href="/institution" className="navbar-logo flex items-center gap-2.5">
           <Image src="/assets/logo.png" alt="Cheerity" width={140} height={36} priority />
-          <span className="text-[10px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-200">
-            Institution
-          </span>
         </Link>
 
         {/* Right: Text-only links with underline hover + Profile avatar */}
@@ -54,7 +85,7 @@ const InstitutionNavbar: React.FC<InstitutionNavbarProps> = ({ session }) => {
                 href="/institution"
                 className={`navbar-link ${isHomeActive ? "active" : ""}`}
               >
-                Home
+                Dashboard
               </Link>
             </li>
             <li>
@@ -75,12 +106,53 @@ const InstitutionNavbar: React.FC<InstitutionNavbarProps> = ({ session }) => {
             </li>
           </ul>
 
+          {/* Notification Bell */}
+          <div className="relative" ref={notifRef}>
+            <button
+              className="navbar-icon-btn"
+              aria-label="Notifications"
+              onClick={handleNotifToggle}
+            >
+              <Bell className="h-5 w-5" />
+              {unreadCount > 0 && <span className="notification-dot" />}
+            </button>
+
+            {/* Notification dropdown */}
+            {notifOpen && (
+              <div className="notif-dropdown">
+                <div className="notif-header">
+                  <span className="font-semibold text-sm">Notifications</span>
+                  {unreadCount > 0 && (
+                    <span className="notif-badge">{unreadCount} new</span>
+                  )}
+                </div>
+                <div className="notif-list">
+                  {notifications.length === 0 ? (
+                    <p className="notif-empty">No notifications yet</p>
+                  ) : (
+                    notifications.map((n) => (
+                      <div
+                        key={n.id}
+                        className={`notif-item ${!n.isRead ? "unread" : ""}`}
+                        onClick={() => handleMarkRead(n.id)}
+                      >
+                        <div className="notif-item-title">{n.title}</div>
+                        <div className="notif-item-message">{n.message}</div>
+                        {n.isRead && <Check className="notif-read-icon h-3 w-3" />}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Profile Dropdown Popup */}
           <div className="relative" ref={profileRef}>
             <button
               type="button"
               onClick={() => setProfileOpen(!profileOpen)}
-              className="navbar-avatar flex items-center justify-center font-bold text-sm bg-emerald-100 text-emerald-800 border-2 border-emerald-200 hover:border-emerald-600 transition-all cursor-pointer"
+              className="navbar-avatar flex items-center justify-center font-bold text-sm bg-green-800 text-white cursor-pointer"
               aria-label="Institution Profile Menu"
             >
               {institutionInitial}
@@ -90,37 +162,23 @@ const InstitutionNavbar: React.FC<InstitutionNavbarProps> = ({ session }) => {
               <div className="profile-dropdown">
                 {/* User info header */}
                 <div className="profile-dropdown-header">
-                  <div className="profile-dropdown-avatar">
-                    {institutionInitial}
-                  </div>
                   <div className="profile-dropdown-info">
                     <p className="profile-dropdown-name">
                       {session?.user?.name || "Institution"}
                     </p>
                     <p className="profile-dropdown-email">{session?.user?.email}</p>
-                    <span className="profile-dropdown-badge">
-                      Social Institution
-                    </span>
                   </div>
                 </div>
 
                 {/* Quick actions */}
                 <div className="profile-dropdown-menu">
                   <Link
-                    href="/institution/newDonations"
-                    onClick={() => setProfileOpen(false)}
-                    className="profile-dropdown-item"
-                  >
-                    <PlusCircle className="w-3.5 h-3.5 text-emerald-700" />
-                    <span>Tambah Kampanye Donasi</span>
-                  </Link>
-                  <Link
                     href="/"
                     onClick={() => setProfileOpen(false)}
                     className="profile-dropdown-item"
                   >
                     <ExternalLink className="w-3.5 h-3.5 text-gray-500" />
-                    <span>Kunjungi Halaman Publik</span>
+                    <span>Go to the public web</span>
                   </Link>
                 </div>
 

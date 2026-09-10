@@ -54,10 +54,10 @@ export default function DonationsActivityChart({ data }: DonationsActivityChartP
 
   // SVG dimensions
   const width = 800;
-  const height = 240;
+  const height = 320;
   const paddingTop = 25;
   const paddingBottom = 40;
-  const paddingLeft = 45; // Space for Y-axis numbers
+  const paddingLeft = 21; // Space for Y-axis numbers
   const paddingRight = 35;
 
   const chartHeight = height - paddingTop - paddingBottom;
@@ -115,7 +115,7 @@ export default function DonationsActivityChart({ data }: DonationsActivityChartP
             Donations Activity
           </h2>
           <p className="chart-subtitle">
-            {getPeriodLabel()} &bull; Total: <strong>{totalCount} donasi</strong>
+            {getPeriodLabel()} &bull; Total: <strong>{totalCount} donation</strong>
           </p>
         </div>
 
@@ -141,7 +141,7 @@ export default function DonationsActivityChart({ data }: DonationsActivityChartP
         <svg
           viewBox={`0 0 ${width} ${height}`}
           className="chart-svg"
-          preserveAspectRatio="none"
+          // preserveAspectRatio="none"
         >
           <defs>
             <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">

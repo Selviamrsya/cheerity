@@ -14,7 +14,6 @@ import {
   XCircle,
   Clock,
   Truck,
-  Package,
   Calendar,
   Phone,
   MapPin,
@@ -121,42 +120,40 @@ const InstitutionHistoryClient: React.FC<InstitutionHistoryClientProps> = ({
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "PENDING":
-        return <span className="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 flex items-center gap-1"><Clock className="w-3 h-3" /> Pending Approval</span>;
+        return <span className="institution-badge institution-badge-pending flex items-center gap-1"><Clock className="w-3 h-3" /> Pending Approval</span>;
       case "APPROVED":
-        return <span className="px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Approved</span>;
+        return <span className="institution-badge institution-badge-approved flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Approved</span>;
       case "ON_PROGRESS":
         return <span className="px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800 flex items-center gap-1"><Truck className="w-3 h-3" /> On Progress</span>;
       case "ARRIVED":
-        return <span className="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Arrived</span>;
+        return <span className="institution-badge institution-badge-approved flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Arrived</span>;
       case "COMPLETED":
-        return <span className="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-900 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Completed</span>;
+        return <span className="institution-badge institution-badge-approved flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Completed</span>;
       case "REJECTED":
-        return <span className="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 flex items-center gap-1"><XCircle className="w-3 h-3" /> Rejected</span>;
+        return <span className="institution-badge institution-badge-rejected flex items-center gap-1"><XCircle className="w-3 h-3" /> Rejected</span>;
       default:
         return null;
     }
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Institution History</h1>
-        <p className="text-gray-500 text-sm mt-1">
-          Review, approve, reject, and manage incoming user donation requests.
-        </p>
+    <div className="space-y-8">
+      <div className="institution-header">
+        <div>
+          <h1 className="institution-title">Donation request</h1>
+          <p className="institution-subtitle">
+            Review, approve, reject, and manage incoming requests.
+          </p>
+        </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-200 overflow-x-auto gap-4">
+      <div className="admin-tabs">
         {tabs.map((t) => (
           <button
             key={t.key}
             onClick={() => setActiveTab(t.key)}
-            className={`pb-3 text-sm font-semibold whitespace-nowrap transition-colors border-b-2 ${
-              activeTab === t.key
-                ? "text-green-800 border-green-800"
-                : "text-gray-500 border-transparent hover:text-gray-800"
-            }`}
+            className={`admin-tab ${activeTab === t.key ? "active" : ""}`}
           >
             {t.label}
           </button>
@@ -165,18 +162,21 @@ const InstitutionHistoryClient: React.FC<InstitutionHistoryClientProps> = ({
 
       {/* Requests List */}
       {filteredRecords.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-2xl border border-gray-100 shadow-sm">
-          <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-600 font-medium">No donation requests in this category.</p>
+        <div className="institution-table-card">
+          <div className="py-16 text-center text-gray-400 space-y-2">
+            <p className="font-semibold text-sm text-gray-700">
+              No donation requests in this category.
+            </p>
+          </div>
         </div>
       ) : (
         <div className="space-y-4">
           {filteredRecords.map((r) => (
             <div
               key={r.id}
-              className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4"
+              className="institution-table-card"
             >
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-gray-50 pb-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-4">
                 <div>
                   <h3 className="font-bold text-lg text-gray-900">{r.donationTitle}</h3>
                   <p className="text-xs text-gray-500">
