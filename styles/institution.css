@@ -12,17 +12,17 @@
   padding: 108px 24px 80px 24px;
 }
 
+
 /* 2. Institution Header */
 .institution-header {
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  padding-bottom: 18px;
-  margin-bottom: 0;
-  border-bottom: 1px solid var(--color-outline);
+  gap: 8px;
+  margin-bottom: 8px;
+  margin-top: 18px;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 768px) {
   .institution-header {
     flex-direction: row;
     align-items: center;
@@ -31,20 +31,17 @@
 }
 
 .institution-title {
-  margin-top:18px;
   font-family: var(--font-poppins);
   font-size: 26px;
   font-weight: 700;
-  color: var(--color-text-main);
+  color: var(--color-on-surface);
   letter-spacing: -0.02em;
-  margin-bottom: 4px;
 }
 
 .institution-subtitle {
   font-family: var(--font-inter);
-  font-size: 13.5px;
+  font-size: 15px;
   color: var(--color-text-muted);
-  line-height: 1.5;
 }
 
 /* 3. Stat Cards Grid */

@@ -5,6 +5,8 @@ import { db } from "@/app/database/drizzle";
 import { users, institutions, donations, donateRecords } from "@/app/database/schema";
 import { sendEmail, emailTemplates } from "@/lib/workflow";
 import { revalidatePath } from "next/cache";
+import { auth } from "@/app/auth";
+import { geocodeAddress } from "@/lib/geocoding";
 
 // Get stats for admin dashboard
 export const getAdminDashboardStats = async () => {
@@ -268,5 +270,101 @@ export const rejectInstitution = async (
   } catch (error) {
     console.error("Reject institution error:", error);
     return { success: false, error: "Failed to reject institution." };
+  }
+};
+
+// Admin updates an institution's address and geocodes coordinates
+export const updateInstitutionAddress = async (
+  institutionId: string,
+  data: {
+    address: string;
+    city: string;
+    state: string;
+    zipCode?: string;
+  }
+) => {
+  try {
+    const session = await auth();
+    if (!session?.user?.id || session.user.role !== "ADMIN") {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const institution = await getInstitutionById(institutionId);
+    if (!institution) return { success: false, error: "Institution not found." };
+
+    const { address, city, state, zipCode } = data;
+
+    if (!address?.trim() || !city?.trim() || !state?.trim()) {
+      return { success: false, error: "Address, city, and state are required." };
+    }
+
+    // Geocode to calculate coordinates
+    let latitude: number | null = null;
+    let longitude: number | null = null;
+    try {
+      const coords = await geocodeAddress(address, city, state);
+      if (coords) {
+        latitude = coords.lat;
+        longitude = coords.lng;
+      }
+    } catch (err) {
+      console.error("Geocoding error:", err);
+    }
+
+    await db
+      .update(institutions)
+      .set({
+        address: address.trim(),
+        city: city.trim(),
+        state: state.trim(),
+        zipCode: zipCode ? zipCode.trim() : null,
+        latitude,
+        longitude,
+      })
+      .where(eq(institutions.id, institutionId));
+
+    revalidatePath(`/admin/institutions/${institutionId}`);
+    revalidatePath("/admin/institutions");
+    return { success: true };
+  } catch (error) {
+    console.error("Update institution address error:", error);
+    return { success: false, error: "Failed to update institution address." };
+  }
+};
+
+// Admin toggles an institution's account status (APPROVED = Active, REJECTED = Inactive)
+export const toggleInstitutionAccountStatus = async (
+  institutionId: string,
+  newStatus: "APPROVED" | "REJECTED"
+) => {
+  try {
+    const session = await auth();
+    if (!session?.user?.id || session.user.role !== "ADMIN") {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const institution = await getInstitutionById(institutionId);
+    if (!institution) return { success: false, error: "Institution not found." };
+
+    await db
+      .update(institutions)
+      .set({ status: newStatus })
+      .where(eq(institutions.id, institutionId));
+
+    if (newStatus === "APPROVED") {
+      try {
+        const template = emailTemplates.institutionApproved(institution.institutionName);
+        await sendEmail({ email: institution.email, ...template });
+      } catch (e) {
+        console.error("Email send error on activation:", e);
+      }
+    }
+
+    revalidatePath(`/admin/institutions/${institutionId}`);
+    revalidatePath("/admin/institutions");
+    return { success: true };
+  } catch (error) {
+    console.error("Toggle institution account status error:", error);
+    return { success: false, error: "Failed to update institution account status." };
   }
 };

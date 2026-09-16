@@ -149,8 +149,7 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
                 <input
                   type="checkbox"
                   {...form.register("isAnonymous")}
-                  className="h-4 w-4"
-                  style={{ accentColor: "var(--color-primary)" }}
+                  className="h-4 w-4 accent-green-700"
                 />
                 <span>Donate as Anonymous</span>
               </label>

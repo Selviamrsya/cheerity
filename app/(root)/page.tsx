@@ -15,7 +15,7 @@ const Home = async () => {
   let userLat: number | null = null;
   let userLng: number | null = null;
 
-  if (session?.user?.id && session.user.role === "USER") {
+  if (session?.user?.id && (session.user.role === "USER" || session.user.role === "ADMIN")) {
     const [userData] = await db
       .select({ latitude: users.latitude, longitude: users.longitude })
       .from(users)
@@ -125,6 +125,7 @@ const Home = async () => {
                   collected={donation.collected}
                   target={donation.target}
                   category={donation.category}
+                  userId={session?.user?.id ?? null}
                 />
               </div>
             ))}

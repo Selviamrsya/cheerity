@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Search, Package, Truck, CheckCircle2, Clock, XCircle } from "lucide-react";
+import { Search, Package, Truck, CheckCircle2, Clock, XCircle, Eye, MoreVertical } from "lucide-react";
 import { DONATION_CATEGORIES, CATEGORY_LABELS, DELIVERY_METHOD_LABELS } from "@/constants";
 
 interface HistoryRecord {
@@ -30,6 +30,10 @@ const UserHistoryClient: React.FC<UserHistoryClientProps> = ({ records }) => {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [selectedRecord, setSelectedRecord] = useState<HistoryRecord | null>(null);
+  const [imagePopup, setImagePopup] = useState<{ isOpen: boolean; imageUrl: string | null }>({
+    isOpen: false,
+    imageUrl: null,
+  });
 
   const tabs = [
     { key: "ALL", label: "All" },
@@ -81,30 +85,61 @@ const UserHistoryClient: React.FC<UserHistoryClientProps> = ({ records }) => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "PENDING":
-        return <span className="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 flex items-center gap-1"><Clock className="w-3 h-3" /> Pending</span>;
+        return <span className="institution-badge institution-badge-pending flex items-center gap-1"><Clock className="w-3 h-3" /> Pending</span>;
       case "APPROVED":
       case "ON_PROGRESS":
-        return <span className="px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800 flex items-center gap-1"><Truck className="w-3 h-3" /> On Progress</span>;
+        return <span className="institution-badge bg-purple-100 text-purple-800 flex items-center gap-1"><Truck className="w-3 h-3" /> On Progress</span>;
       case "ARRIVED":
-        return <span className="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Arrived</span>;
+        return <span className="institution-badge institution-badge-approved flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Arrived</span>;
       case "COMPLETED":
-        return <span className="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-900 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Completed</span>;
+        return <span className="institution-badge institution-badge-approved flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Completed</span>;
       case "REJECTED":
-        return <span className="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 flex items-center gap-1"><XCircle className="w-3 h-3" /> Rejected</span>;
+        return <span className="institution-badge institution-badge-rejected flex items-center gap-1"><XCircle className="w-3 h-3" /> Rejected</span>;
       default:
         return null;
     }
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Donation History</h1>
-        <p className="text-gray-500 text-sm mt-1">Track and manage your submitted donations.</p>
+    <div className="w-full">
+      <div className="user-header">
+          <h1 className="institution-title">Donation History</h1>
+          <p className="institution-subtitle">
+            Track and manage your submitted donations.
+          </p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-gray-200 overflow-x-auto gap-4">
+      {/* Search & Category Filter */}
+      <div className="find-donation-filters" style={{ marginBottom: "0px" }}>
+        {/* Search */}
+        <div className="find-donation-search flex-1">
+          <Search className="h-4 w-4" style={{ color: "var(--color-on-surface-variant)" }} />
+          <input
+            type="text"
+            placeholder="Search by title or institution..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="find-donation-search-input"
+          />
+        </div>
+
+        {/* Category filter */}
+        <select
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+          className="find-donation-select w-auto"
+        >
+          <option value="">All Categories</option>
+          {DONATION_CATEGORIES.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* tab */}
+      <div className="flex border-b border-gray-200 overflow-x-auto gap-4" style={{marginTop:"16px",marginBottom:"12px"}}>
         {tabs.map((t) => (
           <button
             key={t.key}
@@ -120,77 +155,81 @@ const UserHistoryClient: React.FC<UserHistoryClientProps> = ({ records }) => {
         ))}
       </div>
 
-      {/* Search & Category Filter */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search by title or institution..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="form-input pl-9"
-          />
-        </div>
-        <select
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          className="form-input sm:w-64"
-        >
-          <option value="">All Categories</option>
-          {DONATION_CATEGORIES.map((c) => (
-            <option key={c.value} value={c.value}>
-              {c.label}
-            </option>
-          ))}
-        </select>
-      </div>
 
-      {/* History List or Empty State */}
+      {/* History Table or Empty State */}
       {filteredRecords.length === 0 ? (
-        <div className="text-center py-16 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-          <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-600 font-medium">There are no donations available yet</p>
+        <div className="user-table-card">
+          <div className="py-16 text-center text-gray-400 space-y-2">
+            <p className="font-semibold text-md text-gray-700">
+              There are no donations available yet
+            </p>
+            <p className="text-sm text-gray-400">
+              Start by donating to a campaign.
+            </p>
+          </div>
         </div>
       ) : (
-        <div className="space-y-4">
-          {filteredRecords.map((r) => (
-            <div
-              key={r.id}
-              onClick={() => setSelectedRecord(r)}
-              className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0 relative">
-                  {r.donationCover ? (
-                    <img src={r.donationCover} alt={r.donationTitle} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      <Package className="w-8 h-8" />
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 text-lg">{r.donationTitle}</h3>
-                  <p className="text-sm text-gray-500">{r.institutionName}</p>
-                  <div className="flex items-center gap-4 mt-1 text-xs text-gray-500">
-                    <span>Qty: {r.quantity}</span>
-                    <span>•</span>
-                    <span>Method: {DELIVERY_METHOD_LABELS[r.deliveryMethod] || r.deliveryMethod}</span>
-                    <span>•</span>
-                    <span>Category: {CATEGORY_LABELS[r.donationCategory] || r.donationCategory}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col items-end gap-2 w-full md:w-auto">
-                {getStatusBadge(r.status)}
-                <span className="text-xs text-gray-400">
-                  Requested: {formatDate(r.requestDate)}
-                </span>
-              </div>
-            </div>
-          ))}
+        <div className="user-table-card">
+          <div className="institution-table-wrapper">
+            <table className="institution-table">
+              <thead>
+                <tr>
+                  <th className="institution-table-th">No</th>
+                  <th className="institution-table-th">Title</th>
+                  <th className="institution-table-th">Institution</th>
+                  <th className="institution-table-th">Category</th>
+                  <th className="institution-table-th">Quantity</th>
+                  <th className="institution-table-th">Delivery Method</th>
+                  <th className="institution-table-th">Status</th>
+                  <th className="institution-table-th">Request Date</th>
+                  <th className="institution-table-th">Cover</th>
+                  <th className="institution-table-th">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredRecords.map((r, index) => (
+                  <tr key={r.id} className="institution-table-tr">
+                    <td className="institution-table-td font-medium">{index + 1}</td>
+                    <td className="institution-table-td font-bold">{r.donationTitle}</td>
+                    <td className="institution-table-td">{r.institutionName}</td>
+                    <td className="institution-table-td">
+                      {CATEGORY_LABELS[r.donationCategory] || r.donationCategory}
+                    </td>
+                    <td className="institution-table-td font-bold">{r.quantity}</td>
+                    <td className="institution-table-td">
+                      {DELIVERY_METHOD_LABELS[r.deliveryMethod] || r.deliveryMethod}
+                    </td>
+                    <td className="institution-table-td">
+                      {getStatusBadge(r.status)}
+                    </td>
+                    <td className="institution-table-td text-xs">
+                      {formatDate(r.requestDate)}
+                    </td>
+                    <td className="institution-table-td">
+                      {r.donationCover ? (
+                        <button
+                          onClick={() => setImagePopup({ isOpen: true, imageUrl: r.donationCover })}
+                          className="p-2 hover:bg-gray-100 transition-colors"
+                        >
+                          <Eye className="w-5 h-5 text-gray-600" />
+                        </button>
+                      ) : (
+                        <span className="text-gray-400 text-xs">No image</span>
+                      )}
+                    </td>
+                    <td className="institution-table-td">
+                      <button
+                        onClick={() => setSelectedRecord(r)}
+                        className="p-2 hover:bg-gray-100 transition-colors"
+                      >
+                        <MoreVertical className="w-5 h-5 text-gray-600" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -264,6 +303,31 @@ const UserHistoryClient: React.FC<UserHistoryClientProps> = ({ records }) => {
             </div>
           </div>
         </>
+      )}
+
+      {/* Image Popup Modal */}
+      {imagePopup.isOpen && imagePopup.imageUrl && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setImagePopup({ isOpen: false, imageUrl: null })}
+        >
+          <div className="relative max-w-2xl max-h-[80vh]">
+            <img
+              src={imagePopup.imageUrl}
+              alt="Donation cover"
+              className="max-w-full max-h-[80vh] object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <button
+              onClick={() => setImagePopup({ isOpen: false, imageUrl: null })}
+              className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-lg hover:bg-gray-100"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -23,12 +23,14 @@ interface FindDonationClientProps {
   initialDonations: Donation[];
   userLat: number | null;
   userLng: number | null;
+  userId?: string | null;
 }
 
 const FindDonationClient: React.FC<FindDonationClientProps> = ({
   initialDonations,
   userLat,
   userLng,
+  userId,
 }) => {
   const [donations, setDonations] = useState<Donation[]>(initialDonations);
   const [search, setSearch] = useState("");
@@ -69,7 +71,7 @@ const FindDonationClient: React.FC<FindDonationClientProps> = ({
   };
 
   return (
-    <div className="page-container">
+    <div className="w-full">
       {/* Page header */}
       <div className="find-donation-header">
         <h1 className="find-donation-title">Find a Donation</h1>
@@ -81,7 +83,7 @@ const FindDonationClient: React.FC<FindDonationClientProps> = ({
       {/* Search + Filters */}
       <div className="find-donation-filters">
         {/* Search */}
-        <div className="find-donation-search">
+        <div className="find-donation-search flex-1">
           <Search className="h-4 w-4" style={{ color: "var(--color-on-surface-variant)" }} />
           <input
             type="text"
@@ -96,7 +98,7 @@ const FindDonationClient: React.FC<FindDonationClientProps> = ({
         <select
           value={category}
           onChange={(e) => handleCategoryChange(e.target.value)}
-          className="find-donation-select"
+          className="find-donation-select w-auto"
         >
           <option value="">All Categories</option>
           {DONATION_CATEGORIES.map((c) => (
@@ -110,7 +112,7 @@ const FindDonationClient: React.FC<FindDonationClientProps> = ({
         <select
           value={maxDistance ?? ""}
           onChange={(e) => handleDistanceChange(e.target.value)}
-          className="find-donation-select"
+          className="find-donation-select w-auto"
         >
           <option value="">Any Distance</option>
           {DISTANCE_FILTERS.map((d) => (
@@ -146,6 +148,7 @@ const FindDonationClient: React.FC<FindDonationClientProps> = ({
                 collected={donation.collected}
                 target={donation.target}
                 category={donation.category}
+                userId={userId}
               />
             </div>
           ))}

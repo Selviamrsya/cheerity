@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { MapPin } from "lucide-react";
 import React from "react";
@@ -13,6 +15,7 @@ interface DonationCardProps {
   collected: number;
   target: number;
   category: string;
+  userId?: string | null;
 }
 
 const DonationCard: React.FC<DonationCardProps> = ({
@@ -25,14 +28,15 @@ const DonationCard: React.FC<DonationCardProps> = ({
   distanceKm,
   collected,
   target,
+  userId,
 }) => {
   const progress = target > 0 ? Math.min((collected / target) * 100, 100) : 0;
   const location = [institutionCity, institutionState].filter(Boolean).join(", ");
 
   return (
-    <Link href={`/donations/${id}`} className="donation-card block text-inherit no-underline">
-      {/* Cover image */}
-      <div className="donation-card_cover">
+    <div className="donation-card">
+      {/* Cover image - clickable to view details */}
+      <Link href={`/donations/${id}`} className="donation-card_cover block text-inherit no-underline">
         {cover ? (
           <img src={cover} alt={title} className="object-cover w-full h-full" />
         ) : (
@@ -45,7 +49,7 @@ const DonationCard: React.FC<DonationCardProps> = ({
             </span>
           </div>
         )}
-      </div>
+      </Link>
 
       <div className="donation-card_body">
         {/* Institution info */}
@@ -65,8 +69,10 @@ const DonationCard: React.FC<DonationCardProps> = ({
           <span>{institutionName}</span>
         </div>
 
-        {/* Title */}
-        <h3 className="donation-card_title">{title}</h3>
+        {/* Title - clickable to view details */}
+        <Link href={`/donations/${id}`} className="donation-card_title text-inherit no-underline">
+          {title}
+        </Link>
 
         {/* Location + Distance */}
         <div className="donation-card_location">
@@ -91,8 +97,27 @@ const DonationCard: React.FC<DonationCardProps> = ({
             <strong>{collected}</strong> / {target} items collected
           </p>
         </div>
+
+        {/* Donate Now Button */}
+        {userId ? (
+          <Link
+            href={`/donations/${id}/request`}
+            className="donate-now-button"
+            style={{ marginTop: "12px", width: "100%", textAlign: "center" }}
+          >
+            Donate Now
+          </Link>
+        ) : (
+          <Link
+            href="/sign-in"
+            className="donate-now-button"
+            style={{ marginTop: "12px", width: "100%", textAlign: "center" }}
+          >
+            Sign In to Donate
+          </Link>
+        )}
       </div>
-    </Link>
+    </div>
   );
 };
 

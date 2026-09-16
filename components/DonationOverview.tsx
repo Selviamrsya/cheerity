@@ -54,7 +54,7 @@ const DonationOverview: React.FC<DonationOverviewProps> = ({
           <img src={cover} alt={title} className="donation-overview-img" />
         ) : (
           <div className="donation-overview-placeholder">
-            <Package className="h-16 w-16" style={{ color: "var(--color-surface)" }} />
+            <Package className="h-18 w-18" style={{ color: "var(--color-surface)" }} />
           </div>
         )}
         {/* Category badge overlaid top-left */}
@@ -121,6 +121,25 @@ const DonationOverview: React.FC<DonationOverviewProps> = ({
             ))}
           </div>
         </div>
+
+        {/* Donate Now Button */}
+        {userId ? (
+          <Link
+            href={`/donations/${id}/request`}
+            className="donate-now-button"
+            style={{ marginTop: "6px" }}
+          >
+            Donate Now
+          </Link>
+        ) : (
+          <Link
+            href="/sign-in"
+            className="donate-now-button"
+            style={{ marginTop: "16px" }}
+          >
+            Sign In to Donate
+          </Link>
+        )}
       </div>
     </section>
   );

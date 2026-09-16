@@ -9,17 +9,14 @@ import {
   Bell,
   LogIn,
   Check,
-  MapPin,
   LogOut,
   LayoutDashboard,
   ShieldCheck,
   Building2,
-  Clock,
   User,
 } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 import { getNotifications, markNotificationRead } from "@/lib/actions/donation";
-import EditAddressModal from "@/components/EditAddressModal";
 
 interface Notification {
   id: string;
@@ -36,7 +33,6 @@ const Header = ({ session }: { session: Session | null }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [addressModalOpen, setAddressModalOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const notifRef = useRef<HTMLDivElement>(null);
@@ -214,48 +210,47 @@ const Header = ({ session }: { session: Session | null }) => {
                             <LayoutDashboard className="w-4 h-4 text-green-700" />
                             <span>Admin Dashboard</span>
                           </Link>
+                          <Link
+                            href="/admin/profile"
+                            onClick={() => setProfileOpen(false)}
+                            className="profile-dropdown-item"
+                          >
+                            <User className="w-4 h-4 text-green-700" />
+                            <span>Admin Profile</span>
+                          </Link>
                         </>
                       )}
 
                       {session.user?.role === "INSTITUTION" && (
-                        <Link
-                          href="/institution"
-                          onClick={() => setProfileOpen(false)}
-                          className="profile-dropdown-item"
-                        >
-                          <Building2 className="w-4 h-4 text-green-700" />
-                          <span>Institution Dashboard</span>
-                        </Link>
+                        <>
+                          <Link
+                            href="/institution"
+                            onClick={() => setProfileOpen(false)}
+                            className="profile-dropdown-item"
+                          >
+                            <Building2 className="w-4 h-4 text-green-700" />
+                            <span>Institution Dashboard</span>
+                          </Link>
+                          <Link
+                            href="/institution/profile"
+                            onClick={() => setProfileOpen(false)}
+                            className="profile-dropdown-item"
+                          >
+                            <User className="w-4 h-4 text-green-700" />
+                            <span>Institution Profile</span>
+                          </Link>
+                        </>
                       )}
 
                       {session.user?.role === "USER" && (
                         <>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setProfileOpen(false);
-                              setAddressModalOpen(true);
-                            }}
-                            className="profile-dropdown-item"
-                          >
-                            <MapPin className="w-4 h-4 text-green-700" />
-                            <span>Ubah Alamat</span>
-                          </button>
-                          <Link
-                            href="/history"
-                            onClick={() => setProfileOpen(false)}
-                            className="profile-dropdown-item"
-                          >
-                            <Clock className="w-4 h-4 text-green-700" />
-                            <span>Riwayat Donasi</span>
-                          </Link>
                           <Link
                             href="/my-profile"
                             onClick={() => setProfileOpen(false)}
                             className="profile-dropdown-item"
                           >
                             <User className="w-4 h-4 text-green-700" />
-                            <span>Profil Lengkap</span>
+                            <span>My Profile</span>
                           </Link>
                         </>
                       )}
@@ -284,12 +279,6 @@ const Header = ({ session }: { session: Session | null }) => {
           </div>
         </nav>
       </header>
-
-      {/* Edit Address Modal for User */}
-      <EditAddressModal
-        isOpen={addressModalOpen}
-        onClose={() => setAddressModalOpen(false)}
-      />
     </>
   );
 };

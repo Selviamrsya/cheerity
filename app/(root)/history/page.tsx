@@ -14,7 +14,7 @@ const HistoryPage = async () => {
   const records = await getUserDonationHistory(session.user.id);
 
   return (
-    <div className="max-w-5xl mx-auto py-6">
+    <div className="user-page-container">
       <UserHistoryClient records={records} />
     </div>
   );

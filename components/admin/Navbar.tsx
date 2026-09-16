@@ -6,7 +6,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { Session } from "next-auth";
-import { LogOut, Bell, Check } from "lucide-react";
+import { LogOut, Bell, Check, User } from "lucide-react";
 import { getNotifications, markNotificationRead } from "@/lib/actions/donation";
 
 interface Notification {
@@ -163,6 +163,14 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ session }) => {
 
                 {/* Quick link to public site */}
                 <div className="profile-dropdown-menu">
+                  <Link
+                    href="/admin/profile"
+                    onClick={() => setProfileOpen(false)}
+                    className="profile-dropdown-item"
+                  >
+                    <User className="w-3.5 h-3.5 text-gray-500" />
+                    <span>Admin Profile</span>
+                  </Link>
                   <Link
                     href="/"
                     onClick={() => setProfileOpen(false)}

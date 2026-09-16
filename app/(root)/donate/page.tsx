@@ -12,7 +12,7 @@ const DonatePage = async () => {
   let userLat: number | null = null;
   let userLng: number | null = null;
 
-  if (session?.user?.id && session.user.role === "USER") {
+  if (session?.user?.id && (session.user.role === "USER" || session.user.role === "ADMIN")) {
     const [userData] = await db
       .select({ latitude: users.latitude, longitude: users.longitude })
       .from(users)
@@ -25,11 +25,14 @@ const DonatePage = async () => {
   const donations = await getDonationsWithDistance({ userLat, userLng, limit: 50 });
 
   return (
-    <FindDonationClient
-      initialDonations={donations as Parameters<typeof FindDonationClient>[0]["initialDonations"]}
-      userLat={userLat}
-      userLng={userLng}
-    />
+    <div className="page-container">
+      <FindDonationClient
+        initialDonations={donations as Parameters<typeof FindDonationClient>[0]["initialDonations"]}
+        userLat={userLat}
+        userLng={userLng}
+        userId={session?.user?.id ?? null}
+      />
+    </div>
   );
 };
 

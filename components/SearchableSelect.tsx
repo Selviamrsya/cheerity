@@ -70,25 +70,23 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
         type="button"
         disabled={disabled}
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className="form-input flex items-center justify-between text-left cursor-pointer bg-white w-full"
+        className="w-full px-3 py-2 border border-gray-300 rounded-sm bg-white text-gray-900 flex items-center justify-between text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-50 disabled:text-gray-400 transition-colors"
         style={{
-          minHeight: "48px",
-          paddingLeft: "18px",
-          paddingRight: "16px",
-          paddingTop: "12px",
-          paddingBottom: "12px",
+          minHeight: "38px",
+          marginTop: "4px",
+          marginBottom: "8px",
         }}
       >
         <span className={`truncate text-sm ${!value ? "text-gray-400" : "text-gray-900 font-medium"}`}>
           {displayLabel}
         </span>
-        <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+        <ChevronDown className={`w-4 h-4 text-gray-400 shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </button>
 
       {/* Dropdown Overlay */}
       {isOpen && (
         <div
-          className="absolute z-50 left-0 right-0 mt-2 bg-white border border-gray-200 shadow-2xl overflow-hidden max-h-80 flex flex-col rounded-md"
+          className="absolute z-50 left-0 right-0 mt-2 bg-white border border-gray-200 shadow-2xl overflow-hidden max-h-80 flex flex-col rounded-sm"
           style={{ zIndex: 9999 }}
         >
           {/* Search Box Header - Generous vertical and horizontal padding */}
@@ -133,7 +131,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
             {filteredOptions.length === 0 ? (
               <div
                 style={{
-                  padding: "10px",
+                  padding: "8px",
                   textAlign: "center",
                   fontSize: "10px",
                   color: "#9ca3af",

@@ -23,7 +23,7 @@ const DonationDetailPage = async ({
 
   let userProfile = null;
 
-  if (session?.user?.id && session.user.role === "USER") {
+  if (session?.user?.id && (session.user.role === "USER" || session.user.role === "ADMIN")) {
     const [u] = await db
       .select({
         id: users.id,
@@ -54,7 +54,7 @@ const DonationDetailPage = async ({
   }
 
   return (
-    <div className="page-container">
+    <div className="w-full">
       <DonationDetailClient
         donation={donation}
         user={userProfile}

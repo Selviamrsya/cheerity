@@ -13,6 +13,7 @@ const ManageDonationsPage = async () => {
   const formattedDonations = donations.map((d) => ({
     ...d,
     createdAt: d.createdAt ? d.createdAt.toISOString() : null,
+    status: d.status || "ACTIVE",
   }));
 
   return <ManageDonationsClient donations={formattedDonations} />;

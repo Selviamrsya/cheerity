@@ -237,7 +237,7 @@ const ManageDonationsClient = ({ donations }: ManageDonationsClientProps) => {
             onClick={() => setActionMenu({ isOpen: false, donationId: null, position: null })}
           />
           <div
-            className="fixed bg-white border border-gray-200 shadow-lg rounded-lg min-w-40 p-1.5 z-50"
+            className="fixed bg-white border border-gray-200 shadow-lg rounded-sm min-w-40 p-1.5 z-50"
             style={{
               top: `${actionMenu.position.top}px`,
               left: `${actionMenu.position.left}px`,

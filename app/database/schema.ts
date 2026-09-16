@@ -115,7 +115,6 @@ export const donateRecords = pgTable("donate_records", {
   donationId: uuid("donation_id")
     .notNull()
     .references(() => donations.id),
-  // Donor info (copied from user profile at time of request)
   donorName: varchar("donor_name", { length: 255 }),
   isAnonymous: boolean("is_anonymous").default(false).notNull(),
   phoneNumber: varchar("phone_number", { length: 20 }),
