@@ -1,13 +1,15 @@
 import React from "react";
-import { auth } from "@/app/auth";
+import { getSession } from "@/lib/auth";
 import { db } from "@/app/database/drizzle";
 import { users } from "@/app/database/schema";
 import { eq } from "drizzle-orm";
 import { getDonationsWithDistance } from "@/lib/actions/donation";
 import FindDonationClient from "@/components/FindDonationClient";
+import { headers } from "next/headers";
 
 const DonatePage = async () => {
-  const session = await auth();
+  const reqHeaders = await headers();
+  const session = await getSession(reqHeaders);
 
   let userLat: number | null = null;
   let userLng: number | null = null;
@@ -25,7 +27,7 @@ const DonatePage = async () => {
   const donations = await getDonationsWithDistance({ userLat, userLng, limit: 50 });
 
   return (
-    <div className="page-container">
+    <div className="mx-auto w-full max-w-345 px-8 pb-10 pt-8 md:px-32 md:pb-14 md:pt-12">
       <FindDonationClient
         initialDonations={donations as Parameters<typeof FindDonationClient>[0]["initialDonations"]}
         userLat={userLat}

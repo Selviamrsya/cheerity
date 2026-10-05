@@ -1,19 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/auth";
+import { getSession } from "@/lib/auth";
 import { db } from "@/app/database/drizzle";
 import { institutions, users } from "@/app/database/schema";
 import { eq, and, ne } from "drizzle-orm";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getSession(request.headers);
 
     if (!session?.user?.id || session.user.role !== "INSTITUTION") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
-    const { institutionName, email, phoneNumber, websiteOrSocial, description } = body;
+    const { institutionName, email, phoneNumber, websiteOrSocial, description, address, city, state, zipCode } = body;
 
     // Validate required fields
     if (!institutionName || institutionName.trim() === "") {
@@ -65,16 +65,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update institution profile (strictly NO address or verificationEvidence modification)
+    // Update institution profile (address can be updated, but verificationEvidence cannot)
+    const updateData: any = {
+      institutionName: institutionName.trim(),
+      email: trimmedEmail,
+      phoneNumber: phoneNumber ? phoneNumber.trim() : null,
+      websiteOrSocial: websiteOrSocial ? websiteOrSocial.trim() : null,
+      description: description ? description.trim() : null,
+    };
+
+    // Include address fields if provided
+    if (address !== undefined) {
+      updateData.address = address.trim() || null;
+    }
+    if (city !== undefined) {
+      updateData.city = city.trim() || null;
+    }
+    if (state !== undefined) {
+      updateData.state = state.trim() || null;
+    }
+    if (zipCode !== undefined) {
+      updateData.zipCode = zipCode.trim() || null;
+    }
+
     await db
       .update(institutions)
-      .set({
-        institutionName: institutionName.trim(),
-        email: trimmedEmail,
-        phoneNumber: phoneNumber ? phoneNumber.trim() : null,
-        websiteOrSocial: websiteOrSocial ? websiteOrSocial.trim() : null,
-        description: description ? description.trim() : null,
-      })
+      .set(updateData)
       .where(eq(institutions.id, session.user.id));
 
     return NextResponse.json({ success: true });

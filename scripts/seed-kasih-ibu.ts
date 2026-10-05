@@ -1,7 +1,7 @@
 import { config } from "dotenv";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
-import { hash } from "bcryptjs";
+import { hashPassword } from "better-auth/crypto";
 import { eq } from "drizzle-orm";
 import { users, institutions, donations } from "../app/database/schema";
 
@@ -15,7 +15,7 @@ async function main() {
 
   const email = "selviamrsya@gmail.com";
   const passwordText = "KasihIbu1234";
-  const hashedPassword = await hash(passwordText, 10);
+  const hashedPassword = await hashPassword({ password: passwordText });
 
   // 1. Remove from users table if exists so NextAuth doesn't conflict and pick user role
   const existingUser = await db.select().from(users).where(eq(users.email, email)).limit(1);
@@ -35,7 +35,7 @@ async function main() {
       .update(institutions)
       .set({
         institutionName: "Yayasan Kasih Ibu",
-        password: hashedPassword,
+        password: hashedPassword.hash,
         status: "APPROVED",
         phoneNumber: "081234567890",
         city: "Jakarta Pusat",
@@ -51,7 +51,7 @@ async function main() {
       .values({
         institutionName: "Yayasan Kasih Ibu",
         email,
-        password: hashedPassword,
+        password: hashedPassword.hash,
         phoneNumber: "081234567890",
         city: "Jakarta Pusat",
         state: "DKI Jakarta",

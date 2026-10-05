@@ -3,11 +3,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
-import { Session } from "next-auth";
-import { LogOut, Bell, Check, User } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { LogOut, Bell, Check, User, Globe } from "lucide-react";
 import { getNotifications, markNotificationRead } from "@/lib/actions/donation";
+import { authClient } from "@/lib/auth-client";
 
 interface Notification {
   id: string;
@@ -18,12 +17,22 @@ interface Notification {
   createdAt: Date | null;
 }
 
+interface Session {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string | null | undefined;
+  };
+}
+
 interface AdminNavbarProps {
   session: Session | null;
 }
 
 const AdminNavbar: React.FC<AdminNavbarProps> = ({ session }) => {
   const pathname = usePathname();
+  const router = useRouter();
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -69,10 +78,10 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ session }) => {
   const isVerifyActive = pathname.startsWith("/admin/institutions");
 
   return (
-    <header className="navbar scrolled">
-      <nav className="navbar-inner flex items-center justify-between">
+    <header className="fixed top-0 right-0 left-0 z-50 border-b border-outline bg-white/95 shadow-[0_4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md">
+      <nav className="mx-auto flex h-[72px] w-full max-w-345 items-center justify-between px-4 md:px-6 flex items-center justify-between">
         {/* Left: Logo with subtle Admin indicator */}
-        <Link href="/admin" className="navbar-logo flex items-center gap-2.5">
+        <Link href="/admin" className="flex items-center flex items-center gap-2.5">
           <Image src="/assets/logo.png" alt="Cheerity" width={140} height={36} priority />
         </Link>
 
@@ -82,7 +91,8 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ session }) => {
             <li>
               <Link
                 href="/admin"
-                className={`navbar-link ${isHomeActive ? "active" : ""}`}
+                data-active={isHomeActive}
+                className={`relative bg-transparent px-2.5 py-2 text-sm font-medium text-on-surface-variant no-underline transition-colors after:absolute after:bottom-0 after:left-3.5 after:right-3.5 after:h-0.5 after:origin-center after:scale-x-0 after:rounded-t after:bg-primary after:transition-transform after:content-[''] hover:bg-transparent hover:text-primary hover:after:scale-x-100 data-[active=true]:font-semibold data-[active=true]:text-primary data-[active=true]:after:scale-x-100 md:px-3.5 ${isHomeActive ? "active" : ""}`}
               >
                 Dashboard
               </Link>
@@ -90,7 +100,8 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ session }) => {
             <li>
               <Link
                 href="/admin/institutions"
-                className={`navbar-link ${isVerifyActive ? "active" : ""}`}
+                data-active={isVerifyActive}
+                className={`relative bg-transparent px-2.5 py-2 text-sm font-medium text-on-surface-variant no-underline transition-colors after:absolute after:bottom-0 after:left-3.5 after:right-3.5 after:h-0.5 after:origin-center after:scale-x-0 after:rounded-t after:bg-primary after:transition-transform after:content-[''] hover:bg-transparent hover:text-primary hover:after:scale-x-100 data-[active=true]:font-semibold data-[active=true]:text-primary data-[active=true]:after:scale-x-100 md:px-3.5 ${isVerifyActive ? "active" : ""}`}
               >
                 Verify Institution
               </Link>
@@ -100,35 +111,35 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ session }) => {
           {/* Notification Bell */}
           <div className="relative" ref={notifRef}>
             <button
-              className="navbar-icon-btn"
+              className="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border-none bg-transparent text-on-surface-variant transition-all hover:bg-surface-container hover:text-on-surface"
               aria-label="Notifications"
               onClick={handleNotifToggle}
             >
               <Bell className="h-5 w-5" />
-              {unreadCount > 0 && <span className="notification-dot" />}
+              {unreadCount > 0 && <span className="absolute top-2 right-2 h-2 w-2 rounded-full border-2 border-white bg-red-500" />}
             </button>
 
             {/* Notification dropdown */}
             {notifOpen && (
-              <div className="notif-dropdown">
-                <div className="notif-header">
+              <div className="absolute top-12 right-0 z-100 w-80 overflow-hidden rounded-sm border border-outline bg-white shadow-lg">
+                <div className="flex items-center justify-between border-b border-outline bg-gray-50 px-4 py-3">
                   <span className="font-semibold text-sm">Notifications</span>
                   {unreadCount > 0 && (
-                    <span className="notif-badge">{unreadCount} new</span>
+                    <span className="rounded-full bg-primary px-2 py-0.5 text-[11px] text-white">{unreadCount} new</span>
                   )}
                 </div>
-                <div className="notif-list">
+                <div className="max-h-70 overflow-y-auto">
                   {notifications.length === 0 ? (
-                    <p className="notif-empty">No notifications yet</p>
+                    <p className="p-6 text-center text-[13px] text-gray-400">No notifications yet</p>
                   ) : (
                     notifications.map((n) => (
                       <div
                         key={n.id}
-                        className={`notif-item ${!n.isRead ? "unread" : ""}`}
+                        className={`cursor-pointer border-b border-gray-100 px-4 py-3 transition-colors hover:bg-gray-50 data-[unread=true]:bg-green-50 ${!n.isRead ? "unread" : ""}`}
                         onClick={() => handleMarkRead(n.id)}
                       >
-                        <div className="notif-item-title">{n.title}</div>
-                        <div className="notif-item-message">{n.message}</div>
+                        <div className="text-[13px] font-semibold text-gray-900">{n.title}</div>
+                        <div className="mt-0.5 text-xs text-gray-600">{n.message}</div>
                         {n.isRead && <Check className="notif-read-icon h-3 w-3" />}
                       </div>
                     ))
@@ -143,30 +154,30 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ session }) => {
             <button
               type="button"
               onClick={() => setProfileOpen(!profileOpen)}
-              className="navbar-avatar flex items-center justify-center font-bold text-sm bg-green-800 text-white cursor-pointer"
+              className="h-9 w-9 rounded-full object-cover flex items-center justify-center font-bold text-sm bg-green-800 text-white cursor-pointer"
               aria-label="Admin Profile Menu"
             >
               {adminInitial}
             </button>
 
             {profileOpen && (
-              <div className="profile-dropdown">
+              <div className="absolute top-12 right-0 z-50 w-[260px] overflow-hidden rounded-sm border border-outline bg-surface p-2 shadow-lg">
                 {/* User info header */}
-                <div className="profile-dropdown-header">
-                  <div className="profile-dropdown-info">
-                    <p className="profile-dropdown-name">
+                <div className="flex items-center gap-3 border-b border-outline px-3 py-2.5">
+                  <div className="min-w-0 overflow-hidden">
+                    <p className="truncate font-poppins text-[13.5px] leading-tight font-semibold text-text-main">
                       {session?.user?.name || "Admin"}
                     </p>
-                    <p className="profile-dropdown-email">{session?.user?.email}</p>
+                    <p className="mt-0.5 truncate font-inter text-[11.5px] text-text-muted">{session?.user?.email}</p>
                   </div>
                 </div>
 
                 {/* Quick link to public site */}
-                <div className="profile-dropdown-menu">
+                <div className="py-1">
                   <Link
                     href="/admin/profile"
                     onClick={() => setProfileOpen(false)}
-                    className="profile-dropdown-item"
+                    className="flex w-full cursor-pointer items-center gap-2.5 rounded-sm border-none bg-transparent px-3 py-2 font-inter text-[12.5px] font-semibold text-text-main no-underline transition-all hover:bg-primary-50 hover:text-primary-800"
                   >
                     <User className="w-3.5 h-3.5 text-gray-500" />
                     <span>Admin Profile</span>
@@ -174,18 +185,28 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ session }) => {
                   <Link
                     href="/"
                     onClick={() => setProfileOpen(false)}
-                    className="profile-dropdown-item"
+                    className="flex w-full cursor-pointer items-center gap-2.5 rounded-sm border-none bg-transparent px-3 py-2 font-inter text-[12.5px] font-semibold text-text-main no-underline transition-all hover:bg-primary-50 hover:text-primary-800"
                   >
+                    <Globe className="w-3.5 h-3.5 text-gray-500" />
                     <span>Go to the public web</span>
                   </Link>
                 </div>
 
                 {/* Sign Out */}
-                <div className="profile-dropdown-footer">
+                <div className="border-t border-outline pt-1">
                   <button
                     type="button"
-                    onClick={() => signOut({ callbackUrl: "/sign-in" })}
-                    className="profile-dropdown-signout"
+                    onClick={async () => {
+                      await authClient.signOut({
+                        fetchOptions: {
+                          onSuccess: () => {
+                            router.push("/sign-in");
+                            router.refresh();
+                          },
+                        },
+                      });
+                    }}
+                    className="flex w-full cursor-pointer items-center gap-2.5 rounded-sm border-none bg-transparent px-3 py-2 text-left font-inter text-[12.5px] font-semibold text-danger transition-all hover:bg-danger-bg"
                   >
                     <LogOut className="w-4 h-4" />
                     <span>Sign Out</span>

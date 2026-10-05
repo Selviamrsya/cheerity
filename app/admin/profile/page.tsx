@@ -1,13 +1,15 @@
 import React from "react";
 import { redirect } from "next/navigation";
-import { auth } from "@/app/auth";
+import { getSession } from "@/lib/auth";
 import { db } from "@/app/database/drizzle";
 import { users } from "@/app/database/schema";
 import { eq } from "drizzle-orm";
 import AdminProfileForm from "@/components/admin/AdminProfileForm";
+import { headers } from "next/headers";
 
 const AdminProfilePage = async () => {
-  const session = await auth();
+  const reqHeaders = await headers();
+  const session = await getSession(reqHeaders);
 
   if (!session?.user?.id || session.user.role !== "ADMIN") {
     redirect("/sign-in");
@@ -29,27 +31,14 @@ const AdminProfilePage = async () => {
   }
 
   return (
-    <div className="w-full">
-      <div className="bg-white p-8 space-y-6 shadow-xs border border-gray-100 rounded-sm">
-        <div
-          className="flex items-center justify-between pb-6 border-b border-gray-100"
-          style={{ paddingBottom: "12px" }}
-        >
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-green-800 text-white flex items-center justify-center font-bold text-2xl">
-              {user.fullName.charAt(0).toUpperCase()}
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                {user.fullName}
-              </h1>
-              <p className="text-sm text-gray-500 capitalize">
-                Administrator Profile
-              </p>
-            </div>
-          </div>
-        </div>
+    <div className="w-full space-y-6">
+      {/* Back button */}
+      <div className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-green-800 transition-colors">
+        ← Back to Dashboard
+      </div>
 
+      {/* Main Details Card */}
+      <div className="flex w-full flex-col gap-6 px-0 py-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] sm:p-0">
         <AdminProfileForm user={user} />
       </div>
     </div>

@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { auth } from "@/app/auth";
+import { getSession } from "@/lib/auth";
 import {
   getInstitutionDonations,
   getInstitutionDonationHistory,
@@ -18,9 +18,11 @@ import {
   Eye,
   ArrowRight,
 } from "lucide-react";
+import { headers } from "next/headers";
 
 const InstitutionDashboardPage = async () => {
-  const session = await auth();
+  const reqHeaders = await headers();
+  const session = await getSession(reqHeaders);
   const institutionId = session?.user?.id as string;
 
   const [uploadedDonations, donationHistory, locationStats, activityStats] = await Promise.all([
@@ -41,7 +43,7 @@ const InstitutionDashboardPage = async () => {
 
   // Sum of all arrived or completed items
   const totalCollected = donationHistory
-    .filter((h) => h.status === "ARRIVED" || h.status === "COMPLETED")
+    .filter((h) => h.status === "WAITING_FOR_DOCUMENTATION" || h.status === "COMPLETED")
     .reduce((sum, h) => sum + (h.quantity || 0), 0);
 
   const currentDate = new Date().toLocaleDateString("id-ID", {
@@ -57,13 +59,13 @@ const InstitutionDashboardPage = async () => {
     switch (status) {
       case "PENDING":
         return (
-          <span className="institution-badge institution-badge-pending">
+          <span className="inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-0.5 font-inter text-xs font-semibold border border-warning-border bg-warning-bg text-warning">
             <Clock className="w-3 h-3" /> Pending Review
           </span>
         );
       case "APPROVED":
         return (
-          <span className="institution-badge institution-badge-approved">
+          <span className="inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-0.5 font-inter text-xs font-semibold border border-success-border bg-success-bg text-success">
             <CheckCircle2 className="w-3 h-3" /> Approved
           </span>
         );
@@ -76,13 +78,13 @@ const InstitutionDashboardPage = async () => {
       case "ARRIVED":
       case "COMPLETED":
         return (
-          <span className="institution-badge institution-badge-approved">
+          <span className="inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-0.5 font-inter text-xs font-semibold border border-success-border bg-success-bg text-success">
             <CheckCircle2 className="w-3 h-3" /> {status === "ARRIVED" ? "Arrived" : "Completed"}
           </span>
         );
       case "REJECTED":
         return (
-          <span className="institution-badge institution-badge-rejected">
+          <span className="inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-0.5 font-inter text-xs font-semibold border border-danger-border bg-danger-bg text-danger">
             <XCircle className="w-3 h-3" /> Rejected
           </span>
         );
@@ -92,51 +94,51 @@ const InstitutionDashboardPage = async () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-2">
       {/* Header matching Admin Header */}
-      <div className="institution-header">
+      <div className="mt-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="institution-title">
+          <h1 className="font-poppins text-[22px] font-medium tracking-tight text-on-surface md:text-[26px]">
             Welcome, {session?.user?.name || "Institution"}!
           </h1>
-          <p className="institution-subtitle">
+          <p className="font-inter text-sm text-text-muted md:text-[15px]">
             Welcome back to the Cheerity Dashboard Social Institution.
           </p>
         </div>
       </div>
 
       {/* 4 Stat Cards Grid */}
-      <div className="institution-stats-grid">
+      <div className="my-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {/* 1. Total Campaigns Uploaded */}
-        <div className="institution-stat-card">
-          <div className="institution-stat-header">
-            <span className="institution-stat-label">Total Campaigns</span>
+        <div className="flex flex-col justify-between gap-1 rounded-sm border border-card-border bg-surface px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-inter text-[11px] font-medium uppercase tracking-wide text-text-muted">Total Campaigns</span>
           </div>
-          <div className="institution-stat-value">{totalUploaded}</div>
+          <div className="font-poppins text-2xl font-extrabold leading-tight tracking-tight text-text-main">{totalUploaded}</div>
         </div>
 
         {/* 2. Today Requests */}
-        <div className="institution-stat-card">
-          <div className="institution-stat-header">
-            <span className="institution-stat-label">Today Requests</span>
+        <div className="flex flex-col justify-between gap-1 rounded-sm border border-card-border bg-surface px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-inter text-[11px] font-medium uppercase tracking-wide text-text-muted">Today Requests</span>
           </div>
-          <div className="institution-stat-value">{todayRequests}</div>
+          <div className="font-poppins text-2xl font-extrabold leading-tight tracking-tight text-text-main">{todayRequests}</div>
         </div>
 
         {/* 3. Total Requests Received */}
-        <div className="institution-stat-card">
-          <div className="institution-stat-header">
-            <span className="institution-stat-label">Total Requests</span>
+        <div className="flex flex-col justify-between gap-1 rounded-sm border border-card-border bg-surface px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-inter text-[11px] font-medium uppercase tracking-wide text-text-muted">Total Requests</span>
           </div>
-          <div className="institution-stat-value">{totalDonationsCount}</div>
+          <div className="font-poppins text-2xl font-extrabold leading-tight tracking-tight text-text-main">{totalDonationsCount}</div>
         </div>
 
         {/* 4. Total Items Collected */}
-        <div className="institution-stat-card">
-          <div className="institution-stat-header">
-            <span className="institution-stat-label">Items Collected</span>
+        <div className="flex flex-col justify-between gap-1 rounded-sm border border-card-border bg-surface px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-inter text-[11px] font-medium uppercase tracking-wide text-text-muted">Items Collected</span>
           </div>
-          <div className="institution-stat-value">{totalCollected}</div>
+          <div className="font-poppins text-2xl font-extrabold leading-tight tracking-tight text-text-main">{totalCollected}</div>
         </div>
       </div>
 
@@ -161,11 +163,11 @@ const InstitutionDashboardPage = async () => {
               subtitle="Top donor cities"
             />
           ) : (
-            <div className="chart-card">
-              <div className="chart-header">
+            <div className="mb-4 flex min-h-[400px] w-full flex-col rounded-sm border border-card-border bg-surface p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+              <div className="flex flex-col gap-2 border-b border-card-border pb-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h2 className="chart-title">Donor Locations</h2>
-                  <p className="chart-subtitle">Top cities</p>
+                  <h2 className="font-poppins text-lg font-medium text-text-main">Donor Locations</h2>
+                  <p className="mt-1 font-inter text-xs text-text-muted">Top cities</p>
                 </div>
               </div>
               <div className="flex items-center justify-center h-80 text-gray-400">
@@ -177,9 +179,9 @@ const InstitutionDashboardPage = async () => {
       </div>
 
       {/* Recent Donation Requests Table */}
-      <div className="institution-table-card">
-        <div className="institution-table-header">
-          <h2 className="institution-table-title">
+      <div className="relative flex flex-col px-8 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)] md:px-32">
+        <div className="flex flex-col border-b border-card-border sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="mb-4 font-poppins text-lg font-medium text-text-main">
             Recent Donation Requests
           </h2>
 
@@ -193,67 +195,67 @@ const InstitutionDashboardPage = async () => {
         </div>
 
         {latestFiveRequests.length === 0 ? (
-        <div 
-          className="flex flex-col items-center justify-center text-center gap-2 w-full"
-          style={{ minHeight: "150px" }} 
-        >
-          <p className="font-semibold text-sm text-gray-700">
-            All institutional applications have completed review.
-          </p>
-          <p className="text-xs text-gray-400">
-            There are no donation request at this time.
-          </p>
-        </div>
+          <div
+            className="flex flex-col items-center justify-center text-center gap-2 w-full"
+            style={{ minHeight: "150px" }}
+          >
+            <p className="font-semibold text-sm text-gray-700">
+              All institutional applications have completed review.
+            </p>
+            <p className="text-xs text-gray-400">
+              There are no donation request at this time.
+            </p>
+          </div>
         ) : (
-          <div className="institution-table-wrapper">
-            <table className="institution-table">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-left">
               <thead>
                 <tr>
-                  <th className="institution-table-th w-12 text-center">No</th>
-                  <th className="institution-table-th">Donor Name</th>
-                  <th className="institution-table-th">Campaign</th>
-                  <th className="institution-table-th text-center">Qty</th>
-                  <th className="institution-table-th">Delivery Method</th>
-                  <th className="institution-table-th">Request Date</th>
-                  <th className="institution-table-th">Status</th>
-                  <th className="institution-table-th text-center w-20">Action</th>
+                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4 w-12 text-center">No</th>
+                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4">Donor Name</th>
+                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4">Campaign</th>
+                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4 text-center">Qty</th>
+                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4">Delivery Method</th>
+                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4">Request Date</th>
+                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4">Status</th>
+                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4 text-center w-20">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {latestFiveRequests.map((record, idx) => (
-                  <tr key={record.id} className="institution-table-tr">
-                    <td className="institution-table-td text-center text-xs text-gray-500 font-medium">
+                  <tr key={record.id} className="transition-colors hover:bg-bg-light">
+                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-center text-xs text-gray-500 font-medium">
                       {idx + 1}
                     </td>
-                    <td className="institution-table-td font-bold">
+                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 font-bold">
                       {record.isAnonymous ? "Anonymous Donor" : record.donorName || "Donor"}
                     </td>
-                    <td className="institution-table-td font-medium text-gray-800">
+                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 font-medium text-gray-800">
                       {record.donationTitle || "Donation Item"}
                     </td>
-                    <td className="institution-table-td text-center font-bold text-green-900">
+                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-center font-bold text-green-900">
                       {record.quantity}
                     </td>
-                    <td className="institution-table-td text-xs text-gray-600">
+                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-xs text-gray-600">
                       {DELIVERY_METHOD_LABELS[record.deliveryMethod as keyof typeof DELIVERY_METHOD_LABELS] ||
                         record.deliveryMethod}
                     </td>
-                    <td className="institution-table-td text-xs text-gray-600 font-medium">
+                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-xs text-gray-600 font-medium">
                       {record.requestDate
                         ? new Date(record.requestDate).toLocaleDateString("id-ID", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          })
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })
                         : "-"}
                     </td>
-                    <td className="institution-table-td">
+                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4">
                       {getStatusBadge(record.status)}
                     </td>
-                    <td className="institution-table-td text-center">
+                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-center">
                       <Link
                         href="/institution/history"
-                        className="institution-table-icon-btn"
+                        className="inline-flex items-center justify-center bg-transparent p-1.5 text-text-muted shadow-none transition-colors hover:bg-transparent hover:text-primary-800"
                         title="Lihat di Riwayat"
                         aria-label="Lihat di Riwayat"
                       >

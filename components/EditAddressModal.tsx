@@ -67,8 +67,8 @@ export default function EditAddressModal({ isOpen, onClose }: EditAddressModalPr
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white w-full max-w-lg rounded-2xl p-6 sm:p-8 shadow-2xl border border-gray-100 relative animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="bg-white w-full max-w-lg rounded-2xl p-6 sm:p-8 shadow-2xl border border-gray-100 relative animate-in animate-fade-in zoom-in-95 duration-200">
         <button
           onClick={onClose}
           className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 p-1.5 rounded-full hover:bg-gray-100 transition-colors"
@@ -118,13 +118,13 @@ export default function EditAddressModal({ isOpen, onClose }: EditAddressModalPr
               onCityChange={(val) => setCity(val)}
             />
 
-            <div className="form-group">
-              <label className="form-label">Alamat Lengkap</label>
+            <div className="mb-5 flex flex-col gap-1.5">
+              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Alamat Lengkap</label>
               <textarea
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="Nama jalan, nomor rumah, RT/RW, kelurahan"
-                className="form-input min-h-[90px] py-2.5 resize-none text-sm"
+                className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-[11px] font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400 min-h-[90px] py-2.5 resize-none text-sm"
                 required
               />
             </div>
@@ -140,7 +140,7 @@ export default function EditAddressModal({ isOpen, onClose }: EditAddressModalPr
               </button>
               <button
                 type="submit"
-                className="btn-primary"
+                className="relative flex w-full items-center justify-center overflow-hidden rounded-sm bg-primary px-6 py-2 font-inter text-[15px] font-semibold text-white transition-all hover:bg-primary-dark disabled:opacity-50"
                 style={{ width: "auto", padding: "10px 24px" }}
                 disabled={loading}
               >

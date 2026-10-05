@@ -1,5 +1,13 @@
 import React from "react";
-import { Session } from "next-auth";
+
+interface Session {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+}
 
 interface AdminHeaderProps {
   session: Session | null;

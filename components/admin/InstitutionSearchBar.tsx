@@ -25,14 +25,14 @@ export default function InstitutionSearchBar() {
   );
 
   return (
-    <div className="admin-search-wrapper">
-      <Search className="admin-search-icon" />
+    <div className="relative flex min-w-[250px] max-w-[420px] items-center">
+      <Search className="pointer-events-none absolute left-2.5 h-[15px] w-[15px] shrink-0 text-text-muted" />
       <input
         type="text"
         placeholder="Search institution..."
         defaultValue={searchParams.get("q") ?? ""}
         onChange={(e) => handleSearch(e.target.value)}
-        className="admin-search-input"
+        className="w-full rounded-md border border-outline bg-bg-light py-2 pr-3 pl-8 font-inter text-[13px] text-text-main outline-none transition-all placeholder:text-text-muted focus:border-primary-800 focus:ring-2 focus:ring-primary-800/10"
       />
     </div>
   );

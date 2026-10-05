@@ -34,11 +34,11 @@ const DonationList: React.FC<DonationListProps> = ({
         {subtitle && <p className="section-subtitle">{subtitle}</p>}
       </div>
 
-      <div className="donation-grid">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {donations.map((donation, index) => (
           <div
             key={donation.id}
-            className={`fade-in stagger-${(index % 3) + 1}`}
+            className={`animate-fade-in stagger-${(index % 3) + 1}`}
           >
             <DonationCard {...donation} />
           </div>

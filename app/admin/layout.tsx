@@ -1,10 +1,13 @@
 import React from "react";
 import { redirect } from "next/navigation";
-import { auth } from "@/app/auth";
+import { getSession } from "@/lib/auth";
 import AdminNavbar from "@/components/admin/Navbar";
 
+import { headers } from "next/headers";
+
 const AdminLayout = async ({ children }: { children: React.ReactNode }) => {
-  const session = await auth();
+  const reqHeaders = await headers();
+  const session = await getSession(reqHeaders);
 
   if (!session?.user?.id) {
     redirect("/sign-in");
@@ -15,9 +18,9 @@ const AdminLayout = async ({ children }: { children: React.ReactNode }) => {
   }
 
   return (
-    <div className="admin-layout">
+    <div className="flex min-h-screen flex-col">
       <AdminNavbar session={session} />
-      <main className="admin-page-container">
+      <main className="mx-auto w-full max-w-330 px-8 pb-16 pt-28 md:px-32 md:pb-20">
         {children}
       </main>
     </div>

@@ -7,6 +7,10 @@ import {
   rejectDonationRequest,
   markOnProgress,
   markArrived,
+  markDonationComplete,
+  uploadDocumentationAndComplete,
+  rejectDonationFromProgress,
+  cancelDonation,
 } from "@/lib/actions/donation";
 import LocalImageUpload from "@/components/LocalImageUpload";
 import {
@@ -23,7 +27,7 @@ import { CATEGORY_LABELS, DELIVERY_METHOD_LABELS } from "@/constants";
 
 interface InstitutionHistoryRecord {
   id: string;
-  status: "PENDING" | "APPROVED" | "REJECTED" | "ON_PROGRESS" | "ARRIVED" | "COMPLETED";
+  status: "PENDING" | "APPROVED" | "REJECTED" | "ON_PROGRESS" | "WAITING_FOR_DOCUMENTATION" | "COMPLETED";
   donorName: string | null;
   isAnonymous: boolean;
   phoneNumber: string | null;
@@ -37,7 +41,9 @@ interface InstitutionHistoryRecord {
   requestDate: Date | null;
   approvalDate: Date | null;
   arrivalProofPhoto: string | null;
+  documentationPhoto: string | null;
   rejectionReason: string | null;
+  cancelReason: string | null;
   donationTitle: string;
   donationCategory: string;
 }
@@ -56,8 +62,17 @@ const InstitutionHistoryClient: React.FC<InstitutionHistoryClientProps> = ({
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
 
+  const [rejectingFromProgressId, setRejectingFromProgressId] = useState<string | null>(null);
+  const [rejectionFromProgressReason, setRejectionFromProgressReason] = useState("");
+
+  const [cancelId, setCancelId] = useState<string | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
+
   const [arrivingId, setArrivingId] = useState<string | null>(null);
   const [arrivalProofPhoto, setArrivalProofPhoto] = useState("");
+
+  const [documentationId, setDocumentationId] = useState<string | null>(null);
+  const [documentationPhoto, setDocumentationPhoto] = useState("");
 
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
@@ -66,7 +81,7 @@ const InstitutionHistoryClient: React.FC<InstitutionHistoryClientProps> = ({
     { key: "PENDING", label: "Pending Approval" },
     { key: "APPROVED", label: "Approved" },
     { key: "ON_PROGRESS", label: "On Progress" },
-    { key: "ARRIVED", label: "Arrived" },
+    { key: "WAITING_FOR_DOCUMENTATION", label: "Waiting for Documentation" },
     { key: "COMPLETED", label: "Completed" },
     { key: "REJECTED", label: "Rejected" },
   ];
@@ -117,20 +132,63 @@ const InstitutionHistoryClient: React.FC<InstitutionHistoryClientProps> = ({
     }
   };
 
+  const handleMarkDonationComplete = async (id: string) => {
+    setLoadingId(id);
+    const res = await markDonationComplete(id);
+    setLoadingId(null);
+    if (res.success) {
+      router.refresh();
+    }
+  };
+
+  const handleUploadDocumentationSubmit = async (id: string) => {
+    if (!documentationPhoto) return;
+    setLoadingId(id);
+    const res = await uploadDocumentationAndComplete(id, documentationPhoto);
+    setLoadingId(null);
+    setDocumentationId(null);
+    setDocumentationPhoto("");
+    if (res.success) {
+      router.refresh();
+    }
+  };
+
+  const handleRejectFromProgressSubmit = async (id: string) => {
+    setLoadingId(id);
+    const res = await rejectDonationFromProgress(id, institutionId, rejectionFromProgressReason);
+    setLoadingId(null);
+    setRejectingFromProgressId(null);
+    setRejectionFromProgressReason("");
+    if (res.success) {
+      router.refresh();
+    }
+  };
+
+  const handleCancelSubmit = async (id: string) => {
+    setLoadingId(id);
+    const res = await cancelDonation(id, cancelReason);
+    setLoadingId(null);
+    setCancelId(null);
+    setCancelReason("");
+    if (res.success) {
+      router.refresh();
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "PENDING":
-        return <span className="institution-badge institution-badge-pending flex items-center gap-1"><Clock className="w-3 h-3" /> Pending Approval</span>;
+        return <span className="inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-0.5 font-inter text-xs font-semibold border border-warning-border bg-warning-bg text-warning flex items-center gap-1"><Clock className="w-3 h-3" /> Pending Approval</span>;
       case "APPROVED":
-        return <span className="institution-badge institution-badge-approved flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Approved</span>;
+        return <span className="inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-0.5 font-inter text-xs font-semibold border border-success-border bg-success-bg text-success flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Approved</span>;
       case "ON_PROGRESS":
         return <span className="px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800 flex items-center gap-1"><Truck className="w-3 h-3" /> On Progress</span>;
-      case "ARRIVED":
-        return <span className="institution-badge institution-badge-approved flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Arrived</span>;
+      case "WAITING_FOR_DOCUMENTATION":
+        return <span className="px-3 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800 flex items-center gap-1"><Clock className="w-3 h-3" /> Waiting for Documentation</span>;
       case "COMPLETED":
-        return <span className="institution-badge institution-badge-approved flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Completed</span>;
+        return <span className="inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-0.5 font-inter text-xs font-semibold border border-success-border bg-success-bg text-success flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Completed</span>;
       case "REJECTED":
-        return <span className="institution-badge institution-badge-rejected flex items-center gap-1"><XCircle className="w-3 h-3" /> Rejected</span>;
+        return <span className="inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-0.5 font-inter text-xs font-semibold border border-danger-border bg-danger-bg text-danger flex items-center gap-1"><XCircle className="w-3 h-3" /> Rejected</span>;
       default:
         return null;
     }
@@ -138,22 +196,22 @@ const InstitutionHistoryClient: React.FC<InstitutionHistoryClientProps> = ({
 
   return (
     <div className="space-y-8">
-      <div className="institution-header">
+      <div className="mt-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="institution-title">Donation request</h1>
-          <p className="institution-subtitle">
+          <h1 className="font-poppins text-[22px] font-medium tracking-tight text-on-surface md:text-[26px]">Donation request</h1>
+          <p className="font-inter text-sm text-text-muted md:text-[15px]">
             Review, approve, reject, and manage incoming requests.
           </p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="admin-tabs">
+      <div className="mb-6 mt-4 flex flex-1 justify-start gap-4 overflow-x-auto border-b border-outline sm:gap-6">
         {tabs.map((t) => (
           <button
             key={t.key}
             onClick={() => setActiveTab(t.key)}
-            className={`admin-tab ${activeTab === t.key ? "active" : ""}`}
+            className={`shrink-0 border-b-2 border-transparent pb-3 font-inter text-sm font-semibold text-text-muted no-underline whitespace-nowrap transition-colors hover:text-primary-800 data-[active=true]:border-primary-800 data-[active=true]:text-primary-800 ${activeTab === t.key ? "active" : ""}`}
           >
             {t.label}
           </button>
@@ -162,7 +220,7 @@ const InstitutionHistoryClient: React.FC<InstitutionHistoryClientProps> = ({
 
       {/* Requests List */}
       {filteredRecords.length === 0 ? (
-        <div className="institution-table-card">
+        <div className="relative flex flex-col px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)] sm:px-6">
           <div className="py-16 text-center text-gray-400 space-y-2">
             <p className="font-semibold text-sm text-gray-700">
               No donation requests in this category.
@@ -174,7 +232,7 @@ const InstitutionHistoryClient: React.FC<InstitutionHistoryClientProps> = ({
           {filteredRecords.map((r) => (
             <div
               key={r.id}
-              className="institution-table-card"
+              className="relative flex flex-col px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)] sm:px-6"
             >
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-4">
                 <div>
@@ -246,6 +304,23 @@ const InstitutionHistoryClient: React.FC<InstitutionHistoryClientProps> = ({
                 </p>
               )}
 
+              {/* Cancel reason if cancelled */}
+              {r.status === "REJECTED" && r.cancelReason && (
+                <p className="text-xs text-red-700 bg-red-50 p-3 rounded-lg">
+                  <strong>Cancel Reason:</strong> {r.cancelReason}
+                </p>
+              )}
+
+              {/* Documentation Photo if Waiting for Documentation or Completed */}
+              {r.documentationPhoto && (
+                <div className="p-4 bg-blue-50 rounded-xl space-y-2">
+                  <p className="text-xs font-bold text-blue-900 flex items-center gap-1.5">
+                    <FileImage className="w-4 h-4" /> Documentation Photo:
+                  </p>
+                  <img src={r.documentationPhoto} alt="Documentation" className="max-h-48 rounded-lg object-cover border border-blue-200" />
+                </div>
+              )}
+
               {/* Action Buttons depending on status */}
               <div className="pt-2 flex flex-wrap gap-3 justify-end">
                 {/* Status: PENDING -> Approve or Reject */}
@@ -268,24 +343,54 @@ const InstitutionHistoryClient: React.FC<InstitutionHistoryClientProps> = ({
                   </>
                 )}
 
-                {/* Status: APPROVED -> Mark On Progress */}
+                {/* Status: APPROVED -> Mark On Progress or Cancel */}
                 {r.status === "APPROVED" && (
-                  <button
-                    onClick={() => handleMarkOnProgress(r.id)}
-                    disabled={loadingId === r.id}
-                    className="px-5 py-2 bg-purple-700 hover:bg-purple-800 text-white font-semibold text-xs rounded-xl transition-colors disabled:opacity-50"
-                  >
-                    {loadingId === r.id ? "Updating..." : "Start Delivery (On Progress)"}
-                  </button>
+                  <>
+                    <button
+                      onClick={() => handleMarkOnProgress(r.id)}
+                      disabled={loadingId === r.id}
+                      className="px-5 py-2 bg-purple-700 hover:bg-purple-800 text-white font-semibold text-xs rounded-xl transition-colors disabled:opacity-50"
+                    >
+                      {loadingId === r.id ? "Updating..." : "Start Delivery (On Progress)"}
+                    </button>
+                    <button
+                      onClick={() => setCancelId(r.id)}
+                      disabled={loadingId === r.id}
+                      className="px-5 py-2 bg-red-100 hover:bg-red-200 text-red-800 font-semibold text-xs rounded-xl transition-colors disabled:opacity-50"
+                    >
+                      Cancel Donation
+                    </button>
+                  </>
                 )}
 
-                {/* Status: ON_PROGRESS or APPROVED -> Upload Arrival Proof & Mark Arrived */}
-                {(r.status === "ON_PROGRESS" || r.status === "APPROVED") && (
+                {/* Status: ON_PROGRESS -> Donation Complete or Reject */}
+                {r.status === "ON_PROGRESS" && (
+                  <>
+                    <button
+                      onClick={() => handleMarkDonationComplete(r.id)}
+                      disabled={loadingId === r.id}
+                      className="px-5 py-2 bg-green-800 hover:bg-green-900 text-white font-semibold text-xs rounded-xl transition-colors disabled:opacity-50"
+                    >
+                      {loadingId === r.id ? "Updating..." : "Donation Complete"}
+                    </button>
+                    <button
+                      onClick={() => setRejectingFromProgressId(r.id)}
+                      disabled={loadingId === r.id}
+                      className="px-5 py-2 bg-red-100 hover:bg-red-200 text-red-800 font-semibold text-xs rounded-xl transition-colors disabled:opacity-50"
+                    >
+                      Reject Donation
+                    </button>
+                  </>
+                )}
+
+                {/* Status: WAITING_FOR_DOCUMENTATION -> Upload Documentation */}
+                {r.status === "WAITING_FOR_DOCUMENTATION" && (
                   <button
-                    onClick={() => setArrivingId(r.id)}
-                    className="px-5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs rounded-xl transition-colors"
+                    onClick={() => setDocumentationId(r.id)}
+                    disabled={loadingId === r.id}
+                    className="px-5 py-2 bg-blue-700 hover:bg-blue-800 text-white font-semibold text-xs rounded-xl transition-colors disabled:opacity-50"
                   >
-                    Mark Goods Arrived (Upload Proof)
+                    Upload Documentation
                   </button>
                 )}
               </div>
@@ -297,11 +402,11 @@ const InstitutionHistoryClient: React.FC<InstitutionHistoryClientProps> = ({
       {/* Reject Reason Modal */}
       {rejectingId && (
         <>
-          <div className="modal-backdrop" onClick={() => setRejectingId(null)} />
-          <div className="modal-container max-w-md">
-            <div className="modal-header">
-              <h2 className="modal-title">Reject Donation Request</h2>
-              <button onClick={() => setRejectingId(null)} className="modal-close-btn">✕</button>
+          <div className="fixed inset-0 z-[999] bg-black/50 backdrop-blur-[4px]" onClick={() => setRejectingId(null)} />
+          <div className="fixed top-1/2 left-1/2 z-[1000] max-h-[90vh] w-[90%] max-w-[600px] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl bg-white p-5 shadow-xl sm:p-7 max-w-md">
+            <div className="mb-5 flex items-center justify-between border-b border-outline pb-3">
+              <h2 className="text-lg font-bold sm:text-xl">Reject Donation Request</h2>
+              <button onClick={() => setRejectingId(null)} className="cursor-pointer border-none bg-transparent text-lg text-on-surface-variant">✕</button>
             </div>
 
             <div className="space-y-4">
@@ -313,12 +418,13 @@ const InstitutionHistoryClient: React.FC<InstitutionHistoryClientProps> = ({
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
                 placeholder="e.g. Items requested do not match our current needs..."
-                className="form-input form-textarea"
+                className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-[11px] font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400 min-h-20 resize-none"
               />
               <div className="flex gap-3 justify-end pt-2">
                 <button
                   onClick={() => setRejectingId(null)}
-                  className="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-xl"
+                  className="inline-flex w-auto items-center justify-center gap-2 rounded-sm border border-outline bg-white px-6 py-2 font-inter text-[15px] font-semibold text-on-surface transition-all hover:bg-bg-light disabled:opacity-50"
+                  style={{ padding: "10px 24px" }}
                 >
                   Cancel
                 </button>
@@ -338,11 +444,11 @@ const InstitutionHistoryClient: React.FC<InstitutionHistoryClientProps> = ({
       {/* Arrived Proof Modal */}
       {arrivingId && (
         <>
-          <div className="modal-backdrop" onClick={() => setArrivingId(null)} />
-          <div className="modal-container max-w-md">
-            <div className="modal-header">
-              <h2 className="modal-title">Confirm Goods Arrived</h2>
-              <button onClick={() => setArrivingId(null)} className="modal-close-btn">✕</button>
+          <div className="fixed inset-0 z-[999] bg-black/50 backdrop-blur-[4px]" onClick={() => setArrivingId(null)} />
+          <div className="fixed top-1/2 left-1/2 z-[1000] max-h-[90vh] w-[90%] max-w-[600px] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl bg-white p-5 shadow-xl sm:p-7 max-w-md">
+            <div className="mb-5 flex items-center justify-between border-b border-outline pb-3">
+              <h2 className="text-lg font-bold sm:text-xl">Confirm Goods Arrived</h2>
+              <button onClick={() => setArrivingId(null)} className="cursor-pointer border-none bg-transparent text-lg text-on-surface-variant">✕</button>
             </div>
 
             <div className="space-y-4">
@@ -358,7 +464,8 @@ const InstitutionHistoryClient: React.FC<InstitutionHistoryClientProps> = ({
               <div className="flex gap-3 justify-end pt-2">
                 <button
                   onClick={() => setArrivingId(null)}
-                  className="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-xl"
+                  className="inline-flex w-auto items-center justify-center gap-2 rounded-sm border border-outline bg-white px-6 py-2 font-inter text-[15px] font-semibold text-on-surface transition-all hover:bg-bg-light disabled:opacity-50"
+                  style={{ padding: "10px 24px" }}
                 >
                   Cancel
                 </button>
@@ -368,6 +475,131 @@ const InstitutionHistoryClient: React.FC<InstitutionHistoryClientProps> = ({
                   className="px-5 py-2 bg-green-800 hover:bg-green-900 text-white text-xs font-bold rounded-xl transition-colors disabled:opacity-50"
                 >
                   Submit Proof & Mark Arrived
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Reject from Progress Modal */}
+      {rejectingFromProgressId && (
+        <>
+          <div className="fixed inset-0 z-[999] bg-black/50 backdrop-blur-[4px]" onClick={() => setRejectingFromProgressId(null)} />
+          <div className="fixed top-1/2 left-1/2 z-[1000] max-h-[90vh] w-[90%] max-w-[600px] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl bg-white p-5 shadow-xl sm:p-7 max-w-md">
+            <div className="mb-5 flex items-center justify-between border-b border-outline pb-3">
+              <h2 className="text-lg font-bold sm:text-xl">Reject Donation</h2>
+              <button onClick={() => setRejectingFromProgressId(null)} className="cursor-pointer border-none bg-transparent text-lg text-on-surface-variant">✕</button>
+            </div>
+
+            <div className="space-y-4">
+              <p className="text-xs text-gray-600">
+                Please state the reason for rejecting this donation. An email notification will be sent to the donor.
+              </p>
+              <textarea
+                rows={4}
+                value={rejectionFromProgressReason}
+                onChange={(e) => setRejectionFromProgressReason(e.target.value)}
+                placeholder="e.g. Items do not match requirements..."
+                className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-[11px] font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400 min-h-20 resize-none"
+              />
+              <div className="flex gap-3 justify-end pt-2">
+                <button
+                  onClick={() => setRejectingFromProgressId(null)}
+                  className="inline-flex w-auto items-center justify-center gap-2 rounded-sm border border-outline bg-white px-6 py-2 font-inter text-[15px] font-semibold text-on-surface transition-all hover:bg-bg-light disabled:opacity-50"
+                  style={{ padding: "10px 24px" }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleRejectFromProgressSubmit(rejectingFromProgressId)}
+                  disabled={loadingId === rejectingFromProgressId}
+                  className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl transition-colors disabled:opacity-50"
+                >
+                  Confirm Reject
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Cancel Donation Modal */}
+      {cancelId && (
+        <>
+          <div className="fixed inset-0 z-[999] bg-black/50 backdrop-blur-[4px]" onClick={() => setCancelId(null)} />
+          <div className="fixed top-1/2 left-1/2 z-[1000] max-h-[90vh] w-[90%] max-w-[600px] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl bg-white p-5 shadow-xl sm:p-7 max-w-md">
+            <div className="mb-5 flex items-center justify-between border-b border-outline pb-3">
+              <h2 className="text-lg font-bold sm:text-xl">Cancel Donation</h2>
+              <button onClick={() => setCancelId(null)} className="cursor-pointer border-none bg-transparent text-lg text-on-surface-variant">✕</button>
+            </div>
+
+            <div className="space-y-4">
+              <p className="text-xs text-gray-600">
+                Please state the reason for cancelling this donation. An email notification will be sent to the donor.
+              </p>
+              <textarea
+                rows={4}
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                placeholder="e.g. No longer able to accept this donation..."
+                className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-[11px] font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400 min-h-20 resize-none"
+              />
+              <div className="flex gap-3 justify-end pt-2">
+                <button
+                  onClick={() => setCancelId(null)}
+                  className="inline-flex w-auto items-center justify-center gap-2 rounded-sm border border-outline bg-white px-6 py-2 font-inter text-[15px] font-semibold text-on-surface transition-all hover:bg-bg-light disabled:opacity-50"
+                  style={{ padding: "10px 24px" }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleCancelSubmit(cancelId)}
+                  disabled={loadingId === cancelId}
+                  className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl transition-colors disabled:opacity-50"
+                >
+                  Confirm Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Upload Documentation Modal */}
+      {documentationId && (
+        <>
+          <div className="fixed inset-0 z-[999] bg-black/50 backdrop-blur-[4px]" onClick={() => setDocumentationId(null)} />
+          <div className="fixed top-1/2 left-1/2 z-[1000] max-h-[90vh] w-[90%] max-w-[600px] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl bg-white p-5 shadow-xl sm:p-7 max-w-md">
+            <div className="mb-5 flex items-center justify-between border-b border-outline pb-3">
+              <h2 className="text-lg font-bold sm:text-xl">Upload Documentation</h2>
+              <button onClick={() => setDocumentationId(null)} className="cursor-pointer border-none bg-transparent text-lg text-on-surface-variant">✕</button>
+            </div>
+
+            <div className="space-y-4">
+              <p className="text-xs text-gray-600">
+                Upload the required documentation for this donation. The status will automatically change to Completed after submission.
+              </p>
+              <LocalImageUpload
+                value={documentationPhoto}
+                onChange={(url) => setDocumentationPhoto(url)}
+                folder="documentation"
+                placeholder="Upload documentation photo *"
+              />
+              <div className="flex gap-3 justify-end pt-2">
+                <button
+                  onClick={() => setDocumentationId(null)}
+                  className="inline-flex w-auto items-center justify-center gap-2 rounded-sm border border-outline bg-white px-6 py-2 font-inter text-[15px] font-semibold text-on-surface transition-all hover:bg-bg-light disabled:opacity-50"
+                  style={{ padding: "10px 24px" }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleUploadDocumentationSubmit(documentationId)}
+                  disabled={!documentationPhoto || loadingId === documentationId}
+                  className="px-5 py-2 bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold rounded-xl transition-colors disabled:opacity-50"
+                >
+                  Submit & Complete
                 </button>
               </div>
             </div>

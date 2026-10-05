@@ -3,10 +3,18 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
-import { Session } from "next-auth";
+import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, FolderPlus, History, LogOut } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
+
+interface Session {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+}
 
 interface InstitutionSidebarProps {
   session: Session | null;
@@ -14,6 +22,7 @@ interface InstitutionSidebarProps {
 
 const InstitutionSidebar: React.FC<InstitutionSidebarProps> = ({ session }) => {
   const pathname = usePathname();
+  const router = useRouter();
 
   const navItems = [
     { label: "Dashboard", href: "/institution", icon: LayoutDashboard },
@@ -74,7 +83,16 @@ const InstitutionSidebar: React.FC<InstitutionSidebarProps> = ({ session }) => {
         </div>
 
         <button
-          onClick={() => signOut({ callbackUrl: "/sign-in" })}
+          onClick={async () => {
+            await authClient.signOut({
+              fetchOptions: {
+                onSuccess: () => {
+                  router.push("/sign-in");
+                  router.refresh();
+                },
+              },
+            });
+          }}
           className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-100 hover:bg-red-50 hover:text-red-700 text-gray-700 text-sm font-medium rounded-xl transition-colors"
         >
           <LogOut className="w-4 h-4" />

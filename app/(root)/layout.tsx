@@ -1,30 +1,34 @@
 import React from "react";
 import Image from "next/image";
 import Header from "@/components/Header";
-import { auth } from "@/app/auth";
+import { getSession } from "@/lib/auth";
+
+import { headers } from "next/headers";
 
 const Layout = async ({ children }: { children: React.ReactNode }) => {
-  const session = await auth();
+  const reqHeaders = await headers();
+  const session = await getSession(reqHeaders);
 
   return (
-    <>
+    <div className="flex min-h-screen flex-col">
       <Header session={session} />
-      <main className="page-container">{children}</main>
+      <main className="w-full flex-1 pt-14">{children}</main>
 
-      {/* Footer */}
-      <footer className="site-footer">
-        <div className="site-footer-inner">
-          <div className="site-footer-logo">
+      <footer className="bg-primary px-8 py-9 text-white md:px-32 md:pt-9 md:pb-11">
+        <div className="mx-auto flex max-w-330 flex-col items-start gap-3 text-left">
+          <div className="[&_img]:brightness-0 [&_img]:invert">
             <Image src="/assets/logo.png" alt="Cheerity" width={120} height={30} />
-            <p className="site-footer-tagline">Cheerity bring Cheer</p>
+            <p className="mt-3 font-poppins text-sm font-light text-green-200">
+              Cheerity bring Cheer
+            </p>
           </div>
-          <div className="horizontal-line"></div>
-          <p className="site-footer-copy">
+          <div className="w-full border-t-2 border-surface" />
+          <p className="mt-2 text-[13px] text-green-100">
             &copy; 2026 Cheerity &mdash; All rights reserved
           </p>
         </div>
       </footer>
-    </>
+    </div>
   );
 };
 

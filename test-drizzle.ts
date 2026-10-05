@@ -1,0 +1,1 @@
+import { db } from './app/database/drizzle'; import { getUserDonationHistory } from './lib/actions/donation'; async function test() { try { const res = await getUserDonationHistory('4ecbb8de-bc36-4bdb-a5d4-43ff8ca73ac1'); console.log('SUCCESS'); } catch(e) { console.error(e); } } test();

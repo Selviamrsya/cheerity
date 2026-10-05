@@ -14,6 +14,9 @@ async function run() {
     await sql`DROP TABLE IF EXISTS donations CASCADE;`;
     await sql`DROP TABLE IF EXISTS institutions CASCADE;`;
     await sql`DROP TABLE IF EXISTS notifications CASCADE;`;
+    await sql`DROP TABLE IF EXISTS sessions CASCADE;`;
+    await sql`DROP TABLE IF EXISTS account CASCADE;`;
+    await sql`DROP TABLE IF EXISTS verification CASCADE;`;
     await sql`DROP TABLE IF EXISTS users CASCADE;`;
 
     await sql`DROP TYPE IF EXISTS donation_campaign_status CASCADE;`;
@@ -48,7 +51,11 @@ async function run() {
         "longitude" double precision,
         "role" "role" DEFAULT 'USER',
         "status" "status" DEFAULT 'APPROVED',
-        "created_at" timestamp with time zone DEFAULT now()
+        "created_at" timestamp with time zone DEFAULT now(),
+        "name" varchar(255),
+        "email_verified" boolean DEFAULT false,
+        "image" text,
+        "updated_at" timestamp with time zone DEFAULT now()
       );
     `;
 
@@ -131,6 +138,44 @@ async function run() {
         "type" varchar(50) NOT NULL,
         "is_read" boolean DEFAULT false NOT NULL,
         "related_id" uuid,
+        "created_at" timestamp with time zone DEFAULT now()
+      );
+    `;
+
+    // BetterAuth tables
+    await sql`
+      CREATE TABLE "sessions" (
+        "id" text PRIMARY KEY NOT NULL,
+        "user_id" uuid NOT NULL REFERENCES "users"("id"),
+        "expires_at" timestamp NOT NULL,
+        "ip_address" text,
+        "user_agent" text,
+        "created_at" timestamp with time zone DEFAULT now(),
+        "updated_at" timestamp with time zone DEFAULT now(),
+        "token" text
+      );
+    `;
+
+    await sql`
+      CREATE TABLE "account" (
+        "id" text PRIMARY KEY NOT NULL,
+        "user_id" uuid NOT NULL REFERENCES "users"("id"),
+        "account_id" text NOT NULL,
+        "provider_id" text NOT NULL,
+        "access_token" text,
+        "refresh_token" text,
+        "id_token" text,
+        "expires_at" timestamp,
+        "password" text
+      );
+    `;
+
+    await sql`
+      CREATE TABLE "verification" (
+        "id" text PRIMARY KEY NOT NULL,
+        "identifier" text NOT NULL,
+        "value" text NOT NULL,
+        "expires_at" timestamp NOT NULL,
         "created_at" timestamp with time zone DEFAULT now()
       );
     `;

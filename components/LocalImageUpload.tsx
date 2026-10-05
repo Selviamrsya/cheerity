@@ -62,7 +62,7 @@ const LocalImageUpload: React.FC<LocalImageUploadProps> = ({
   return (
     <div>
       <div
-        className="upload-area"
+        className="rounded-sm border-2 border-dashed border-gray-300 bg-gray-50 p-8 text-center transition-all hover:border-primary hover:bg-primary-50 sm:p-16"
         onClick={() => !isUploading && inputRef.current?.click()}
         style={{ cursor: isUploading ? "not-allowed" : "pointer" }}
       >
@@ -75,32 +75,32 @@ const LocalImageUpload: React.FC<LocalImageUploadProps> = ({
         />
 
         {value ? (
-          <div className="upload-preview">
-            <img src={value} alt="Preview" className="upload-preview-img" />
+          <div className="relative max-h-60 w-full overflow-hidden rounded-md">
+            <img src={value} alt="Preview" className="h-60 w-full object-cover" />
             <button
               type="button"
               onClick={handleRemove}
-              className="upload-remove-btn"
+              className="absolute top-2 right-2 cursor-pointer rounded-full border-none bg-black/60 p-1.5 text-white transition-colors hover:bg-red-600/80"
               aria-label="Remove image"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
         ) : isUploading ? (
-          <div className="upload-placeholder">
+          <div className="flex flex-col items-center gap-2">
             <Loader2 className="h-8 w-8 animate-spin" style={{ color: "var(--color-primary)" }} />
-            <p className="upload-placeholder-text">Uploading...</p>
+            <p className="text-sm font-medium text-on-surface">Uploading...</p>
           </div>
         ) : (
-          <div className="upload-placeholder">
+          <div className="flex flex-col items-center gap-2">
             <ImagePlus className="h-8 w-8" style={{ color: "var(--color-on-surface-variant)" }} />
-            <p className="upload-placeholder-text">{placeholder}</p>
-            <p className="upload-placeholder-hint">JPEG, PNG, WebP up to 5MB</p>
+            <p className="text-sm font-medium text-on-surface">{placeholder}</p>
+            <p className="text-xs text-gray-400">JPEG, PNG, WebP up to 5MB</p>
           </div>
         )}
       </div>
       {(uploadError || error) && (
-        <p className="form-error">{uploadError || error}</p>
+        <p className="mt-0.5 text-xs text-red-600">{uploadError || error}</p>
       )}
     </div>
   );

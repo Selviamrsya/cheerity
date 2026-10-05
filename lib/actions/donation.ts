@@ -7,8 +7,10 @@ import {
   donateRecords,
   institutions,
   notifications,
+  users,
 } from "@/app/database/schema";
 import { revalidatePath } from "next/cache";
+import { sendEmail, emailTemplates } from "@/lib/email";
 
 // Create a donation campaign (institution only)
 export const createDonation = async (params: {
@@ -99,7 +101,7 @@ export const getDonationsWithDistance = async (params: {
         category ? eq(donations.category, category) : undefined
       )
     )
-    .orderBy(hasLocation ? sql`distance_km ASC NULLS LAST` : desc(donations.createdAt))
+    .orderBy(hasLocation ? distanceExpr : desc(donations.createdAt))
     .limit(limit);
 
   if (maxDistanceKm && hasLocation) {
@@ -230,6 +232,20 @@ export const approveDonationRequest = async (recordId: string, _institutionId?: 
       return { success: false, error: "Request not found or already processed." };
     }
 
+    // Get user email and donation info
+    const [userAndDonation] = await db
+      .select({
+        userEmail: users.email,
+        donationTitle: donations.title,
+        institutionName: institutions.institutionName,
+      })
+      .from(users)
+      .innerJoin(donateRecords, eq(users.id, donateRecords.userId))
+      .innerJoin(donations, eq(donateRecords.donationId, donations.id))
+      .innerJoin(institutions, eq(donations.institutionId, institutions.id))
+      .where(eq(donateRecords.id, recordId))
+      .limit(1);
+
     await db
       .update(donateRecords)
       .set({
@@ -246,6 +262,15 @@ export const approveDonationRequest = async (recordId: string, _institutionId?: 
       type: "REQUEST_APPROVED",
       relatedId: recordId,
     });
+
+    // Send email to donatur
+    if (userAndDonation?.userEmail) {
+      const template = emailTemplates.donationRequestAccepted(
+        userAndDonation.donationTitle,
+        userAndDonation.institutionName
+      );
+      await sendEmail({ to: userAndDonation.userEmail, ...template });
+    }
 
     revalidatePath("/institution/history");
     return { success: true };
@@ -272,6 +297,18 @@ export const rejectDonationRequest = async (
       return { success: false, error: "Request not found or already processed." };
     }
 
+    // Get user email and donation info
+    const [userAndDonation] = await db
+      .select({
+        userEmail: users.email,
+        donationTitle: donations.title,
+      })
+      .from(users)
+      .innerJoin(donateRecords, eq(users.id, donateRecords.userId))
+      .innerJoin(donations, eq(donateRecords.donationId, donations.id))
+      .where(eq(donateRecords.id, recordId))
+      .limit(1);
+
     await db
       .update(donateRecords)
       .set({
@@ -291,6 +328,15 @@ export const rejectDonationRequest = async (
       type: "REQUEST_REJECTED",
       relatedId: recordId,
     });
+
+    // Send email to donatur
+    if (userAndDonation?.userEmail) {
+      const template = emailTemplates.donationRequestRejected(
+        userAndDonation.donationTitle,
+        reason
+      );
+      await sendEmail({ to: userAndDonation.userEmail, ...template });
+    }
 
     revalidatePath("/institution/history");
     return { success: true };
@@ -327,10 +373,24 @@ export const markArrived = async (recordId: string, proofPhoto: string) => {
 
     if (!record) return { success: false, error: "Record not found." };
 
+    // Get user email and donation info
+    const [userAndDonation] = await db
+      .select({
+        userEmail: users.email,
+        donationTitle: donations.title,
+        institutionName: institutions.institutionName,
+      })
+      .from(users)
+      .innerJoin(donateRecords, eq(users.id, donateRecords.userId))
+      .innerJoin(donations, eq(donateRecords.donationId, donations.id))
+      .innerJoin(institutions, eq(donations.institutionId, institutions.id))
+      .where(eq(donateRecords.id, recordId))
+      .limit(1);
+
     await db
       .update(donateRecords)
       .set({
-        status: "ARRIVED",
+        status: "WAITING_FOR_DOCUMENTATION",
         arrivalProofPhoto: proofPhoto,
         arrivedDate: new Date(),
       })
@@ -362,12 +422,301 @@ export const markArrived = async (recordId: string, proofPhoto: string) => {
       relatedId: recordId,
     });
 
+    // Send email to donatur
+    if (userAndDonation?.userEmail) {
+      const template = emailTemplates.donationArrived(
+        userAndDonation.donationTitle,
+        userAndDonation.institutionName
+      );
+      await sendEmail({ to: userAndDonation.userEmail, ...template });
+    }
+
     revalidatePath("/institution/history");
     revalidatePath("/history");
     return { success: true };
   } catch (error) {
     console.error("Mark arrived error:", error);
     return { success: false, error: "Failed to update status." };
+  }
+};
+
+// Institution marks donation as complete (ON_PROGRESS -> WAITING_FOR_DOCUMENTATION)
+export const markDonationComplete = async (recordId: string) => {
+  try {
+    const [record] = await db
+      .select({ userId: donateRecords.userId, status: donateRecords.status })
+      .from(donateRecords)
+      .where(eq(donateRecords.id, recordId))
+      .limit(1);
+
+    if (!record || record.status !== "ON_PROGRESS") {
+      return { success: false, error: "Record not found or invalid status." };
+    }
+
+    await db
+      .update(donateRecords)
+      .set({ status: "WAITING_FOR_DOCUMENTATION" })
+      .where(eq(donateRecords.id, recordId));
+
+    await db.insert(notifications).values({
+      recipientId: record.userId,
+      recipientType: "USER",
+      title: "Donation Complete - Upload Documentation",
+      message: "Your donation has been marked as complete. Please upload the required documentation.",
+      type: "ARRIVED",
+      relatedId: recordId,
+    });
+
+    revalidatePath("/institution/history");
+    revalidatePath("/history");
+    return { success: true };
+  } catch (error) {
+    console.error("Mark donation complete error:", error);
+    return { success: false, error: "Failed to update status." };
+  }
+};
+
+// Institution uploads documentation and completes donation (WAITING_FOR_DOCUMENTATION -> COMPLETED)
+export const uploadDocumentationAndComplete = async (recordId: string, documentationPhoto: string) => {
+  try {
+    const [record] = await db
+      .select({
+        donationId: donateRecords.donationId,
+        quantity: donateRecords.quantity,
+        userId: donateRecords.userId,
+        status: donateRecords.status,
+      })
+      .from(donateRecords)
+      .where(eq(donateRecords.id, recordId))
+      .limit(1);
+
+    if (!record || record.status !== "WAITING_FOR_DOCUMENTATION") {
+      return { success: false, error: "Record not found or invalid status." };
+    }
+
+    // Get user email and donation info
+    const [userAndDonation] = await db
+      .select({
+        userEmail: users.email,
+        donationTitle: donations.title,
+        institutionName: institutions.institutionName,
+      })
+      .from(users)
+      .innerJoin(donateRecords, eq(users.id, donateRecords.userId))
+      .innerJoin(donations, eq(donateRecords.donationId, donations.id))
+      .innerJoin(institutions, eq(donations.institutionId, institutions.id))
+      .where(eq(donateRecords.id, recordId))
+      .limit(1);
+
+    await db
+      .update(donateRecords)
+      .set({
+        status: "COMPLETED",
+        documentationPhoto: documentationPhoto,
+        completedDate: new Date(),
+      })
+      .where(eq(donateRecords.id, recordId));
+
+    const [donationData] = await db
+      .select({ target: donations.target, collected: donations.collected })
+      .from(donations)
+      .where(eq(donations.id, record.donationId))
+      .limit(1);
+
+    const newCollected = (donationData?.collected ?? 0) + record.quantity;
+    const isComplete = newCollected >= (donationData?.target ?? 0);
+
+    await db
+      .update(donations)
+      .set({
+        collected: newCollected,
+        status: isComplete ? "COMPLETED" : "ACTIVE",
+      })
+      .where(eq(donations.id, record.donationId));
+
+    await db.insert(notifications).values({
+      recipientId: record.userId,
+      recipientType: "USER",
+      title: "Donation Completed!",
+      message: "Your donation has been completed successfully. Thank you for your generosity!",
+      type: "ARRIVED",
+      relatedId: recordId,
+    });
+
+    // Send email to donatur
+    if (userAndDonation?.userEmail) {
+      const template = emailTemplates.donationArrived(
+        userAndDonation.donationTitle,
+        userAndDonation.institutionName
+      );
+      await sendEmail({ to: userAndDonation.userEmail, ...template });
+    }
+
+    revalidatePath("/institution/history");
+    revalidatePath("/history");
+    return { success: true };
+  } catch (error) {
+    console.error("Upload documentation error:", error);
+    return { success: false, error: "Failed to update status." };
+  }
+};
+
+// Institution rejects donation from ON_PROGRESS status
+export const rejectDonationFromProgress = async (
+  recordId: string,
+  institutionId?: string,
+  reason?: string
+) => {
+  try {
+    const [record] = await db
+      .select({ userId: donateRecords.userId, status: donateRecords.status })
+      .from(donateRecords)
+      .where(eq(donateRecords.id, recordId))
+      .limit(1);
+
+    if (!record || record.status !== "ON_PROGRESS") {
+      return { success: false, error: "Record not found or invalid status." };
+    }
+
+    // Get user email and donation info
+    const [userAndDonation] = await db
+      .select({
+        userEmail: users.email,
+        donationTitle: donations.title,
+      })
+      .from(users)
+      .innerJoin(donateRecords, eq(users.id, donateRecords.userId))
+      .innerJoin(donations, eq(donateRecords.donationId, donations.id))
+      .where(eq(donateRecords.id, recordId))
+      .limit(1);
+
+    await db
+      .update(donateRecords)
+      .set({
+        status: "REJECTED",
+        rejectionReason: reason ?? null,
+      })
+      .where(eq(donateRecords.id, recordId));
+
+    await db.insert(notifications).values({
+      recipientId: record.userId,
+      recipientType: "USER",
+      title: "Donation Rejected",
+      message: reason
+        ? `Your donation was rejected. Reason: ${reason}`
+        : "Your donation was rejected.",
+      type: "REQUEST_REJECTED",
+      relatedId: recordId,
+    });
+
+    // Send email to donatur
+    if (userAndDonation?.userEmail) {
+      const template = emailTemplates.donationRequestRejected(
+        userAndDonation.donationTitle,
+        reason
+      );
+      await sendEmail({ to: userAndDonation.userEmail, ...template });
+    }
+
+    revalidatePath("/institution/history");
+    revalidatePath("/history");
+    return { success: true };
+  } catch (error) {
+    console.error("Reject donation error:", error);
+    return { success: false, error: "Failed to reject donation." };
+  }
+};
+
+// Cancel donation from APPROVED status (for both donor and institution)
+export const cancelDonation = async (
+  recordId: string,
+  reason?: string
+) => {
+  try {
+    const [record] = await db
+      .select({
+        userId: donateRecords.userId,
+        donationId: donateRecords.donationId,
+        status: donateRecords.status,
+      })
+      .from(donateRecords)
+      .where(eq(donateRecords.id, recordId))
+      .limit(1);
+
+    if (!record || record.status !== "APPROVED") {
+      return { success: false, error: "Record not found or invalid status." };
+    }
+
+    // Get institution ID from donation
+    const [donation] = await db
+      .select({ institutionId: donations.institutionId })
+      .from(donations)
+      .where(eq(donations.id, record.donationId))
+      .limit(1);
+
+    if (!donation) return { success: false, error: "Donation not found." };
+
+    // Get user email and donation info
+    const [userAndDonation] = await db
+      .select({
+        userEmail: users.email,
+        donationTitle: donations.title,
+        institutionName: institutions.institutionName,
+      })
+      .from(users)
+      .innerJoin(donateRecords, eq(users.id, donateRecords.userId))
+      .innerJoin(donations, eq(donateRecords.donationId, donations.id))
+      .innerJoin(institutions, eq(donations.institutionId, institutions.id))
+      .where(eq(donateRecords.id, recordId))
+      .limit(1);
+
+    await db
+      .update(donateRecords)
+      .set({
+        status: "REJECTED",
+        cancelReason: reason ?? null,
+      })
+      .where(eq(donateRecords.id, recordId));
+
+    // Notify user
+    await db.insert(notifications).values({
+      recipientId: record.userId,
+      recipientType: "USER",
+      title: "Donation Cancelled",
+      message: reason
+        ? `Your donation was cancelled. Reason: ${reason}`
+        : "Your donation was cancelled.",
+      type: "REQUEST_REJECTED",
+      relatedId: recordId,
+    });
+
+    // Notify institution
+    await db.insert(notifications).values({
+      recipientId: donation.institutionId,
+      recipientType: "INSTITUTION",
+      title: "Donation Cancelled",
+      message: reason
+        ? `A donation was cancelled. Reason: ${reason}`
+        : "A donation was cancelled.",
+      type: "REQUEST_REJECTED",
+      relatedId: recordId,
+    });
+
+    // Send email to donatur
+    if (userAndDonation?.userEmail) {
+      const template = emailTemplates.donationRequestRejected(
+        userAndDonation.donationTitle,
+        reason
+      );
+      await sendEmail({ to: userAndDonation.userEmail, ...template });
+    }
+
+    revalidatePath("/institution/history");
+    revalidatePath("/history");
+    return { success: true };
+  } catch (error) {
+    console.error("Cancel donation error:", error);
+    return { success: false, error: "Failed to cancel donation." };
   }
 };
 
@@ -384,7 +733,9 @@ export const getUserDonationHistory = async (userId: string) => {
       deliveryDate: donateRecords.deliveryDate,
       arrivedDate: donateRecords.arrivedDate,
       arrivalProofPhoto: donateRecords.arrivalProofPhoto,
+      documentationPhoto: donateRecords.documentationPhoto,
       rejectionReason: donateRecords.rejectionReason,
+      cancelReason: donateRecords.cancelReason,
       donationTitle: donations.title,
       donationCategory: donations.category,
       donationCover: donations.cover,
@@ -418,7 +769,9 @@ export const getInstitutionDonationHistory = async (institutionId: string) => {
         requestDate: donateRecords.requestDate,
         approvalDate: donateRecords.approvalDate,
         arrivalProofPhoto: donateRecords.arrivalProofPhoto,
+        documentationPhoto: donateRecords.documentationPhoto,
         rejectionReason: donateRecords.rejectionReason,
+        cancelReason: donateRecords.cancelReason,
         donationTitle: donations.title,
         donationCategory: donations.category,
       })
@@ -437,7 +790,21 @@ export const getInstitutionDonations = async (institutionId: string) => {
   try {
     if (!institutionId) return [];
     return await db
-      .select()
+      .select({
+        id: donations.id,
+        title: donations.title,
+        category: donations.category,
+        description: donations.description,
+        cover: donations.cover,
+        target: donations.target,
+        collected: donations.collected,
+        deliveryMethods: donations.deliveryMethods,
+        hasPickupService: donations.hasPickupService,
+        pickupMaxDistanceKm: donations.pickupMaxDistanceKm,
+        status: donations.status,
+        createdAt: donations.createdAt,
+        institutionId: donations.institutionId,
+      })
       .from(donations)
       .where(eq(donations.institutionId, institutionId))
       .orderBy(desc(donations.createdAt));

@@ -23,7 +23,7 @@ export default function Error({
       <div className="flex gap-2">
         <button
           onClick={() => reset()}
-          className="btn-primary"
+          className="relative flex w-full items-center justify-center overflow-hidden rounded-sm bg-primary px-6 py-2 font-inter text-[15px] font-semibold text-white transition-all hover:bg-primary-dark disabled:opacity-50"
           style={{ width: "auto", padding: "8px 48px" }}
         >
           Try Again

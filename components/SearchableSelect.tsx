@@ -70,11 +70,12 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
         type="button"
         disabled={disabled}
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className="w-full px-3 py-2 border border-gray-300 rounded-sm bg-white text-gray-900 flex items-center justify-between text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-50 disabled:text-gray-400 transition-colors"
+        className="w-full px-3 py-2 border border-gray-300 rounded-sm bg-white text-gray-900 flex items-center justify-between text-left cursor-pointer focus:outline-none"
         style={{
           minHeight: "38px",
           marginTop: "4px",
           marginBottom: "8px",
+          padding:"0 8px"
         }}
       >
         <span className={`truncate text-sm ${!value ? "text-gray-400" : "text-gray-900 font-medium"}`}>
@@ -163,17 +164,15 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                     className="text-left text-sm transition-all cursor-pointer"
                     style={{
                       width: "100%",
-                      paddingTop: "14px",
-                      paddingBottom: "14px",
-                      paddingLeft: "32px",
-                      paddingRight: "18px",
+                      paddingTop: "8px",
+                      paddingBottom: "8px",
+                      paddingLeft: "16px",
                       borderRadius: "6px",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "space-between",
-                      border: isSelected ? "1px solid #86efac" : "1px solid #f3f4f6",
-                      background: isSelected ? "#f0fdf4" : "#ffffff",
-                      color: isSelected ? "#14532d" : "#1f2937",
+                      background: isSelected ? "var(--color-primary)" : "#ffffff",
+                      color: isSelected ? "var(--color-surface)" : "#1f2937",
                       fontWeight: isSelected ? 600 : 500,
                     }}
                   >

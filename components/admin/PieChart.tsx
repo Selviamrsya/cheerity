@@ -25,9 +25,9 @@ export default function PieChart({ data, title, subtitle, colors = DEFAULT_COLOR
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const total = data.reduce((sum, item) => sum + item.value, 0);
-  const centerX = compact ? 100 : 150;
-  const centerY = compact ? 100 : 150;
-  const radius = compact ? 80 : 120;
+  const centerX = compact ? 120 : 150;
+  const centerY = compact ? 120 : 150;
+  const radius = compact ? 100 : 120;
 
   // PINDAHKAN KE SINI: Convert polar to cartesian coordinates
   // Harus dideklarasikan sebelum digunakan di dalam data.map
@@ -76,17 +76,17 @@ export default function PieChart({ data, title, subtitle, colors = DEFAULT_COLOR
 
   if (compact) {
     return (
-      <div className="chart-card">
-        <div className="chart-header">
+      <div className="mb-4 flex min-h-[400px] w-full flex-col rounded-sm border border-card-border bg-surface p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] h-full min-h-[400px]">
+        <div className="flex flex-col gap-2 border-b border-card-border pb-2 sm:flex-row sm:items-center sm:justify-between pb-2">
           <div>
-            <h2 className="chart-title">{title}</h2>
-            {subtitle && <p className="chart-subtitle">{subtitle}</p>}
+            <h2 className="font-poppins text-lg font-medium text-text-main">{title}</h2>
+            {subtitle && <p className="mt-1 font-inter text-xs text-text-muted">{subtitle}</p>}
           </div>
         </div>
 
-        <div className="flex items-center">
+        <div className="flex flex-col items-center flex-1 justify-center">
           <div className="relative shrink-0">
-            <svg width="200" height="200" viewBox="0 0 200 200" className="chart-svg">
+            <svg width="240" height="240" viewBox="0 0 240 240" className="w-[240px] h-[240px]">
               {slices.map((slice, index) => (
                 <g key={index}>
                   <path
@@ -117,18 +117,18 @@ export default function PieChart({ data, title, subtitle, colors = DEFAULT_COLOR
             </svg>
           </div>
 
-          <div className="flex-1 min-w-0">
-            <div className="space-y-2">
+          <div className="w-full mt-2">
+            <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5">
               {slices.map((slice, index) => (
                 <div
                   key={index}
-                  className="flex items-center gap-2 min-w-0 p-1.5"
+                  className="flex items-center gap-1.5"
                 >
                   <div
-                    className="w-3 h-3 rounded-full shrink-0"
+                    className="w-2.5 h-2.5 rounded-full shrink-0"
                     style={{ backgroundColor: slice.color }}
                   />
-                  <span className="text-gray-700 text-sm truncate">{slice.label}</span>
+                  <span className="text-gray-700 text-xs">{slice.label}</span>
                 </div>
               ))}
             </div>
@@ -139,18 +139,18 @@ export default function PieChart({ data, title, subtitle, colors = DEFAULT_COLOR
   }
 
   return (
-    <div className="chart-card">
-      <div className="chart-header">
+    <div className="mb-4 flex min-h-[400px] w-full flex-col rounded-sm border border-card-border bg-surface p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+      <div className="flex flex-col gap-2 border-b border-card-border pb-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="chart-title">{title}</h2>
-          {subtitle && <p className="chart-subtitle">{subtitle}</p>}
+          <h2 className="font-poppins text-lg font-medium text-text-main">{title}</h2>
+          {subtitle && <p className="mt-1 font-inter text-xs text-text-muted">{subtitle}</p>}
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center gap-2">
+      <div className="flex flex-col sm:flex-row items-center">
         {/* Pie Chart */}
         <div className="relative">
-          <svg width="300" height="300" viewBox="0 0 300 300" className="chart-svg">
+          <svg width="300" height="300" viewBox="0 0 300 300">
             {slices.map((slice, index) => (
               <g key={index}>
                 <path
@@ -181,18 +181,18 @@ export default function PieChart({ data, title, subtitle, colors = DEFAULT_COLOR
           </svg>
         </div>
 
-        <div className="flex-1 w-full sm:w-auto">
+        <div className="flex-1 w-full sm:w-auto min-w-0 overflow-hidden">
           <div className="space-y-3">
             {slices.map((slice, index) => (
               <div
                 key={index}
-                className="flex items-center gap-3 p-2"
+                className="flex items-center gap-3 p-2 min-w-0"
               >
                 <div
                   className="w-4 h-4 rounded-full shrink-0"
                   style={{ backgroundColor: slice.color }}
                 />
-                <span className="text-sm font-medium text-gray-700">{slice.label}</span>
+                <span className="text-sm font-medium text-gray-700 truncate">{slice.label}</span>
               </div>
             ))}
           </div>

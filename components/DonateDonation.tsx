@@ -86,7 +86,7 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
 
   if (!isOpen) {
     return (
-      <button className="btn-primary" onClick={() => setIsOpen(true)} style={{ marginTop: 8 }}>
+      <button className="relative flex w-full items-center justify-center overflow-hidden rounded-sm bg-primary px-6 py-2 font-inter text-[15px] font-semibold text-white transition-all hover:bg-primary-dark disabled:opacity-50" onClick={() => setIsOpen(true)} style={{ marginTop: 8 }}>
         Donate Now
       </button>
     );
@@ -94,14 +94,14 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
 
   return (
     <>
-      <div className="modal-backdrop" onClick={() => setIsOpen(false)} />
+      <div className="fixed inset-0 z-[999] bg-black/50 backdrop-blur-[4px]" onClick={() => setIsOpen(false)} />
 
-      <div className="modal-container">
-        <div className="modal-header">
-          <h2 className="modal-title">Donation Request</h2>
+      <div className="fixed top-1/2 left-1/2 z-[1000] max-h-[90vh] w-[90%] max-w-[600px] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl bg-white p-5 shadow-xl sm:p-7">
+        <div className="mb-5 flex items-center justify-between border-b border-outline pb-3">
+          <h2 className="text-lg font-bold sm:text-xl">Donation Request</h2>
           <button
             onClick={() => setIsOpen(false)}
-            className="modal-close-btn"
+            className="cursor-pointer border-none bg-transparent text-lg text-on-surface-variant"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
@@ -109,8 +109,8 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
         </div>
 
         {submitted ? (
-          <div className="modal-success">
-            <div className="modal-success-icon">&#10003;</div>
+          <div className="p-5 text-center">
+            <div className="mx-auto mb-4 flex h-[60px] w-[60px] items-center justify-center rounded-full bg-primary-100 text-[28px] text-primary">&#10003;</div>
             <h3>Request Submitted!</h3>
             <p>
               Your donation request has been submitted. The institution will
@@ -120,13 +120,13 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
               </a>{" "}
               for updates.
             </p>
-            <button className="btn-primary" onClick={() => setIsOpen(false)}>
+            <button className="relative flex w-full items-center justify-center overflow-hidden rounded-sm bg-primary px-6 py-2 font-inter text-[15px] font-semibold text-white transition-all hover:bg-primary-dark disabled:opacity-50" onClick={() => setIsOpen(false)}>
               Close
             </button>
           </div>
         ) : (
-          <form onSubmit={form.handleSubmit(onSubmit)} className="modal-form">
-            <div className="donation-request-info-box">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-3.5">
+            <div className="mb-3 rounded-lg border border-green-200 bg-green-50 p-3.5">
               <div className="flex items-start gap-2">
                 <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" style={{ color: "var(--color-primary-700)" }} />
                 <ul className="text-sm" style={{ color: "var(--color-primary-700)" }}>
@@ -139,12 +139,12 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
             </div>
 
             {submitError && (
-              <p className="form-error-box">{submitError}</p>
+              <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-[13px] text-red-800">{submitError}</p>
             )}
 
-            <div className="modal-section-title">Personal Information</div>
+            <div className="mt-4 mb-2 text-sm font-bold tracking-wide text-primary-900 uppercase">Personal Information</div>
 
-            <div className="form-group">
+            <div className="mb-5 flex flex-col gap-1.5">
               <label className="flex items-center gap-2 cursor-pointer text-sm font-medium">
                 <input
                   type="checkbox"
@@ -156,30 +156,30 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
             </div>
 
             {!isAnonymous && (
-              <div className="form-group">
-                <label className="form-label">Your Name</label>
+              <div className="mb-5 flex flex-col gap-1.5">
+                <label className="font-inter text-[13.5px] font-semibold text-gray-700">Your Name</label>
                 <input
                   type="text"
                   {...form.register("donorName")}
-                  className="form-input"
+                  className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-[11px] font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400"
                   placeholder="Full name"
                 />
                 {form.formState.errors.donorName && (
-                  <p className="form-error">{form.formState.errors.donorName.message}</p>
+                  <p className="mt-0.5 text-xs text-red-600">{form.formState.errors.donorName.message}</p>
                 )}
               </div>
             )}
 
-            <div className="form-group">
-              <label className="form-label">Phone Number</label>
+            <div className="mb-5 flex flex-col gap-1.5">
+              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Phone Number</label>
               <input
                 type="tel"
                 {...form.register("phoneNumber")}
-                className="form-input"
+                className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-[11px] font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400"
                 placeholder="e.g. 081234567890"
               />
               {form.formState.errors.phoneNumber && (
-                <p className="form-error">{form.formState.errors.phoneNumber.message}</p>
+                <p className="mt-0.5 text-xs text-red-600">{form.formState.errors.phoneNumber.message}</p>
               )}
             </div>
 
@@ -197,40 +197,40 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
               }}
             />
 
-            <div className="form-group">
-              <label className="form-label">Full Address</label>
-              <input type="text" {...form.register("address")} className="form-input" />
-              {form.formState.errors.address && <p className="form-error">{form.formState.errors.address.message}</p>}
+            <div className="mb-5 flex flex-col gap-1.5">
+              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Full Address</label>
+              <input type="text" {...form.register("address")} className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-[11px] font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400" />
+              {form.formState.errors.address && <p className="mt-0.5 text-xs text-red-600">{form.formState.errors.address.message}</p>}
             </div>
 
-            <div className="modal-section-title">Donation Information</div>
+            <div className="mt-4 mb-2 text-sm font-bold tracking-wide text-primary-900 uppercase">Donation Information</div>
 
-            <div className="form-group">
-              <label className="form-label">Quantity (max 10,000)</label>
+            <div className="mb-5 flex flex-col gap-1.5">
+              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Quantity (max 10,000)</label>
               <input
                 type="number"
                 min={1}
                 max={10000}
                 {...form.register("quantity")}
-                className="form-input"
+                className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-[11px] font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400"
               />
               {form.formState.errors.quantity && (
-                <p className="form-error">{form.formState.errors.quantity.message}</p>
+                <p className="mt-0.5 text-xs text-red-600">{form.formState.errors.quantity.message}</p>
               )}
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Notes (optional)</label>
+            <div className="mb-5 flex flex-col gap-1.5">
+              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Notes (optional)</label>
               <textarea
                 {...form.register("notes")}
-                className="form-input form-textarea"
+                className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-[11px] font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400 min-h-20 resize-none"
                 rows={3}
                 placeholder="Any additional information about the items..."
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Photo of Items (optional)</label>
+            <div className="mb-5 flex flex-col gap-1.5">
+              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Photo of Items (optional)</label>
               <LocalImageUpload
                 value={form.watch("donorPhoto") ?? ""}
                 onChange={(url) => form.setValue("donorPhoto", url)}
@@ -239,9 +239,9 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Delivery Method</label>
-              <select {...form.register("deliveryMethod")} className="form-input">
+            <div className="mb-5 flex flex-col gap-1.5">
+              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Delivery Method</label>
+              <select {...form.register("deliveryMethod")} className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-[11px] font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400">
                 {availableDeliveryMethods.map((m) => (
                   <option key={m} value={m}>
                     {DELIVERY_METHOD_LABELS[m] ?? m}
@@ -249,36 +249,40 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
                 ))}
               </select>
               {form.formState.errors.deliveryMethod && (
-                <p className="form-error">{form.formState.errors.deliveryMethod.message}</p>
+                <p className="mt-0.5 text-xs text-red-600">{form.formState.errors.deliveryMethod.message}</p>
               )}
             </div>
 
             {isPickup && (
-              <div className="donation-request-info-box" style={{ background: "var(--color-primary-50)", borderColor: "var(--color-primary-100)" }}>
-                <div className="modal-section-title" style={{ marginTop: 0 }}>Estimated Pickup Schedule</div>
+              <div className="mb-3 rounded-lg border border-green-200 bg-green-50 p-3.5" style={{ background: "var(--color-primary-50)", borderColor: "var(--color-primary-100)" }}>
+                <div className="mt-4 mb-2 text-sm font-bold tracking-wide text-primary-900 uppercase" style={{ marginTop: 0 }}>Estimated Pickup Schedule</div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="form-group">
-                    <label className="form-label">Estimated Pickup Date</label>
+                  <div className="mb-5 flex flex-col gap-1.5">
+                    <label className="font-inter text-[13.5px] font-semibold text-gray-700">Estimated Pickup Date</label>
                     <input
                       type="date"
                       {...form.register("estimatedPickupDate")}
-                      className="form-input"
+                      className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-[11px] font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400"
                       min={new Date().toISOString().split("T")[0]}
                     />
                   </div>
-                  <div className="form-group">
-                    <label className="form-label">Estimated Pickup Time</label>
+                  <div className="mb-5 flex flex-col gap-1.5">
+                    <label className="font-inter text-[13.5px] font-semibold text-gray-700">Estimated Pickup Time</label>
                     <input
                       type="time"
                       {...form.register("estimatedPickupTime")}
-                      className="form-input"
+                      className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-[11px] font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400"
                     />
                   </div>
                 </div>
               </div>
             )}
 
-            <button type="submit" className="btn-primary" disabled={isSubmitting}>
+            <button 
+             type="submit" 
+             className="font-medium text-white inline-flex w-auto items-center justify-center gap-2 rounded-sm bg-primary px-6 py-2 font-inter text-[15px] font-semibold text-white transition-all hover:bg-primary-dark disabled:opacity-50"
+             style={{width:"auto", padding:"10px 24px"}}
+             disabled={isSubmitting}>
               {isSubmitting ? "Submitting..." : "Submit Request"}
             </button>
           </form>

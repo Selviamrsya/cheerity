@@ -3,61 +3,43 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/app/database/drizzle";
 import { users, institutions } from "@/app/database/schema";
-import { signIn } from "@/app/auth";
-import { hash } from "bcryptjs";
-import ratelimit from "@/lib/ratelimit";
+import { signInWithCredentials as betterAuthSignIn, signUpUser as betterAuthSignUpUser, signUpInstitution as betterAuthSignUpInstitution } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { geocodeAddress } from "@/lib/geocoding";
-import { sendEmail, emailTemplates } from "@/lib/workflow";
+import { sendEmail, emailTemplates } from "@/lib/email";
 
 export const signInWithCredentials = async (params: {
   email: string;
   password: string;
 }) => {
   const { email, password } = params;
-  const ip = (await headers()).get("x-forwarded-for") || "127.0.0.1";
-  const { success } = await ratelimit.limit(ip);
+  const reqHeaders = await headers();
+  return betterAuthSignIn(email, password, reqHeaders);
+};
 
-  if (!success) return redirect("/too-fast");
+export const getUserRole = async (email: string) => {
+  const user = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, email))
+    .limit(1);
 
-  try {
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-
-    if (result?.error) {
-      return { success: false, error: result.error };
-    }
-
-    // Check role to return for proper client redirect
-    const userResult = await db
-      .select({ role: users.role })
-      .from(users)
-      .where(eq(users.email, email))
-      .limit(1);
-
-    if (userResult.length > 0) {
-      return { success: true, role: userResult[0].role };
-    }
-
-    const instResult = await db
-      .select({ id: institutions.id })
-      .from(institutions)
-      .where(eq(institutions.email, email))
-      .limit(1);
-
-    if (instResult.length > 0) {
-      return { success: true, role: "INSTITUTION" };
-    }
-
-    return { success: true, role: "USER" };
-  } catch (error) {
-    console.error("Signin error:", error);
-    return { success: false, error: "Invalid email or password." };
+  if (user.length > 0) {
+    return { role: user[0].role, status: user[0].status };
   }
+
+  const institution = await db
+    .select()
+    .from(institutions)
+    .where(eq(institutions.email, email))
+    .limit(1);
+
+  if (institution.length > 0) {
+    return { role: "INSTITUTION", status: institution[0].status };
+  }
+
+  return { role: "USER" };
 };
 
 export const signUpUser = async (params: {
@@ -69,50 +51,56 @@ export const signUpUser = async (params: {
   state: string;
   zipCode: string;
   address: string;
+  latitude?: number;
+  longitude?: number;
   password: string;
 }) => {
-  const { name, birthdate, phonenumber, email, city, state, zipCode, address, password } = params;
+  const { name, birthdate, phonenumber, email, city, state, zipCode, address, latitude, longitude, password } = params;
 
-  const ip = (await headers()).get("x-forwarded-for") || "127.0.0.1";
-  const { success } = await ratelimit.limit(ip);
-  if (!success) return redirect("/too-fast");
-
-  const existingUser = await db
-    .select()
-    .from(users)
-    .where(eq(users.email, email))
-    .limit(1);
-
-  if (existingUser.length > 0) {
-    return { success: false, error: "A user with this email already exists." };
+  // Use coordinates from address search if provided, otherwise geocode
+  let coords = null;
+  if (latitude != null && longitude != null) {
+    coords = { lat: latitude, lng: longitude };
+    console.log("User signup using coordinates from address search:", { address, city, state, coords });
+  } else {
+    // Geocode address to coordinates for distance calculation
+    coords = await geocodeAddress(address, city, state);
+    console.log("User signup geocoding:", { address, city, state, coords });
   }
 
-  const hashedPassword = await hash(password, 10);
-
-  // Geocode address to coordinates for distance calculation
-  const coords = await geocodeAddress(address, city, state);
-
   try {
-    await db.insert(users).values({
-      fullName: name,
+    const result = await betterAuthSignUpUser({
+      name,
       email,
-      password: hashedPassword,
+      password,
       birthdate,
       phoneNumber: phonenumber,
       city,
       state,
       zipCode,
       address,
-      latitude: coords?.lat ?? null,
-      longitude: coords?.lng ?? null,
     });
+
+    if (!result.success) {
+      return result;
+    }
+
+    // Update user with geocoded coordinates
+    await db
+      .update(users)
+      .set({
+        latitude: coords?.lat ?? null,
+        longitude: coords?.lng ?? null,
+      })
+      .where(eq(users.email, email));
 
     // Send welcome email (non-blocking)
     const template = emailTemplates.welcomeUser(name);
-    await sendEmail({ email, ...template });
+    await sendEmail({ to: email, ...template });
 
-    // Auto sign in after registration
-    await signInWithCredentials({ email, password });
+    // Auto sign in after registration with headers for session
+    const reqHeaders = await headers();
+    await betterAuthSignIn(email, password, reqHeaders);
     return { success: true };
   } catch (error) {
     console.error("Signup error:", error);
@@ -128,6 +116,8 @@ export const signUpInstitution = async (params: {
   state: string;
   zipCode: string;
   address: string;
+  latitude?: number;
+  longitude?: number;
   verificationEvidence: string;
   websiteOrSocial?: string;
   description: string;
@@ -141,15 +131,13 @@ export const signUpInstitution = async (params: {
     state,
     zipCode,
     address,
+    latitude,
+    longitude,
     verificationEvidence,
     websiteOrSocial,
     description,
     password,
   } = params;
-
-  const ip = (await headers()).get("x-forwarded-for") || "127.0.0.1";
-  const { success } = await ratelimit.limit(ip);
-  if (!success) return redirect("/too-fast");
 
   const existingInstitution = await db
     .select()
@@ -164,31 +152,49 @@ export const signUpInstitution = async (params: {
     };
   }
 
-  const hashedPassword = await hash(password, 10);
-
-  // Geocode institution address
-  const coords = await geocodeAddress(address, city, state);
+  // Use coordinates from address search if provided, otherwise geocode
+  let coords = null;
+  if (latitude != null && longitude != null) {
+    coords = { lat: latitude, lng: longitude };
+    console.log("Institution signup using coordinates from address search:", { address, city, state, coords });
+  } else {
+    // Geocode institution address
+    coords = await geocodeAddress(address, city, state);
+    console.log("Institution signup geocoding:", { address, city, state, coords });
+  }
 
   try {
-    await db.insert(institutions).values({
+    const result = await betterAuthSignUpInstitution({
       institutionName,
       email,
-      password: hashedPassword,
+      password,
       phoneNumber,
       city,
       state,
       zipCode,
       address,
       verificationEvidence,
-      websiteOrSocial: websiteOrSocial || null,
+      websiteOrSocial,
       description,
-      latitude: coords?.lat ?? null,
-      longitude: coords?.lng ?? null,
     });
 
-    // Send confirmation email to institution
-    const template = emailTemplates.institutionApplicationReceived(institutionName);
-    await sendEmail({ email, ...template });
+    if (!result.success) {
+      return result;
+    }
+
+    // Update institution with geocoded coordinates
+    await db
+      .update(institutions)
+      .set({
+        latitude: coords?.lat ?? null,
+        longitude: coords?.lng ?? null,
+      })
+      .where(eq(institutions.email, email));
+
+    // Notify admin about new institution registration via email
+    const adminEmail = process.env.ADMIN_EMAIL || "admin@cheerity.com";
+    const adminTemplate = emailTemplates.newInstitutionRegistration(institutionName, email);
+    await sendEmail({ to: adminEmail, ...adminTemplate });
 
     // Institution must wait for admin approval before logging in
     return { success: true };

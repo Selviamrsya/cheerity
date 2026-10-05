@@ -31,7 +31,7 @@ export const DONATION_REQUEST_STATUS = pgEnum("donation_request_status", [
   "APPROVED",
   "REJECTED",
   "ON_PROGRESS",
-  "ARRIVED",
+  "WAITING_FOR_DOCUMENTATION",
   "COMPLETED",
 ]);
 
@@ -39,9 +39,9 @@ export const DONATION_REQUEST_STATUS = pgEnum("donation_request_status", [
 
 export const users = pgTable("users", {
   id: uuid("id").notNull().primaryKey().defaultRandom().unique(),
-  fullName: varchar("full_name", { length: 255 }).notNull(),
+  fullName: varchar("full_name", { length: 255 }),
   email: text("email").notNull().unique(),
-  password: text("password").notNull(),
+  password: text("password"),
   birthdate: date("birthdate"),
   phoneNumber: varchar("phone_number", { length: 20 }),
   city: varchar("city", { length: 100 }),
@@ -54,6 +54,11 @@ export const users = pgTable("users", {
   role: ROLE_ENUM("role").default("USER"),
   status: STATUS_ENUM("status").default("APPROVED"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  // Better-auth required fields
+  name: varchar("name", { length: 255 }),
+  emailVerified: boolean("email_verified").default(false),
+  image: text("image"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
 // Institutions table - stores charity organizations / NGOs
@@ -132,7 +137,9 @@ export const donateRecords = pgTable("donate_records", {
   // Status tracking
   status: DONATION_REQUEST_STATUS("status").default("PENDING").notNull(),
   arrivalProofPhoto: text("arrival_proof_photo"),
+  documentationPhoto: text("documentation_photo"),
   rejectionReason: text("rejection_reason"),
+  cancelReason: text("cancel_reason"),
   // Timestamps for each status transition
   requestDate: timestamp("request_date", { withTimezone: true }).defaultNow(),
   approvalDate: timestamp("approval_date", { withTimezone: true }),
@@ -158,4 +165,47 @@ export const notifications = pgTable("notifications", {
   // Related donate record ID
   relatedId: uuid("related_id"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});
+
+// Sessions table for better-auth
+
+export const sessions = pgTable("sessions", {
+  id: text("id").notNull().primaryKey(),
+  userId: uuid("user_id").notNull().references(() => users.id),
+  expiresAt: timestamp("expires_at").notNull(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  token: text("token"),
+});
+
+// Account table for better-auth
+
+export const account = pgTable("account", {
+  id: text("id").notNull().primaryKey(),
+  userId: uuid("user_id").notNull().references(() => users.id),
+  accountId: text("account_id").notNull(),
+  providerId: text("provider_id").notNull(),
+  accessToken: text("access_token"),
+  refreshToken: text("refresh_token"),
+  idToken: text("id_token"),
+  accessTokenExpiresAt: timestamp("access_token_expires_at"),
+  refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
+  scope: text("scope"),
+  expiresAt: timestamp("expires_at"),
+  password: text("password"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+});
+
+// Verification table for better-auth
+
+export const verification = pgTable("verification", {
+  id: text("id").notNull().primaryKey(),
+  identifier: text("identifier").notNull(),
+  value: text("value").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });

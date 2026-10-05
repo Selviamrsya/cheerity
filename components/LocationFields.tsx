@@ -23,6 +23,7 @@ interface LocationFieldsProps {
     city?: string;
     zipCode?: string;
   };
+  readOnly?: boolean;
 }
 
 const LocationFields: React.FC<LocationFieldsProps> = ({
@@ -34,6 +35,7 @@ const LocationFields: React.FC<LocationFieldsProps> = ({
   onZipCodeChange,
   onLocationChange,
   errors,
+  readOnly = false,
 }) => {
   // Province options
   const provinceOptions: OptionData[] = INDONESIA_PROVINCES.map((prov: string) => ({
@@ -122,48 +124,131 @@ const LocationFields: React.FC<LocationFieldsProps> = ({
     }
   };
 
+  const getZipCodeOptions = (): OptionData[] => {
+    const zipCodes = new Set<string>();
+    
+    // Get zip codes for the selected province and city
+    if (stateValue && cityValue && INDONESIA_CITIES_BY_PROVINCE[stateValue]) {
+      const cities = INDONESIA_CITIES_BY_PROVINCE[stateValue];
+      cities.forEach((c: CityData) => {
+        if (c.city === cityValue && c.zipCode) {
+          zipCodes.add(c.zipCode);
+        }
+      });
+    }
+    
+    // If no specific zip codes found, show all zip codes from the selected province
+    if (zipCodes.size === 0 && stateValue && INDONESIA_CITIES_BY_PROVINCE[stateValue]) {
+      const cities = INDONESIA_CITIES_BY_PROVINCE[stateValue];
+      cities.forEach((c: CityData) => {
+        if (c.zipCode) {
+          zipCodes.add(c.zipCode);
+        }
+      });
+    }
+    
+    // If still no zip codes, show all available zip codes
+    if (zipCodes.size === 0) {
+      Object.values(INDONESIA_CITIES_BY_PROVINCE).forEach((cities: CityData[]) => {
+        cities.forEach((c: CityData) => {
+          if (c.zipCode) {
+            zipCodes.add(c.zipCode);
+          }
+        });
+      });
+    }
+    
+    const options: OptionData[] = Array.from(zipCodes).map(zip => ({
+      label: zip,
+      value: zip,
+    }));
+    
+    // Add current zip code value if it's not in the list (for display purposes)
+    if (zipCodeValue && !options.some((opt: OptionData) => opt.value === zipCodeValue)) {
+      options.push({ label: zipCodeValue, value: zipCodeValue });
+    }
+    
+    return options;
+  };
+
+  const readOnlyInputClass =
+    "w-full px-3 py-2 border border-gray-200 rounded-sm bg-gray-50 text-gray-600 text-sm cursor-not-allowed select-none";
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
       {/* State / Province */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">State / Province</label>
-        <SearchableSelect
-          key={`state-${stateValue}`}
-          value={stateValue}
-          onChange={handleProvinceSelect}
-          options={provinceOptions}
-          placeholder="Select State / Province"
-          searchPlaceholder="Search province..."
-        />
+        {readOnly && stateValue ? (
+          <input
+            type="text"
+            value={stateValue}
+            readOnly
+            tabIndex={-1}
+            className={readOnlyInputClass}
+            style={{ marginTop: "4px", marginBottom: "8px", minHeight: "38px" }}
+          />
+        ) : (
+          <SearchableSelect
+            key={`state-${stateValue}`}
+            value={stateValue}
+            onChange={handleProvinceSelect}
+            options={provinceOptions}
+            placeholder="Select State / Province"
+            searchPlaceholder="Search province..."
+          />
+        )}
         {errors?.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
       </div>
 
       {/* City */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
-        <SearchableSelect
-          key={`city-${cityValue}-${stateValue}`}
-          value={cityValue}
-          onChange={handleCitySelect}
-          options={cityOptions}
-          placeholder="Select City"
-          searchPlaceholder="Search city..."
-        />
+        {readOnly && cityValue ? (
+          <input
+            type="text"
+            value={cityValue}
+            readOnly
+            tabIndex={-1}
+            className={readOnlyInputClass}
+            style={{ marginTop: "4px", marginBottom: "8px", minHeight: "38px" }}
+          />
+        ) : (
+          <SearchableSelect
+            key={`city-${cityValue}-${stateValue}`}
+            value={cityValue}
+            onChange={handleCitySelect}
+            options={cityOptions}
+            placeholder="Select City"
+            searchPlaceholder="Search city..."
+          />
+        )}
         {errors?.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
       </div>
 
       {/* Zip Code */}
       {onZipCodeChange && (
-        <div className="sm:col-span-2">
+        <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Zip Code</label>
-          <input
-            type="text"
-            value={zipCodeValue || ""}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onZipCodeChange(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
-            placeholder="Zip Code"
-            style={{ marginTop: "4px", marginBottom: "8px" }}
-          />
+          {readOnly && zipCodeValue ? (
+            <input
+              type="text"
+              value={zipCodeValue || ""}
+              readOnly
+              tabIndex={-1}
+              className={readOnlyInputClass}
+              style={{ marginTop: "4px", marginBottom: "8px", minHeight: "38px" }}
+            />
+          ) : (
+            <SearchableSelect
+              key={`zip-${zipCodeValue}-${cityValue}`}
+              value={zipCodeValue || ""}
+              onChange={(zip) => onZipCodeChange(zip)}
+              options={getZipCodeOptions()}
+              placeholder="Select Zip Code"
+              searchPlaceholder="Search zip code..."
+            />
+          )}
           {errors?.zipCode && <p className="text-red-500 text-xs mt-1">{errors.zipCode}</p>}
         </div>
       )}

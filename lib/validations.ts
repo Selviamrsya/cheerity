@@ -17,6 +17,8 @@ export const signUpUserSchema = z
     state: z.string().min(2, "State/Province is required"),
     zipCode: z.string().min(3, "Zip Code is required"),
     address: z.string().min(5, "Address is required"),
+    latitude: z.number().optional(),
+    longitude: z.number().optional(),
     password: z.string().min(6, "Password must be at least 6 characters"),
     confirmPassword: z.string().min(6, "Confirm password is required"),
   })
@@ -37,6 +39,8 @@ export const signUpInstitutionSchema = z
     state: z.string().min(2, "State/Province is required"),
     zipCode: z.string().min(3, "Zip Code is required"),
     address: z.string().min(5, "Address is required"),
+    latitude: z.number().optional(),
+    longitude: z.number().optional(),
     verificationEvidence: z
       .string()
       .min(1, "Verification evidence is required"),

@@ -26,11 +26,11 @@ interface DonationDetailClientProps {
   user: {
     id: string;
     name: string;
-    phone: string;
-    city: string;
-    state: string;
-    zipCode: string;
-    address: string;
+    phone: string | null;
+    city: string | null;
+    state: string | null;
+    zipCode: string | null;
+    address: string | null;
   } | null;
 }
 
@@ -49,26 +49,24 @@ const DonationDetailClient: React.FC<DonationDetailClientProps> = ({
       />
 
       {/* Tabs: Description & About Us */}
-      <div className="donation-detail-tabs-section">
-        <div className="donation-detail-tabs-content">
-          <div className="flex border-b border-gray-200 gap-8 mb-8">
+      <div className="mt-7 w-full px-0 sm:px-0">
+        <div className="flex flex-col gap-2">
+          <div className="flex border-b border-gray-200 gap-8">
             <button
               onClick={() => setActiveTab("description")}
-              className={`pb-3 text-base font-semibold transition-colors relative ${
-                activeTab === "description"
-                  ? "text-green-800 border-b-2 border-green-800"
-                  : "text-gray-500 hover:text-gray-800"
-              }`}
+              className={`pb-3 text-base font-semibold transition-colors relative ${activeTab === "description"
+                ? "text-green-800 border-b-2 border-green-800"
+                : "text-gray-500 hover:text-gray-800"
+                }`}
             >
               Description
             </button>
             <button
               onClick={() => setActiveTab("about_us")}
-              className={`pb-3 text-base font-semibold transition-colors relative ${
-                activeTab === "about_us"
-                  ? "text-green-800 border-b-2 border-green-800"
-                  : "text-gray-500 hover:text-gray-800"
-              }`}
+              className={`pb-3 text-base font-semibold transition-colors relative ${activeTab === "about_us"
+                ? "text-green-800 border-b-2 border-green-800"
+                : "text-gray-500 hover:text-gray-800"
+                }`}
             >
               About Us
             </button>

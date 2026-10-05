@@ -6,7 +6,7 @@ import { Toaster } from "@/components/ui/toast";
 export const metadata: Metadata = {
   title: "Cheerity — Give a Box, Light a Future",
   description:
-    "Cheerity is a donation platform designed to make giving feel simple, secure, and meaningful.",
+    "Cheerity is a donation platform",
 };
 
 const RootLayout = ({ children }: { children: ReactNode }) => {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/auth";
+import { getSession } from "@/lib/auth";
 import { db } from "@/app/database/drizzle";
 import { donateRecords, donations } from "@/app/database/schema";
 import { eq } from "drizzle-orm";
@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getSession(request.headers);
 
     if (!session?.user?.id || session.user.role !== "USER") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

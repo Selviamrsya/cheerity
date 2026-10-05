@@ -2,62 +2,53 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { Session } from "next-auth";
-import { signOut } from "next-auth/react";
+import { usePathname, useRouter } from "next/navigation";
 import {
-  Bell,
   LogIn,
-  Check,
   LogOut,
   LayoutDashboard,
-  ShieldCheck,
   Building2,
   User,
+  Menu,
+  X,
 } from "lucide-react";
-import React, { useState, useEffect, useRef } from "react";
-import { getNotifications, markNotificationRead } from "@/lib/actions/donation";
+import React, { useEffect, useRef, useState } from "react";
+import { authClient } from "@/lib/auth-client";
+import { NotificationMenu } from "@/components/ui/notification-menu";
+import {
+  NavbarAvatarButton,
+  NavbarShell,
+  NavLink,
+  SignInButton,
+} from "@/components/ui/navbar-shell";
+import {
+  ProfileDropdown,
+  ProfileMenuItem,
+  ProfileSignOutButton,
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  type: string;
-  isRead: boolean;
-  createdAt: Date | null;
-}
 
-const Header = ({ session }: { session: Session | null }) => {
+const Header = ({ session }: { session: any }) => {
   const pathname = usePathname();
+  const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-
-  const notifRef = useRef<HTMLDivElement>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-
-    handleResize();
     window.addEventListener("scroll", handleScroll);
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleResize);
-    };
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close dropdowns when clicking outside
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
-        setNotifOpen(false);
-      }
       if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
         setProfileOpen(false);
       }
@@ -66,219 +57,188 @@ const Header = ({ session }: { session: Session | null }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Fetch notifications when user opens the dropdown (only for USER role)
-  const handleNotifToggle = async () => {
-    setNotifOpen((prev) => !prev);
-    if (!notifOpen && session?.user?.id && session.user.role === "USER") {
-      const data = await getNotifications(session.user.id, "USER");
-      setNotifications(data as Notification[]);
-    }
-  };
-
-  const handleMarkRead = async (id: string) => {
-    await markNotificationRead(id);
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
-    );
-  };
-
   const isActive = (path: string) => {
     if (path === "/") return pathname === "/";
     return pathname.startsWith(path);
   };
 
   const isHome = pathname === "/";
-  const isTransparent = isHome && !scrolled && !isMobile;
+  const overlay = isHome && !scrolled && !mobileOpen;
+  const userInitial = session?.user?.name
+    ? session.user.name.trim().charAt(0).toUpperCase()
+    : "U";
 
   const navItems = [
     { label: "Home", href: "/" },
     { label: "Find a Donation", href: "/donate" },
-    ...(session?.user?.role === "USER" ? [{ label: "History", href: "/history" }] : []),
+    ...(session?.user?.role === "USER"
+      ? [{ label: "History", href: "/history" }]
+      : []),
   ];
-
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
-  const userInitial = session?.user?.name ? session.user.name.trim().charAt(0).toUpperCase() : "U";
 
   return (
     <>
-      <header className={`navbar ${isTransparent ? "transparent" : "scrolled"}`}>
-        <nav className="navbar-inner flex items-center justify-between">
-          {/* Logo left */}
-          <Link href="/" className="navbar-logo">
-            <Image
-              src={isTransparent ? "/assets/logo-white.png" : "/assets/logo.png"}
-              alt="Cheerity"
-              width={140}
-              height={36}
-              priority
+      <NavbarShell overlay={overlay}>
+        <Link href="/" className="flex shrink-0 items-center">
+          <Image
+            src={overlay ? "/assets/logo-white.png" : "/assets/logo.png"}
+            alt="Cheerity"
+            width={140}
+            height={36}
+            priority
+          />
+        </Link>
+
+        <div className="flex items-center gap-2 sm:gap-4">
+          <ul className="hidden items-center gap-1 list-none md:flex lg:gap-3">
+            {navItems.map((item) => (
+              <li key={item.label}>
+                <NavLink href={item.href} active={isActive(item.href)} overlay={overlay}>
+                  {item.label}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+
+          {session?.user?.role === "USER" && (
+            <NotificationMenu
+              userId={session.user.id}
+              role="USER"
+              overlay={overlay}
             />
-          </Link>
+          )}
 
-          {/* Right section: Navbar links placed left of notification & profile */}
-          <div className="flex items-center gap-4 sm:gap-6">
-            {/* Navbar Links */}
-            <ul className="flex items-center gap-1 sm:gap-3 list-none">
-              {navItems.map((item) => (
-                <li key={item.label}>
-                  <Link
-                    href={item.href}
-                    className={`navbar-link ${isActive(item.href) ? "active" : ""}`}
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+          {session ? (
+            <div className="relative" ref={profileRef}>
+              <NavbarAvatarButton
+                onClick={() => setProfileOpen(!profileOpen)}
+                aria-label="Profile Menu"
+              >
+                {userInitial}
+              </NavbarAvatarButton>
 
-            {/* Notification Bell - Only for USER role */}
-            {session?.user?.role === "USER" && (
-              <div className="relative" ref={notifRef}>
-                <button
-                  className="navbar-icon-btn"
-                  aria-label="Notifications"
-                  onClick={handleNotifToggle}
-                >
-                  <Bell className="h-5 w-5" />
-                  {unreadCount > 0 && <span className="notification-dot" />}
-                </button>
-
-                {/* Notification dropdown */}
-                {notifOpen && (
-                  <div className="notif-dropdown">
-                    <div className="notif-header">
-                      <span className="font-semibold text-sm">Notifications</span>
-                      {unreadCount > 0 && (
-                        <span className="notif-badge">{unreadCount} new</span>
-                      )}
-                    </div>
-                    <div className="notif-list">
-                      {notifications.length === 0 ? (
-                        <p className="notif-empty">No notifications yet</p>
-                      ) : (
-                        notifications.map((n) => (
-                          <div
-                            key={n.id}
-                            className={`notif-item ${!n.isRead ? "unread" : ""}`}
-                            onClick={() => handleMarkRead(n.id)}
-                          >
-                            <div className="notif-item-title">{n.title}</div>
-                            <div className="notif-item-message">{n.message}</div>
-                            {n.isRead && <Check className="notif-read-icon h-3 w-3" />}
-                          </div>
-                        ))
-                      )}
+              {profileOpen && (
+                <ProfileDropdown>
+                  <div className="flex items-center gap-3 border-b border-outline px-3 py-2.5">
+                    <div className="min-w-0 overflow-hidden">
+                      <p className="truncate font-poppins text-[13.5px] leading-tight font-semibold text-text-main">
+                        {session.user?.name}
+                      </p>
+                      <p className="mt-0.5 truncate font-inter text-[11.5px] text-text-muted">
+                        {session.user?.email}
+                      </p>
                     </div>
                   </div>
-                )}
-              </div>
-            )}
 
-            {/* Auth / Profile section with interactive Popup Dropdown */}
-            {session ? (
-              <div className="relative" ref={profileRef}>
-                <button
-                  type="button"
-                  onClick={() => setProfileOpen(!profileOpen)}
-                  className="navbar-avatar flex items-center justify-center font-bold text-sm bg-green-800 text-white cursor-pointer"
-                  aria-label="Profile Menu"
-                >
-                  {userInitial}
-                </button>
+                  <div className="py-1">
+                    {session.user?.role === "ADMIN" && (
+                      <>
+                        <ProfileMenuItem href="/admin" onClick={() => setProfileOpen(false)}>
+                          <LayoutDashboard className="h-4 w-4 text-green-700" />
+                          <span>Admin Dashboard</span>
+                        </ProfileMenuItem>
+                        <ProfileMenuItem
+                          href="/admin/profile"
+                          onClick={() => setProfileOpen(false)}
+                        >
+                          <User className="h-4 w-4 text-green-700" />
+                          <span>Admin Profile</span>
+                        </ProfileMenuItem>
+                      </>
+                    )}
 
-                {/* Profile Popup Dropdown */}
-                {profileOpen && (
-                  <div className="profile-dropdown">
-                    {/* User info header */}
-                    <div className="profile-dropdown-header">
-                      <div className="profile-dropdown-info">
-                        <p className="profile-dropdown-name">
-                          {session.user?.name}
-                        </p>
-                        <p className="profile-dropdown-email">{session.user?.email}</p>
-                      </div>
-                    </div>
+                    {session.user?.role === "INSTITUTION" && (
+                      <>
+                        <ProfileMenuItem
+                          href="/institution"
+                          onClick={() => setProfileOpen(false)}
+                        >
+                          <Building2 className="h-4 w-4 text-gray-700" />
+                          <span>Institution Dashboard</span>
+                        </ProfileMenuItem>
+                        <ProfileMenuItem
+                          href="/institution/profile"
+                          onClick={() => setProfileOpen(false)}
+                        >
+                          <User className="h-4 w-4 text-gray-700" />
+                          <span>Institution Profile</span>
+                        </ProfileMenuItem>
+                      </>
+                    )}
 
-                    {/* Role-specific Actions */}
-                    <div className="profile-dropdown-menu">
-                      {session.user?.role === "ADMIN" && (
-                        <>
-                          <Link
-                            href="/admin"
-                            onClick={() => setProfileOpen(false)}
-                            className="profile-dropdown-item"
-                          >
-                            <LayoutDashboard className="w-4 h-4 text-green-700" />
-                            <span>Admin Dashboard</span>
-                          </Link>
-                          <Link
-                            href="/admin/profile"
-                            onClick={() => setProfileOpen(false)}
-                            className="profile-dropdown-item"
-                          >
-                            <User className="w-4 h-4 text-green-700" />
-                            <span>Admin Profile</span>
-                          </Link>
-                        </>
-                      )}
-
-                      {session.user?.role === "INSTITUTION" && (
-                        <>
-                          <Link
-                            href="/institution"
-                            onClick={() => setProfileOpen(false)}
-                            className="profile-dropdown-item"
-                          >
-                            <Building2 className="w-4 h-4 text-green-700" />
-                            <span>Institution Dashboard</span>
-                          </Link>
-                          <Link
-                            href="/institution/profile"
-                            onClick={() => setProfileOpen(false)}
-                            className="profile-dropdown-item"
-                          >
-                            <User className="w-4 h-4 text-green-700" />
-                            <span>Institution Profile</span>
-                          </Link>
-                        </>
-                      )}
-
-                      {session.user?.role === "USER" && (
-                        <>
-                          <Link
-                            href="/my-profile"
-                            onClick={() => setProfileOpen(false)}
-                            className="profile-dropdown-item"
-                          >
-                            <User className="w-4 h-4 text-green-700" />
-                            <span>My Profile</span>
-                          </Link>
-                        </>
-                      )}
-                    </div>
-
-                    {/* Direct Sign Out button */}
-                    <div className="profile-dropdown-footer">
-                      <button
-                        type="button"
-                        onClick={() => signOut({ callbackUrl: "/" })}
-                        className="profile-dropdown-signout"
+                    {session.user?.role === "USER" && (
+                      <ProfileMenuItem
+                        href="/my-profile"
+                        onClick={() => setProfileOpen(false)}
                       >
-                        <LogOut className="w-4 h-4" />
-                        <span>Sign Out</span>
-                      </button>
-                    </div>
+                        <User className="h-4 w-4 text-green-700" />
+                        <span>My Profile</span>
+                      </ProfileMenuItem>
+                    )}
                   </div>
-                )}
-              </div>
-            ) : (
-              <Link href="/sign-in" className="navbar-signin-btn">
-                <LogIn className="h-4 w-4" />
-                <span>Sign In</span>
-              </Link>
+
+                  <div className="border-t border-outline pt-1">
+                    <ProfileSignOutButton
+                      onClick={async () => {
+                        await authClient.signOut({
+                          fetchOptions: {
+                            onSuccess: () => {
+                              router.push("/");
+                              router.refresh();
+                            },
+                          },
+                        });
+                      }}
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Sign Out</span>
+                    </ProfileSignOutButton>
+                  </div>
+                </ProfileDropdown>
+              )}
+            </div>
+          ) : (
+            <SignInButton overlay={overlay}>
+              <LogIn className="h-4 w-4" />
+              <span className="hidden sm:inline">Sign In</span>
+            </SignInButton>
+          )}
+
+          <button
+            type="button"
+            className={cn(
+              "inline-flex h-10 w-10 items-center justify-center rounded-full md:hidden",
+              overlay ? "text-white" : "text-on-surface"
             )}
-          </div>
-        </nav>
-      </header>
+            aria-label="Toggle menu"
+            onClick={() => setMobileOpen((v) => !v)}
+          >
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
+      </NavbarShell>
+
+      {mobileOpen && (
+        <div className="fixed inset-x-0 top-[72px] z-40 border-b border-outline bg-white px-4 py-3 shadow-md md:hidden">
+          <ul className="flex flex-col gap-1">
+            {navItems.map((item) => (
+              <li key={item.label}>
+                <Link
+                  href={item.href}
+                  className={cn(
+                    "block rounded-sm px-3 py-2.5 text-sm font-medium",
+                    isActive(item.href)
+                      ? "bg-primary-50 font-semibold text-primary"
+                      : "text-on-surface hover:bg-bg-light"
+                  )}
+                >
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </>
   );
 };

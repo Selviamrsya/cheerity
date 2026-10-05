@@ -1,17 +1,51 @@
 import React from "react";
 import Image from "next/image";
-import { auth } from "@/app/auth";
+import { getSession } from "@/lib/auth";
 import { db } from "@/app/database/drizzle";
 import { users } from "@/app/database/schema";
 import { eq } from "drizzle-orm";
 import { getDonationsWithDistance } from "@/lib/actions/donation";
 import DonationCard from "@/components/DonationCard";
 import Link from "next/link";
+import { headers } from "next/headers";
+import { HomeHero } from "@/components/landing/HomeHero";
+import { InfoCard, TutorialStep } from "@/components/landing/InfoCard";
+import { donationGridClass } from "@/lib/ui";
+import { appButtonVariants } from "@/components/ui/app-button";
+import { cn } from "@/lib/utils";
+
+const tutorialSteps = [
+  {
+    src: "/assets/create-account.png",
+    alt: "create-account",
+    text: "Create an account and select an available donation method.",
+  },
+  {
+    src: "/assets/submit-form.png",
+    alt: "submit-form",
+    text: "Submit the items you wish to donate by completing the form.",
+  },
+  {
+    src: "/assets/wait-verification.png",
+    alt: "wait-verification",
+    text: "Wait for the social organization to review and verify the items.",
+  },
+  {
+    src: "/assets/pickup-item.png",
+    alt: "pickup-item",
+    text: "The item is shipped according to the selected method.",
+  },
+  {
+    src: "/assets/documentation-proof.png",
+    alt: "documentation-proof",
+    text: "The social organization will upload receipt documentation as a proof.",
+  },
+];
 
 const Home = async () => {
-  const session = await auth();
+  const reqHeaders = await headers();
+  const session = await getSession(reqHeaders);
 
-  // Get user's lat/lng for distance calculation
   let userLat: number | null = null;
   let userLng: number | null = null;
 
@@ -28,92 +62,72 @@ const Home = async () => {
   const donations = await getDonationsWithDistance({
     userLat,
     userLng,
-    limit: 4,
+    limit: 3,
   });
 
   return (
     <>
-      {/* Hero Section */}
-      <section className="hero-section">
-        <div className="hero-overlay" />
-        <div className="hero-content">
-          <h1 className="hero-title">
-            Give a Box,<br />Light a Future
-          </h1>
-          <p className="hero-subtitle">
-            Connect your unused belongings with people who truly need them.
-            Every donation makes a difference.
-          </p>
-          <Link href="/donate" className="hero-cta">
-            Find a Donation
-          </Link>
-        </div>
-      </section>
+      <HomeHero />
 
-      {/* Roles description section */}
-      <section className="role-description">
-        <div className="roleDescription-header">
-          <h2 className="roleDescription-title">
+      <section className="mx-auto w-full max-w-345 px-8 py-12 md:px-32 md:py-36">
+        <div className="mx-auto mb-8 max-w-2xl text-center">
+          <h2 className="font-poppins text-2xl font-bold text-text-main md:text-3xl">
             One platform, Two ways to make an impact
           </h2>
-          <p className="roleDescription-subtitle">
+          <p className="mt-2 font-inter text-sm leading-relaxed text-text-muted md:text-base">
             A simple way to connect generosity with real needs. Whether you&apos;re looking to donate usable items or represent an organization seeking support.
           </p>
         </div>
 
-        <div className="role-cards-grid">
-          {/* Card 1: Donate */}
-          <div className="role-card">
-            <Image
-              src="/assets/donate.png"
-              alt="Donate"
-              width={56}
-              height={56}
-              className="role-card-img"
-            />
-            <div className="role-card-content">
-              <h3 className="role-card-title">Donate</h3>
-              <p className="role-card-text">
-                Give unused but valuable items a new purpose by donating them to people who can benefit from them
-              </p>
-            </div>
-          </div>
+        <div className="grid gap-2 grid-cols-2">
+          <InfoCard
+            src="/assets/donate.png"
+            alt="Donate"
+            title="Donate"
+            text="Give unused but valuable items a new purpose by donating them to people who can benefit from them"
+          />
+          <InfoCard
+            src="/assets/distribute.png"
+            alt="Distribute"
+            title="Distribute"
+            text="Help registered institutions and social communities receive and distribute essential supplies directly to people in need."
+          />
+        </div>
+      </section>
 
-          {/* Card 2: Distribute */}
-          <div className="role-card">
-            <Image
-              src="/assets/distribute.png"
-              alt="Distribute"
-              width={56}
-              height={56}
-              className="role-card-img"
-            />
-            <div className="role-card-content">
-              <h3 className="role-card-title">Distribute</h3>
-              <p className="role-card-text">
-                Help registered institutions and social communities receive and distribute essential supplies directly to people in need.
-              </p>
-            </div>
+      <section className="bg-primary text-white">
+        <div className="mx-auto w-full max-w-345 px-8 py-12 md:px-32 md:py-24">
+          <h2 className="mb-8 text-center font-poppins text-2xl font-bold md:text-3xl">
+            How it works
+          </h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {tutorialSteps.map((step, index) => (
+              <TutorialStep
+                key={step.alt}
+                {...step}
+                delay={cn("animate-fade-in", ["delay-100", "delay-200", "delay-300", "delay-400", "delay-500"][index])}
+              />
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Discover Donations Section */}
-      <section className="discover-donations-section">
-        <div className="section-header">
-          <h2 className="section-title">
-            Discover Donations Inspired by What You Care About
-          </h2>
-        </div>
+      <section className="mx-auto w-full max-w-345 px-8 py-12 md:px-32 md:py-24">
+        <h2 className="mb-8 text-center font-poppins text-2xl font-bold text-text-main md:text-3xl">
+          Discover Donations Inspired by What You Care About
+        </h2>
 
         {donations.length === 0 ? (
-          <p className="text-center" style={{ color: "var(--color-on-surface-variant)" }}>
+          <p className="text-center text-on-surface-variant">
             No active donation campaigns yet. Check back soon!
           </p>
         ) : (
-          <div className="donation-grid">
+          <div className={cn(donationGridClass, "xl:grid-cols-3")}>
             {donations.map((donation, index) => (
-              <div key={donation.id} className={`fade-in stagger-${(index % 4) + 1}`}>
+              <div
+                key={donation.id}
+                className={cn("animate-fade-in", ["delay-100", "delay-200", "delay-300"][index % 3])}
+              >
                 <DonationCard
                   id={donation.id}
                   title={donation.title}
@@ -132,85 +146,31 @@ const Home = async () => {
           </div>
         )}
 
-        <div className="text-center mt-8">
-          <Link href="/donate" className="btn-primary" style={{ width: "auto", display: "inline-flex", padding: "12px 32px", margin:"20px 42px" }}>
+        <div className="mt-8 text-center">
+          <Link
+            href="/donate"
+            className={cn(appButtonVariants({ variant: "outline", width: "auto" }), "mx-4")}
+          >
             See All Donations
           </Link>
         </div>
       </section>
 
-  {/* How it works section */}
-    <section className="tutorial-section">
-      <h2 className="tutorial-title">
-        How it works
-      </h2>
-      <div className="tutorial-cards-grid">
-        <div className="tutorial-card">
-          <Image
-            src="/assets/create-account.png"
-            alt="create-account"
-            width={72}
-            height={72}
-            className="tutorial-card-img"
-          />
-          <p className="tutorial-card-text">
-            Create an account and select an available donation method.
+      <section className="bg-primary-50">
+        <div className="mx-auto w-full max-w-3xl px-8 py-12 text-center md:px-12 md:py-16">
+          <h2 className="font-poppins text-2xl font-bold text-text-main md:text-3xl">
+            About Us
+          </h2>
+          <p className="mt-4 font-inter text-sm leading-relaxed text-on-surface md:text-base">
+            Cheerity is an innovative donation platform designed to bridge the gap between compassionate donors and social organizations in need.
+            We ensures that donations are precisely aligned with the actual requirements of social organizations.
+          </p>
+          <p className="mt-3 font-inter text-sm leading-relaxed text-on-surface md:text-base">
+            Our mission is to bridge the gap between those who want to help and those who need it most.
+            Through the good transparency and trust, we&apos;re building a world where everyone can contribute to positive change by creating a seamless ecosystem where every act of kindness finds its place.
           </p>
         </div>
-
-        <div className="tutorial-card">
-          <Image
-            src="/assets/submit-form.png"
-            alt="submit-form"
-            width={56}
-            height={56}
-            className="tutorial-card-img"
-          />
-          <p className="tutorial-card-text">
-            Submit the items you wish to donate by completing the form.
-          </p>
-        </div>
-
-        <div className="tutorial-card">
-          <Image
-            src="/assets/wait-verification.png"
-            alt="wait-verification"
-            width={56}
-            height={56}
-            className="tutorial-card-img"
-          />
-          <p className="tutorial-card-text">
-            Wait for the social organization to review and verify the items.
-          </p>
-        </div>
-
-        <div className="tutorial-card">
-          <Image
-            src="/assets/pickup-item.png"
-            alt="pickup-item"
-            width={56}
-            height={56}
-            className="tutorial-card-img"
-          />
-          <p className="tutorial-card-text">
-            The item is shipped according to the selected method.
-          </p>
-        </div>
-
-        <div className="tutorial-card">
-            <Image
-            src="/assets/documentation-proof.png"
-            alt="documentation-proof"
-            width={56}
-            height={56}
-            className="tutorial-card-img"
-          />
-          <p className="tutorial-card-text">
-            The social organization will upload receipt documentation as a proof.
-          </p>
-        </div>
-      </div>
-    </section>
+      </section>
     </>
   );
 };

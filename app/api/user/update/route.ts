@@ -1,29 +1,58 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/auth";
+import { getSession } from "@/lib/auth";
 import { db } from "@/app/database/drizzle";
-import { users } from "@/app/database/schema";
-import { eq } from "drizzle-orm";
+import { users, institutions } from "@/app/database/schema";
+import { eq, and, ne } from "drizzle-orm";
 import { geocodeAddress } from "@/lib/geocoding";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getSession(request.headers);
 
     if (!session?.user?.id || (session.user.role !== "USER" && session.user.role !== "ADMIN")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
-    const { fullName, phoneNumber, birthdate, address, city, state, zipCode } = body;
+    const { fullName, email, phoneNumber, birthdate, address, city, state, zipCode, street, detailedAddress, latitude, longitude } = body;
 
     // Validate required fields
     if (!fullName || fullName.trim() === "") {
       return NextResponse.json({ error: "Full name is required" }, { status: 400 });
     }
 
+    if (!email || email.trim() === "") {
+      return NextResponse.json({ error: "Email is required" }, { status: 400 });
+    }
+
+    const trimmedEmail = email.trim().toLowerCase();
+
+    // Check if email is taken by another user
+    const [existingUser] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(and(eq(users.email, trimmedEmail), ne(users.id, session.user.id)))
+      .limit(1);
+
+    if (existingUser) {
+      return NextResponse.json({ error: "Email is already in use by another account" }, { status: 400 });
+    }
+
+    // Check if email is taken by an institution
+    const [existingInst] = await db
+      .select({ id: institutions.id })
+      .from(institutions)
+      .where(eq(institutions.email, trimmedEmail))
+      .limit(1);
+
+    if (existingInst) {
+      return NextResponse.json({ error: "Email is already in use by an institution account" }, { status: 400 });
+    }
+
     // Prepare update data
     const updateData: {
       fullName: string;
+      email: string;
       phoneNumber: string | null;
       birthdate: string | null;
       address: string | null;
@@ -34,6 +63,7 @@ export async function POST(request: NextRequest) {
       longitude: number | null;
     } = {
       fullName: fullName.trim(),
+      email: trimmedEmail,
       phoneNumber: phoneNumber || null,
       birthdate: birthdate || null,
       address: address || null,
@@ -44,10 +74,14 @@ export async function POST(request: NextRequest) {
       longitude: null,
     };
 
-    // If address is provided, geocode it to get coordinates
-    if (address && city && state) {
+    // If latitude and longitude are provided from address search, use them directly
+    // Otherwise, if city and state are provided, geocode to get coordinates
+    if (latitude != null && longitude != null) {
+      updateData.latitude = latitude;
+      updateData.longitude = longitude;
+    } else if (city && state) {
       try {
-        const coordinates = await geocodeAddress(address, city, state);
+        const coordinates = await geocodeAddress(address || "", city, state);
         if (coordinates) {
           updateData.latitude = coordinates.lat;
           updateData.longitude = coordinates.lng;

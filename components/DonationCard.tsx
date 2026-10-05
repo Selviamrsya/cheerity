@@ -34,9 +34,9 @@ const DonationCard: React.FC<DonationCardProps> = ({
   const location = [institutionCity, institutionState].filter(Boolean).join(", ");
 
   return (
-    <div className="donation-card">
+    <div className="overflow-hidden rounded-sm border border-outline bg-white">
       {/* Cover image - clickable to view details */}
-      <Link href={`/donations/${id}`} className="donation-card_cover block text-inherit no-underline">
+      <Link href={`/donations/${id}`} className="relative h-50 w-full cursor-pointer overflow-hidden block text-inherit no-underline">
         {cover ? (
           <img src={cover} alt={title} className="object-cover w-full h-full" />
         ) : (
@@ -51,14 +51,14 @@ const DonationCard: React.FC<DonationCardProps> = ({
         )}
       </Link>
 
-      <div className="donation-card_body">
+      <div className="p-4">
         {/* Institution info */}
-        <div className="donation-card_institution">
+        <div className="mb-2 flex items-center gap-2">
           <div
             className="flex items-center justify-center rounded-full text-xs font-bold"
             style={{
-              width: 28,
-              height: 28,
+              width: 24,
+              height: 24,
               background: "var(--color-primary)",
               color: "var(--color-surface)",
               flexShrink: 0,
@@ -66,34 +66,36 @@ const DonationCard: React.FC<DonationCardProps> = ({
           >
             {institutionName.charAt(0).toUpperCase()}
           </div>
-          <span>{institutionName}</span>
+          <span className="text-sm font-medium text-on-surface-variant">
+            {institutionName}
+          </span>
         </div>
 
         {/* Title - clickable to view details */}
-        <Link href={`/donations/${id}`} className="donation-card_title text-inherit no-underline">
+        <Link href={`/donations/${id}`} className="mb-1 line-clamp-2 font-poppins text-base leading-snug font-semibold text-on-surface transition-colors hover:text-primary text-inherit no-underline">
           {title}
         </Link>
 
         {/* Location + Distance */}
-        <div className="donation-card_location">
-          <div className="donation-card_location-left">
+        <div className="mb-2 flex items-center justify-between">
+          <div className="flex items-center gap-1 text-[12.5px] text-on-surface [&_svg]:h-3.5 [&_svg]:w-3.5 [&_svg]:shrink-0">
             <MapPin />
             <span>{location || "Location not set"}</span>
           </div>
-          <span className="donation-card_distance">
-            {distanceKm != null ? `${distanceKm} km away` : "N/A"}
+          <span className="rounded-full bg-surface-container px-2.5 py-0.5 text-xs font-medium text-on-surface-variant">
+            {distanceKm != null ? `${distanceKm} km away` : "Distance unavailable"}
           </span>
         </div>
 
         {/* Progress bar */}
-        <div className="donation-card_progress">
-          <div className="donation-card_progress-bar">
+        <div className="mb-4">
+          <div className="ml-1 h-2 w-full overflow-hidden rounded-full bg-surface-container">
             <div
-              className="donation-card_progress-fill"
+              className="relative h-full rounded-full bg-primary transition-[width] duration-1000"
               style={{ width: `${progress}%` }}
             />
           </div>
-          <p className="donation-card_progress-text">
+          <p className="mt-1.5 ml-1 text-[13px] text-on-surface-variant">
             <strong>{collected}</strong> / {target} items collected
           </p>
         </div>
@@ -102,16 +104,16 @@ const DonationCard: React.FC<DonationCardProps> = ({
         {userId ? (
           <Link
             href={`/donations/${id}/request`}
-            className="donate-now-button"
-            style={{ marginTop: "12px", width: "100%", textAlign: "center" }}
+            className="block w-full rounded-sm bg-primary px-4 py-2.5 text-center text-sm font-semibold text-white no-underline transition-all hover:bg-primary-dark hover:-translate-y-px"
+            style={{ width: "100%", textAlign: "center" }}
           >
             Donate Now
           </Link>
         ) : (
           <Link
             href="/sign-in"
-            className="donate-now-button"
-            style={{ marginTop: "12px", width: "100%", textAlign: "center" }}
+            className="block w-full rounded-sm bg-primary px-4 py-2.5 text-center text-sm font-semibold text-white no-underline transition-all hover:bg-primary-dark hover:-translate-y-px"
+            style={{width: "100%", textAlign: "center" }}
           >
             Sign In to Donate
           </Link>

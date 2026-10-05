@@ -1,12 +1,13 @@
 import React from "react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { auth } from "@/app/auth";
+import { getSession } from "@/lib/auth";
 import { db } from "@/app/database/drizzle";
 import { users, institutions } from "@/app/database/schema";
 import { eq } from "drizzle-orm";
 import { getDonationById } from "@/lib/actions/donation";
 import DonationRequestForm from "@/components/DonationRequestForm";
+import { headers } from "next/headers";
 
 const DonationRequestPage = async ({
   params,
@@ -14,7 +15,8 @@ const DonationRequestPage = async ({
   params: Promise<{ id: string }>;
 }) => {
   const { id } = await params;
-  const session = await auth();
+  const reqHeaders = await headers();
+  const session = await getSession(reqHeaders);
 
   if (!session?.user?.id || (session.user.role !== "USER" && session.user.role !== "ADMIN")) {
     redirect("/sign-in");

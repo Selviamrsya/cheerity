@@ -1,10 +1,12 @@
 import React from "react";
-import { auth } from "@/app/auth";
+import { getSession } from "@/lib/auth";
 import { getInstitutionDonationHistory } from "@/lib/actions/donation";
 import InstitutionHistoryClient from "@/components/InstitutionHistoryClient";
+import { headers } from "next/headers";
 
 const InstitutionHistoryPage = async () => {
-  const session = await auth();
+  const reqHeaders = await headers();
+  const session = await getSession(reqHeaders);
   const institutionId = session?.user?.id as string;
 
   const records = await getInstitutionDonationHistory(institutionId);

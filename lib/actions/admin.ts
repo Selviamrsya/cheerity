@@ -1,12 +1,13 @@
 "use server";
 
-import { eq, count, desc, sql, ilike, and } from "drizzle-orm";
+import { eq, count, desc, sql, ilike, and, inArray } from "drizzle-orm";
 import { db } from "@/app/database/drizzle";
-import { users, institutions, donations, donateRecords } from "@/app/database/schema";
-import { sendEmail, emailTemplates } from "@/lib/workflow";
+import { users, institutions, donations, donateRecords, sessions, account, notifications } from "@/app/database/schema";
 import { revalidatePath } from "next/cache";
-import { auth } from "@/app/auth";
+import { getSession, auth } from "@/lib/auth";
 import { geocodeAddress } from "@/lib/geocoding";
+import { sendEmail, emailTemplates } from "@/lib/email";
+import { headers } from "next/headers";
 
 // Get stats for admin dashboard
 export const getAdminDashboardStats = async () => {
@@ -14,17 +15,17 @@ export const getAdminDashboardStats = async () => {
     const [totalUsers] = await db
       .select({ count: count() })
       .from(users)
-      .where(sql`${users.role}::text = 'USER'`);
+      .where(eq(users.role, "USER"));
 
     const [totalInstitutions] = await db
       .select({ count: count() })
       .from(institutions)
-      .where(sql`${institutions.status}::text = 'APPROVED'`);
+      .where(eq(institutions.status, "APPROVED"));
 
     const [pendingInstitutions] = await db
       .select({ count: count() })
       .from(institutions)
-      .where(sql`${institutions.status}::text = 'PENDING'`);
+      .where(eq(institutions.status, "PENDING"));
 
     const [totalDonations] = await db.select({ count: count() }).from(donations);
 
@@ -189,7 +190,7 @@ export const getInstitutions = async (
 ) => {
   try {
     const statusCondition = status
-      ? sql`${institutions.status}::text = ${status}`
+      ? eq(institutions.status, status)
       : undefined;
     const searchCondition = search
       ? ilike(institutions.institutionName, `%${search}%`)
@@ -232,9 +233,14 @@ export const approveInstitution = async (institutionId: string) => {
       .set({ status: "APPROVED" })
       .where(eq(institutions.id, institutionId));
 
-    // Send approval email
+    await db
+      .update(users)
+      .set({ status: "APPROVED" })
+      .where(eq(users.id, institutionId));
+
+    // Send approval email to institution
     const template = emailTemplates.institutionApproved(institution.institutionName);
-    await sendEmail({ email: institution.email, ...template });
+    await sendEmail({ to: institution.email, ...template });
 
     revalidatePath("/admin/institutions");
     return { success: true };
@@ -244,7 +250,7 @@ export const approveInstitution = async (institutionId: string) => {
   }
 };
 
-// Admin rejects an institution
+// Admin rejects an institution - performs DELETE with cascade
 export const rejectInstitution = async (
   institutionId: string,
   reason?: string
@@ -253,19 +259,58 @@ export const rejectInstitution = async (
     const institution = await getInstitutionById(institutionId);
     if (!institution) return { success: false, error: "Institution not found." };
 
+    // 1. Get all donations for this institution
+    const institutionDonations = await db
+      .select({ id: donations.id })
+      .from(donations)
+      .where(eq(donations.institutionId, institutionId));
+
+    const donationIds = institutionDonations.map(d => d.id);
+
+    // 2. Delete donate_records related to these donations
+    if (donationIds.length > 0) {
+      await db
+        .delete(donateRecords)
+        .where(inArray(donateRecords.donationId, donationIds));
+    }
+
+    // 3. Delete the donations
     await db
-      .update(institutions)
-      .set({ status: "REJECTED" })
+      .delete(donations)
+      .where(eq(donations.institutionId, institutionId));
+
+    // 4. Delete notifications for this institution
+    await db
+      .delete(notifications)
+      .where(
+        and(
+          eq(notifications.recipientId, institutionId),
+          eq(notifications.recipientType, "INSTITUTION")
+        )
+      );
+
+    // 5. Delete sessions for the user record
+    await db
+      .delete(sessions)
+      .where(eq(sessions.userId, institutionId));
+
+    // 6. Delete account records for the user
+    await db
+      .delete(account)
+      .where(eq(account.userId, institutionId));
+
+    // 7. Delete the user record (shares ID with institution)
+    await db
+      .delete(users)
+      .where(eq(users.id, institutionId));
+
+    // 8. Delete the institution record
+    await db
+      .delete(institutions)
       .where(eq(institutions.id, institutionId));
 
-    // Send rejection email
-    const template = emailTemplates.institutionRejected(
-      institution.institutionName,
-      reason
-    );
-    await sendEmail({ email: institution.email, ...template });
-
     revalidatePath("/admin/institutions");
+    revalidatePath("/admin");
     return { success: true };
   } catch (error) {
     console.error("Reject institution error:", error);
@@ -284,7 +329,7 @@ export const updateInstitutionAddress = async (
   }
 ) => {
   try {
-    const session = await auth();
+    const session = await getSession(await headers());
     if (!session?.user?.id || session.user.role !== "ADMIN") {
       return { success: false, error: "Unauthorized" };
     }
@@ -332,39 +377,3 @@ export const updateInstitutionAddress = async (
   }
 };
 
-// Admin toggles an institution's account status (APPROVED = Active, REJECTED = Inactive)
-export const toggleInstitutionAccountStatus = async (
-  institutionId: string,
-  newStatus: "APPROVED" | "REJECTED"
-) => {
-  try {
-    const session = await auth();
-    if (!session?.user?.id || session.user.role !== "ADMIN") {
-      return { success: false, error: "Unauthorized" };
-    }
-
-    const institution = await getInstitutionById(institutionId);
-    if (!institution) return { success: false, error: "Institution not found." };
-
-    await db
-      .update(institutions)
-      .set({ status: newStatus })
-      .where(eq(institutions.id, institutionId));
-
-    if (newStatus === "APPROVED") {
-      try {
-        const template = emailTemplates.institutionApproved(institution.institutionName);
-        await sendEmail({ email: institution.email, ...template });
-      } catch (e) {
-        console.error("Email send error on activation:", e);
-      }
-    }
-
-    revalidatePath(`/admin/institutions/${institutionId}`);
-    revalidatePath("/admin/institutions");
-    return { success: true };
-  } catch (error) {
-    console.error("Toggle institution account status error:", error);
-    return { success: false, error: "Failed to update institution account status." };
-  }
-};

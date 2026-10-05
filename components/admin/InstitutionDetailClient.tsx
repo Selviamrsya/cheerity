@@ -7,22 +7,18 @@ import {
   approveInstitution,
   rejectInstitution,
   updateInstitutionAddress,
-  toggleInstitutionAccountStatus,
 } from "@/lib/actions/admin";
 import {
   ArrowLeft,
-  CheckCircle2,
-  XCircle,
-  Clock,
   FileText,
   ExternalLink,
   Loader2,
   Edit2,
-  MapPin,
   Power,
   PowerOff,
   AlertTriangle,
 } from "lucide-react";
+import LocationFields from "@/components/LocationFields";
 
 interface InstitutionDetailClientProps {
   institution: {
@@ -51,8 +47,8 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionType, setActionType] = useState<string | null>(null);
 
-  // Address edit modal state
-  const [addressModalOpen, setAddressModalOpen] = useState(false);
+  // Address edit mode state
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [addressData, setAddressData] = useState({
     address: institution.address || "",
     city: institution.city || "",
@@ -63,10 +59,6 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
   // Rejection modal state
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
-
-  // Toggle status confirmation modal
-  const [toggleModalOpen, setToggleModalOpen] = useState(false);
-  const [targetStatus, setTargetStatus] = useState<"APPROVED" | "REJECTED" | null>(null);
 
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -99,7 +91,7 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
     }
   };
 
-  // Reject action (for pending review)
+  // Reject action (for pending review) - performs DELETE
   const handleRejectSubmit = async () => {
     setIsSubmitting(true);
     setActionType("reject");
@@ -110,17 +102,22 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
     setRejectModalOpen(false);
 
     if (res.success) {
-      setCurrentStatus("REJECTED");
-      setSuccessMsg("Institusi telah ditolak.");
-      router.refresh();
+      setSuccessMsg("Institusi telah ditolak dan dihapus dari database. Email tersebut sekarang bebas untuk Sign Up baru.");
+      setTimeout(() => {
+        router.push("/admin/institutions");
+      }, 1500);
     } else {
       setErrorMsg(res.error ?? "Failed to reject institution.");
     }
   };
 
   // Save updated address
-  const handleSaveAddress = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveAddress = async () => {
+    if (!addressData.address.trim() || !addressData.city.trim() || !addressData.state.trim()) {
+      setErrorMsg("Please fill out full address, province, and city.");
+      return;
+    }
+
     setIsSubmitting(true);
     setActionType("updateAddress");
     setErrorMsg(null);
@@ -136,70 +133,33 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
         state: addressData.state,
         zipCode: addressData.zipCode,
       });
+      setIsEditingAddress(false);
       setSuccessMsg("Alamat institusi berhasil diperbarui!");
-      setAddressModalOpen(false);
       router.refresh();
     } else {
       setErrorMsg(res.error ?? "Gagal memperbarui alamat institusi.");
     }
   };
 
-  // Toggle active/inactive account status
-  const handleToggleStatusConfirm = async () => {
-    if (!targetStatus) return;
-    setIsSubmitting(true);
-    setActionType("toggleStatus");
+  // Cancel address editing
+  const handleCancelAddressEdit = () => {
+    setAddressData({
+      address: currentAddress.address || "",
+      city: currentAddress.city || "",
+      state: currentAddress.state || "",
+      zipCode: currentAddress.zipCode || "",
+    });
+    setIsEditingAddress(false);
     setErrorMsg(null);
-    setSuccessMsg(null);
-
-    const res = await toggleInstitutionAccountStatus(institution.id, targetStatus);
-    setIsSubmitting(false);
-    setToggleModalOpen(false);
-
-    if (res.success) {
-      setCurrentStatus(targetStatus);
-      setSuccessMsg(
-        targetStatus === "APPROVED"
-          ? "Akun institusi berhasil diaktifkan."
-          : "Akun institusi berhasil dinonaktifkan."
-      );
-      router.refresh();
-    } else {
-      setErrorMsg(res.error ?? "Gagal mengubah status akun institusi.");
-    }
   };
 
-  const getStatusBadge = (status: string | null) => {
-    switch (status) {
-      case "PENDING":
-        return (
-          <span className="admin-badge admin-badge-pending">
-            <Clock className="w-3.5 h-3.5" /> Pending Review
-          </span>
-        );
-      case "APPROVED":
-        return (
-          <span className="admin-badge admin-badge-approved">
-            <CheckCircle2 className="w-3.5 h-3.5" /> Active
-          </span>
-        );
-      case "REJECTED":
-        return (
-          <span className="admin-badge admin-badge-rejected">
-            <XCircle className="w-3.5 h-3.5" /> Inactive
-          </span>
-        );
-      default:
-        return null;
-    }
-  };
 
   const registrationDate = institution.createdAt
     ? new Date(institution.createdAt).toLocaleDateString("id-ID", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      })
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    })
     : "-";
 
   return (
@@ -226,86 +186,141 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
       )}
 
       {/* Main Details Card */}
-      <div className="admin-detail-card">
-        {/* Header with Title and Status */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-gray-100">
+      <div className="flex w-full flex-col gap-6 px-0 py-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] sm:p-0">
+        {/* Header with Title */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-gray-100"
+        >
           <div>
-            <h1 className="admin-title">Detail Institusi</h1>
-            <p className="admin-subtitle">ID: {institution.id}</p>
+            <h1 className="mb-1 font-poppins text-[22px] font-medium tracking-tight text-text-main md:text-[26px]">Institution Detail</h1>
+            <p className="font-inter text-[13.5px] leading-relaxed text-text-muted">ID: {institution.id}</p>
           </div>
-
-          <div>{getStatusBadge(currentStatus)}</div>
         </div>
 
         {/* Clean Key-Value Data Rows */}
         <div>
-          <div className="admin-detail-row">
-            <span className="admin-detail-label">Registration Date</span>
-            <span className="admin-detail-value">{registrationDate}</span>
+          <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
+            <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Registration Date</span>
+            <span className="text-[13.5px] font-medium text-text-main">{registrationDate}</span>
           </div>
 
-          <div className="admin-detail-row">
-            <span className="admin-detail-label">Institution Name</span>
-            <span className="admin-detail-value font-bold">
+          <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
+            <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Institution Name</span>
+            <span className="text-[13.5px] font-medium text-text-main font-bold">
               {institution.institutionName}
             </span>
           </div>
 
-          <div className="admin-detail-row">
-            <span className="admin-detail-label">Email</span>
-            <span className="admin-detail-value">{institution.email}</span>
+          <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
+            <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Email</span>
+            <span className="text-[13.5px] font-medium text-text-main">{institution.email}</span>
           </div>
 
-          <div className="admin-detail-row">
-            <span className="admin-detail-label">Phone Number</span>
-            <span className="admin-detail-value">
+          <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
+            <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Phone Number</span>
+            <span className="text-[13.5px] font-medium text-text-main">
               {institution.phoneNumber || "-"}
             </span>
           </div>
 
-          <div className="admin-detail-row">
-            <span className="admin-detail-label">Location</span>
-            <span className="admin-detail-value">
+          <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
+            <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Location</span>
+            <span className="text-[13.5px] font-medium text-text-main">
               {[currentAddress.city, currentAddress.state, currentAddress.zipCode]
                 .filter(Boolean)
                 .join(", ") || "-"}
             </span>
           </div>
 
-          {/* Address row with Edit Address button */}
-          <div className="admin-detail-row">
-            <span className="admin-detail-label">Address</span>
-            <div className="flex items-center justify-between gap-4 w-full">
-              <span className="admin-detail-value">
-                {currentAddress.address || "-"}
-              </span>
-              <button
-                type="button"
-                onClick={() => {
-                  setAddressData({
-                    address: currentAddress.address || "",
-                    city: currentAddress.city || "",
-                    state: currentAddress.state || "",
-                    zipCode: currentAddress.zipCode || "",
-                  });
-                  setAddressModalOpen(true);
-                }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-green-800 hover:bg-green-50 rounded-sm border border-green-700 transition-colors cursor-pointer shrink-0"
-              >
-                <Edit2 className="w-3.5 h-3.5" />
-                <span>Ubah Alamat</span>
-              </button>
+          {/* Address row with inline editing */}
+          <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3 items-start">
+            <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Address</span>
+            <div className="flex-1 w-full">
+              {!isEditingAddress ? (
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-[13.5px] font-medium text-text-main">
+                    {currentAddress.address || "-"}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingAddress(true)}
+                    className="inline-flex items-center gap-1.5 px-6 py-3 text-xs font-semibold text-gray-500 hover:text-green-800 cursor-pointer"
+                    style={{ padding: "8px 12px" }}
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                    <span>Change address</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3 w-full">
+                  {errorMsg && (
+                    <div className="p-2 bg-red-50 border border-red-200 text-red-700 text-xs rounded-sm">
+                      {errorMsg}
+                    </div>
+                  )}
+
+                  <LocationFields
+                    stateValue={addressData.state}
+                    cityValue={addressData.city}
+                    zipCodeValue={addressData.zipCode}
+                    onStateChange={(val) => setAddressData(prev => ({ ...prev, state: val }))}
+                    onCityChange={(val) => setAddressData(prev => ({ ...prev, city: val }))}
+                    onZipCodeChange={(val) => setAddressData(prev => ({ ...prev, zipCode: val }))}
+                  />
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" style={{ marginBottom: "4px", marginTop: "8px" }}>
+                      Full address
+                    </label>
+                    <textarea
+                      rows={4}
+                      value={addressData.address}
+                      onChange={(e) => setAddressData(prev => ({ ...prev, address: e.target.value }))}
+                      placeholder="Street name, house number, RT/RW, or another detailed information"
+                      className="w-full border border-gray-300 rounded-sm bg-white text-gray-900 text-sm font-sans placeholder:text-gray-400 placeholder:font-normal"
+                      style={{ padding: "8px" }}
+                    />
+                  </div>
+
+                  <div className="flex gap-2 justify-end">
+                    <button
+                      type="button"
+                      onClick={handleSaveAddress}
+                      disabled={isSubmitting}
+                      className="font-medium text-white inline-flex w-auto items-center justify-center gap-2 rounded-sm bg-primary px-6 py-2 font-inter text-[15px] font-semibold text-white transition-all hover:bg-primary-dark disabled:opacity-50"
+                      style={{ width: "auto", padding: "10px 24px" }}
+                    >
+                      {isSubmitting && actionType === "updateAddress" ? (
+                        <>
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          <span>Saving information...</span>
+                        </>
+                      ) : (
+                        "Save changes"
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCancelAddressEdit}
+                      disabled={isSubmitting}
+                      className="inline-flex w-auto items-center justify-center gap-2 rounded-sm border border-outline bg-white px-6 py-2 font-inter text-[15px] font-semibold text-on-surface transition-all hover:bg-bg-light disabled:opacity-50"
+                      style={{ padding: "10px 24px" }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
           {institution.websiteOrSocial && (
-            <div className="admin-detail-row">
-              <span className="admin-detail-label">Website / Social</span>
+            <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
+              <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Website / Social</span>
               <a
                 href={institution.websiteOrSocial}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="admin-detail-value text-green-800 underline inline-flex items-center gap-1.5"
+                className="text-[13.5px] font-medium text-text-main text-green-800 underline inline-flex items-center gap-1.5"
               >
                 <span>{institution.websiteOrSocial}</span>
                 <ExternalLink className="w-3.5 h-3.5" />
@@ -313,17 +328,17 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
             </div>
           )}
 
-          <div className="admin-detail-row">
-            <span className="admin-detail-label">Description</span>
-            <p className="admin-detail-value text-xs sm:text-sm leading-relaxed whitespace-pre-line">
+          <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
+            <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Description</span>
+            <p className="text-[13.5px] font-medium text-text-main text-xs sm:text-sm leading-relaxed whitespace-pre-line">
               {institution.description ||
                 "Tidak ada deskripsi yang dicantumkan."}
             </p>
           </div>
 
           {/* Verification Evidence */}
-          <div className="admin-detail-row items-start">
-            <span className="admin-detail-label">Verification Evidence</span>
+          <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3 items-start">
+            <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Verification Evidence</span>
             <div className="space-y-3">
               {institution.verificationEvidence ? (
                 <div className="space-y-2">
@@ -341,7 +356,7 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
                     className="inline-flex items-center gap-1 text-xs font-bold text-green-800 hover:text-green-950 hover:underline"
                   >
                     <FileText className="w-3.5 h-3.5" />
-                    <span>Buka Berkas Ukuran Penuh</span>
+                    <span>Open full-size file</span>
                   </a>
                 </div>
               ) : (
@@ -353,11 +368,14 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
           </div>
         </div>
 
-        {/* Action Buttons: Pending Review OR Activate / Deactivate Toggle */}
-        <div className="pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="text-xs text-gray-500 font-medium">
-            Account Status:{" "}
-            <strong className="text-gray-800">{currentStatus}</strong>
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-1">
+          <div className="flex flex-col gap-2">
+            <div className="text-xs text-gray-500 font-medium">
+              Account Status:{" "}
+              <strong className="text-gray-800">{currentStatus}</strong>
+            </div>
+
+
           </div>
 
           <div className="flex items-center gap-3">
@@ -367,7 +385,7 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
                   type="button"
                   onClick={() => setRejectModalOpen(true)}
                   disabled={isSubmitting}
-                  className="admin-btn-reject w-full sm:w-auto"
+                  className="cursor-pointer rounded-md border border-danger-border bg-danger-bg px-6 py-2.5 font-inter text-[12.5px] font-medium text-danger transition-all hover:bg-danger-border w-full sm:w-auto"
                 >
                   Reject
                 </button>
@@ -375,7 +393,7 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
                   type="button"
                   onClick={handleApprove}
                   disabled={isSubmitting}
-                  className="admin-btn-accept w-full sm:w-auto justify-center"
+                  className="inline-flex items-center gap-2 rounded-md border-none bg-primary-800 px-6 py-2.5 font-inter text-[12.5px] font-medium text-surface transition-colors hover:bg-primary-900 w-full sm:w-auto justify-center"
                 >
                   {isSubmitting && actionType === "approve" ? (
                     <>
@@ -388,158 +406,9 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
                 </button>
               </>
             )}
-
-            {currentStatus === "APPROVED" && (
-              <button
-                type="button"
-                onClick={() => {
-                  setTargetStatus("REJECTED");
-                  setToggleModalOpen(true);
-                }}
-                disabled={isSubmitting}
-                className="px-4 py-2 bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 text-xs font-semibold rounded-sm transition-colors inline-flex items-center gap-1.5 cursor-pointer"
-              >
-                <PowerOff className="w-3.5 h-3.5" />
-                <span>Nonaktifkan Akun</span>
-              </button>
-            )}
-
-            {currentStatus === "REJECTED" && (
-              <button
-                type="button"
-                onClick={() => {
-                  setTargetStatus("APPROVED");
-                  setToggleModalOpen(true);
-                }}
-                disabled={isSubmitting}
-                className="px-4 py-2 bg-green-700 text-white hover:bg-green-800 text-xs font-semibold rounded-sm transition-colors inline-flex items-center gap-1.5 cursor-pointer"
-              >
-                <Power className="w-3.5 h-3.5" />
-                <span>Aktifkan Akun</span>
-              </button>
-            )}
           </div>
         </div>
       </div>
-
-      {/* Edit Address Modal */}
-      {addressModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="bg-white w-full max-w-lg rounded-sm p-6 sm:p-8 shadow-2xl border border-gray-100 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-              <div className="flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-green-800" />
-                <h3 className="text-base font-bold text-gray-900">
-                  Ubah Alamat Institusi
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setAddressModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 text-sm cursor-pointer"
-              >
-                Tutup
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveAddress} className="space-y-4 pt-1">
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Alamat Lengkap (Jalan, Nomor, RT/RW, Kelurahan, Kecamatan)
-                </label>
-                <textarea
-                  rows={3}
-                  required
-                  value={addressData.address}
-                  onChange={(e) =>
-                    setAddressData({ ...addressData, address: e.target.value })
-                  }
-                  placeholder="Contoh: Jl. Merdeka No. 45"
-                  className="w-full p-2.5 text-xs border border-gray-200 rounded-sm focus:outline-none focus:border-green-800"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Kota / Kabupaten
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={addressData.city}
-                    onChange={(e) =>
-                      setAddressData({ ...addressData, city: e.target.value })
-                    }
-                    placeholder="Contoh: Jakarta Pusat"
-                    className="w-full p-2.5 text-xs border border-gray-200 rounded-sm focus:outline-none focus:border-green-800"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Provinsi
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={addressData.state}
-                    onChange={(e) =>
-                      setAddressData({ ...addressData, state: e.target.value })
-                    }
-                    placeholder="Contoh: DKI Jakarta"
-                    className="w-full p-2.5 text-xs border border-gray-200 rounded-sm focus:outline-none focus:border-green-800"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Kode Pos
-                </label>
-                <input
-                  type="text"
-                  value={addressData.zipCode}
-                  onChange={(e) =>
-                    setAddressData({ ...addressData, zipCode: e.target.value })
-                  }
-                  placeholder="Contoh: 10110"
-                  className="w-full p-2.5 text-xs border border-gray-200 rounded-sm focus:outline-none focus:border-green-800"
-                />
-              </div>
-
-              <p className="text-[11px] text-gray-500">
-                Catatan: Koordinat peta (latitude & longitude) akan otomatis dihitung ulang menggunakan geocoding berdasarkan alamat yang Anda masukkan.
-              </p>
-
-              <div className="flex gap-2.5 justify-end pt-3">
-                <button
-                  type="button"
-                  onClick={() => setAddressModalOpen(false)}
-                  disabled={isSubmitting}
-                  className="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-sm cursor-pointer"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-5 py-2 bg-green-800 hover:bg-green-900 text-white text-xs font-bold rounded-sm transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center gap-1.5"
-                >
-                  {isSubmitting && actionType === "updateAddress" ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      <span>Menyimpan...</span>
-                    </>
-                  ) : (
-                    "Simpan Alamat"
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* Reject Modal */}
       {rejectModalOpen && (
@@ -549,7 +418,7 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
               Tolak Pendaftaran Institusi
             </h3>
             <p className="text-xs text-gray-500 leading-relaxed">
-              Masukkan alasan penolakan berkas. Email pemberitahuan akan otomatis dikirimkan ke pihak institusi.
+              Masukkan alasan penolakan berkas. Email pemberitahuan akan otomatis dikirimkan ke pihak institusi. <strong>Setelah ditolak, seluruh data institusi akan dihapus dan email tersebut dapat digunakan kembali untuk pendaftaran baru.</strong>
             </p>
 
             <textarea
@@ -588,67 +457,7 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
         </div>
       )}
 
-      {/* Toggle Status Confirmation Modal */}
-      {toggleModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="bg-white w-full max-w-md rounded-sm p-6 sm:p-8 shadow-2xl border border-gray-100 space-y-4">
-            <div className="flex items-center gap-3">
-              <div
-                className={`w-9 h-9 rounded-full flex items-center justify-center ${
-                  targetStatus === "APPROVED"
-                    ? "bg-green-100 text-green-800"
-                    : "bg-red-100 text-red-800"
-                }`}
-              >
-                <AlertTriangle className="w-5 h-5" />
-              </div>
-              <h3 className="text-base font-bold text-gray-900">
-                {targetStatus === "APPROVED"
-                  ? "Aktifkan Akun Institusi?"
-                  : "Nonaktifkan Akun Institusi?"}
-              </h3>
-            </div>
 
-            <p className="text-xs text-gray-600 leading-relaxed">
-              {targetStatus === "APPROVED"
-                ? `Apakah Anda yakin ingin mengaktifkan akun institusi "${institution.institutionName}"? Institusi akan dapat masuk ke sistem dan mengelola donasi.`
-                : `Apakah Anda yakin ingin menonaktifkan akun institusi "${institution.institutionName}"? Institusi tidak akan dapat login dan kampanye donasinya tidak akan ditampilkan ke publik.`}
-            </p>
-
-            <div className="flex gap-2.5 justify-end pt-2">
-              <button
-                type="button"
-                onClick={() => setToggleModalOpen(false)}
-                disabled={isSubmitting}
-                className="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-sm cursor-pointer"
-              >
-                Batal
-              </button>
-              <button
-                type="button"
-                onClick={handleToggleStatusConfirm}
-                disabled={isSubmitting}
-                className={`px-5 py-2 text-white text-xs font-bold rounded-sm transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center gap-2 ${
-                  targetStatus === "APPROVED"
-                    ? "bg-green-700 hover:bg-green-800"
-                    : "bg-red-600 hover:bg-red-700"
-                }`}
-              >
-                {isSubmitting && actionType === "toggleStatus" ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Memproses...</span>
-                  </>
-                ) : targetStatus === "APPROVED" ? (
-                  "Aktifkan"
-                ) : (
-                  "Nonaktifkan"
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

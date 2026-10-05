@@ -3,12 +3,13 @@
 import { db } from "@/app/database/drizzle";
 import { users } from "@/app/database/schema";
 import { eq } from "drizzle-orm";
-import { auth } from "@/app/auth";
+import { getSession } from "@/lib/auth";
 import { geocodeAddress } from "@/lib/geocoding";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 
 export async function getUserAddress() {
-  const session = await auth();
+  const session = await getSession(await headers());
   if (!session?.user?.id) return null;
 
   const [user] = await db
@@ -29,7 +30,7 @@ export async function updateUserAddress(params: {
   city: string;
   state: string;
 }) {
-  const session = await auth();
+  const session = await getSession(await headers());
   if (!session?.user?.id) {
     return { success: false, error: "Unauthorized" };
   }
@@ -37,12 +38,12 @@ export async function updateUserAddress(params: {
   const { address, city, state } = params;
 
   try {
-    const coords = await geocodeAddress(address, city, state);
+    const coords = await geocodeAddress(address || "", city, state);
 
     await db
       .update(users)
       .set({
-        address,
+        address: address || null,
         city,
         state,
         latitude: coords?.lat ?? null,

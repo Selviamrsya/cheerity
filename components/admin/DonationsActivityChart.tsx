@@ -107,20 +107,20 @@ export default function DonationsActivityChart({ data }: DonationsActivityChartP
   };
 
   return (
-    <div className="chart-card">
+    <div className="mb-4 flex min-h-[400px] w-full flex-col rounded-sm border border-card-border bg-surface p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
       {/* Header with Title & Filter Buttons */}
-      <div className="chart-header">
+      <div className="flex flex-col gap-2 border-b border-card-border pb-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="chart-title">
+          <h2 className="font-poppins text-lg font-medium text-text-main">
             Donations Activity
           </h2>
-          <p className="chart-subtitle">
+          <p className="mt-1 font-inter text-xs text-text-muted">
             {getPeriodLabel()} &bull; Total: <strong>{totalCount} donation</strong>
           </p>
         </div>
 
         {/* Filter Tabs: Weekly | Monthly | Yearly */}
-        <div className="chart-filter-group">
+        <div className="inline-flex self-start rounded-lg border border-outline bg-surface-container p-1 sm:self-auto">
           {(["weekly", "monthly", "yearly"] as const).map((tab) => (
             <button
               key={tab}
@@ -128,7 +128,7 @@ export default function DonationsActivityChart({ data }: DonationsActivityChartP
                 setPeriod(tab);
                 setHoveredIndex(null);
               }}
-              className={`chart-filter-btn ${period === tab ? "active" : ""}`}
+              className={`cursor-pointer rounded-md border-none bg-transparent px-4 py-1.5 font-inter text-xs font-medium capitalize text-text-muted transition-all hover:text-text-main data-[active=true]:bg-surface data-[active=true]:text-primary-900 data-[active=true]:shadow-sm ${period === tab ? "active" : ""}`}
             >
               {tab}
             </button>
@@ -137,10 +137,10 @@ export default function DonationsActivityChart({ data }: DonationsActivityChartP
       </div>
 
       {/* Interactive SVG Chart */}
-      <div className="chart-svg-container">
+      <div className="relative w-full flex-1 overflow-x-auto">
         <svg
           viewBox={`0 0 ${width} ${height}`}
-          className="chart-svg"
+          className="h-80 min-w-[600px] w-full overflow-visible"
           // preserveAspectRatio="none"
         >
           <defs>
@@ -160,14 +160,14 @@ export default function DonationsActivityChart({ data }: DonationsActivityChartP
                   y1={y}
                   x2={lineX2}
                   y2={y}
-                  className="chart-grid-line"
+                  className="stroke-outline stroke-1"
                   strokeDasharray={i === 0 ? "0" : "4 4"}
                 />
                 <text
                   x={lineX1 - 12}
                   y={y + 4}
                   textAnchor="end"
-                  className="chart-grid-text"
+                  className="fill-text-subtle font-inter text-xs font-medium"
                 >
                   {tick}
                 </text>
@@ -182,7 +182,7 @@ export default function DonationsActivityChart({ data }: DonationsActivityChartP
           {pathD && (
             <path
               d={pathD}
-              className="chart-line"
+              className="fill-none stroke-primary-800 stroke-[3.5] [stroke-linecap:round] [stroke-linejoin:round]"
             />
           )}
 
@@ -202,7 +202,7 @@ export default function DonationsActivityChart({ data }: DonationsActivityChartP
                 cx={p.x}
                 cy={p.y}
                 r={hoveredIndex === idx ? 6 : 4}
-                className={`chart-point ${hoveredIndex === idx ? "active" : ""}`}
+                className={`fill-surface stroke-primary-800 stroke-[1.5] transition-all data-[active=true]:fill-primary-800 data-[active=true]:stroke-[2.5] ${hoveredIndex === idx ? "active" : ""}`}
               />
 
               {/* X-axis Label */}
@@ -210,7 +210,7 @@ export default function DonationsActivityChart({ data }: DonationsActivityChartP
                 x={p.x}
                 y={height - 12}
                 textAnchor="middle"
-                className={`chart-axis-label ${hoveredIndex === idx ? "active" : ""}`}
+                className={`fill-text-subtle font-poppins text-xs font-medium transition-[fill] data-[active=true]:fill-primary-900 ${hoveredIndex === idx ? "active" : ""}`}
               >
                 {p.label}
               </text>
@@ -221,16 +221,16 @@ export default function DonationsActivityChart({ data }: DonationsActivityChartP
         {/* Hover Tooltip Popup */}
         {hoveredIndex !== null && points[hoveredIndex] && (
           <div
-            className="chart-tooltip"
+            className="pointer-events-none absolute z-10 mt-[-10px] -translate-x-1/2 -translate-y-full rounded-md bg-text-main px-3 py-2 font-inter text-[11.5px] text-surface shadow-lg"
             style={{
               left: `${(points[hoveredIndex].x / width) * 100}%`,
               top: `${(points[hoveredIndex].y / height) * 100}%`,
             }}
           >
-            <div className="chart-tooltip-count">
+            <div className="font-medium text-surface">
               {points[hoveredIndex].count} donasi
             </div>
-            <div className="chart-tooltip-date">
+            <div className="text-xs text-text-subtle">
               {points[hoveredIndex].fullDate || points[hoveredIndex].label}
             </div>
           </div>
