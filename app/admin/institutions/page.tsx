@@ -1,7 +1,7 @@
 import React, { Suspense } from "react";
 import Link from "next/link";
 import { getInstitutions } from "@/lib/actions/admin";
-import { CheckCircle2, Clock, XCircle, Eye } from "lucide-react";
+import { Eye } from "lucide-react";
 import InstitutionSearchBar from "@/components/admin/InstitutionSearchBar";
 
 interface AdminInstitutionsPageProps {
@@ -29,24 +29,25 @@ const AdminInstitutionsPage: React.FC<AdminInstitutionsPageProps> = async ({
 
   const currentTab = status || "ALL";
 
+  // Badge tanpa border dan tanpa ikon
   const getBadge = (instStatus: string | null) => {
     switch (instStatus) {
       case "PENDING":
         return (
-          <span className="inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-0.5 font-inter text-xs font-semibold border border-warning-border bg-warning-bg text-warning">
-            <Clock className="w-3.5 h-3.5" /> Pending Review
+          <span className="inline-flex w-fit items-center rounded-full px-2.5 py-0.5 font-inter text-xs font-semibold bg-warning-bg text-warning">
+            Pending Review
           </span>
         );
       case "APPROVED":
         return (
-          <span className="inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-0.5 font-inter text-xs font-semibold border border-success-border bg-success-bg text-success">
-            <CheckCircle2 className="w-3.5 h-3.5" /> Approved
+          <span className="inline-flex w-fit items-center rounded-full px-2.5 py-0.5 font-inter text-xs font-semibold bg-success-bg text-success">
+            Approved
           </span>
         );
       case "REJECTED":
         return (
-          <span className="inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-0.5 font-inter text-xs font-semibold border border-danger-border bg-danger-bg text-danger">
-            <XCircle className="w-3.5 h-3.5" /> Rejected
+          <span className="inline-flex w-fit items-center rounded-full px-2.5 py-0.5 font-inter text-xs font-semibold bg-danger-bg text-danger">
+            Rejected
           </span>
         );
       default:
@@ -70,11 +71,12 @@ const AdminInstitutionsPage: React.FC<AdminInstitutionsPageProps> = async ({
       </div>
 
       {/* Tabs */}
-      <div className="mb-6 mt-4 flex flex-1 justify-start gap-4 overflow-x-auto border-b border-outline sm:gap-6">
+      <div className="mb-6 flex flex-1 justify-start gap-4 overflow-x-auto border-b border-outline sm:gap-6">
         {tabs.map((t) => (
           <Link
             key={t.key}
             href={t.href}
+            data-active={currentTab === t.key}
             className={`shrink-0 border-b-2 border-transparent pb-3 font-inter text-sm font-semibold text-text-muted no-underline whitespace-nowrap transition-colors hover:text-primary-800 data-[active=true]:border-primary-800 data-[active=true]:text-primary-800 ${currentTab === t.key ? "active" : ""}`}
           >
             {t.label}
@@ -84,7 +86,6 @@ const AdminInstitutionsPage: React.FC<AdminInstitutionsPageProps> = async ({
 
       {/* Table */}
       {institutionsList.length === 0 ? (
-        // <div className="py-20 text-center text-gray-400 space-y-2">
         <div className="w-full flex items-center justify-center min-h-75 text-center">
           <p className="text-xs text-gray-400">There is no data for this status category yet.</p>
         </div>

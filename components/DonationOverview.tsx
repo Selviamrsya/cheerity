@@ -58,7 +58,7 @@ const DonationOverview: React.FC<DonationOverviewProps> = ({
           </div>
         )}
         {/* Category badge overlaid top-left */}
-        <span className="absolute top-5 left-[18px] rounded-full bg-primary-800/90 px-3 py-1 text-xs font-semibold text-white backdrop-blur-[4px]">
+        <span className="absolute top-5 left-[18px] rounded-full bg-primary-800/90 px-3 py-1 text-xs font-semibold text-white backdrop-blur-xs">
           {CATEGORY_LABELS[category] ?? category}
         </span>
       </div>

@@ -8,7 +8,7 @@ export function ModalBackdrop({
   return (
     <div
       className={cn(
-        "fixed inset-0 z-[999] bg-black/50 backdrop-blur-[4px]",
+        "fixed inset-0 z-[999] bg-black/50 backdrop-blur-xs",
         className
       )}
       {...props}
@@ -23,7 +23,7 @@ export function ModalContainer({
   return (
     <div
       className={cn(
-        "fixed top-1/2 left-1/2 z-[1000] max-h-[90vh] w-[90%] max-w-[600px] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl bg-white p-5 shadow-xl sm:p-7",
+        "fixed top-1/2 left-1/2 z-1000 max-h-[90vh] w-[90%] max-w-[600px] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl bg-white p-5 shadow-xl sm:p-7",
         className
       )}
       {...props}

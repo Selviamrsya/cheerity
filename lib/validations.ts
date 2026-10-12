@@ -98,7 +98,6 @@ export const donationUploadSchema = z
 export const donationRequestSchema = z.object({
   // Personal info
   donorName: z.string().min(2, "Name is required").optional(),
-  isAnonymous: z.boolean(),
   phoneNumber: z.string().min(8, "Phone number is required"),
   city: z.string().min(2, "City is required"),
   state: z.string().min(2, "State is required"),

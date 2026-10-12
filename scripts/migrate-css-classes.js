@@ -9,7 +9,7 @@ const ROOT = path.join(__dirname, "..");
 
 const map = {
   "form-input":
-    "w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-[11px] font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400",
+    "w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400",
   "form-textarea": "min-h-20 resize-none",
   "form-label": "font-inter text-[13.5px] font-semibold text-gray-700",
   "form-error": "mt-0.5 text-xs text-red-600",
@@ -176,9 +176,9 @@ const map = {
   "institution-banner-btn":
     "inline-flex items-center gap-2 self-start rounded-md bg-surface px-[22px] py-2.5 font-inter text-[13px] font-medium whitespace-nowrap text-primary-900 no-underline shadow-sm transition-all hover:bg-primary-50 sm:self-auto",
   "modal-backdrop":
-    "fixed inset-0 z-[999] bg-black/50 backdrop-blur-[4px]",
+    "fixed inset-0 z-[999] bg-black/50 backdrop-blur-xs",
   "modal-container":
-    "fixed top-1/2 left-1/2 z-[1000] max-h-[90vh] w-[90%] max-w-[600px] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl bg-white p-5 shadow-xl sm:p-7",
+    "fixed top-1/2 left-1/2 z-1000 max-h-[90vh] w-[90%] max-w-[600px] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl bg-white p-5 shadow-xl sm:p-7",
   "modal-header":
     "mb-5 flex items-center justify-between border-b border-outline pb-3",
   "modal-title": "text-lg font-bold sm:text-xl",
@@ -189,7 +189,7 @@ const map = {
   "modal-form": "flex flex-col gap-3.5",
   "modal-success": "p-5 text-center",
   "modal-success-icon":
-    "mx-auto mb-4 flex h-[60px] w-[60px] items-center justify-center rounded-full bg-primary-100 text-[28px] text-primary",
+    "mx-auto mb-4 flex h-15 w-15 items-center justify-center rounded-full bg-primary-100 text-[28px] text-primary",
   "navbar scrolled":
     "fixed top-0 right-0 left-0 z-50 border-b border-outline bg-white/95 shadow-[0_4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md",
   "navbar-inner":
@@ -286,7 +286,7 @@ const map = {
   "donation-overview-placeholder":
     "flex h-full w-full items-center justify-center bg-green-50",
   "donation-overview-category-badge":
-    "absolute top-5 left-[18px] rounded-full bg-primary-800/90 px-3 py-1 text-xs font-semibold text-white backdrop-blur-[4px]",
+    "absolute top-5 left-[18px] rounded-full bg-primary-800/90 px-3 py-1 text-xs font-semibold text-white backdrop-blur-xs",
   "donation-overview-info": "flex flex-1 flex-col gap-2",
   "donation-overview-title": "text-2xl font-bold text-gray-900",
   "donation-overview-institution": "flex items-center gap-2.5",

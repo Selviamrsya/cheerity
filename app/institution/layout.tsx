@@ -59,7 +59,7 @@ const InstitutionLayout = async ({ children }: { children: React.ReactNode }) =>
 
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
             <div className="flex items-start gap-3">
-              <Mail className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <Mail className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
               <div className="text-left">
                 <p className="text-sm font-semibold text-blue-900 mb-1">
                   Contact Administrator
@@ -75,7 +75,7 @@ const InstitutionLayout = async ({ children }: { children: React.ReactNode }) =>
           </div>
 
           <div className="flex items-start gap-2 text-xs text-gray-500">
-            <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
             <p className="text-left">
               If you believe this is an error, please reach out to our support team with your institution details.
             </p>
@@ -91,7 +91,7 @@ const InstitutionLayout = async ({ children }: { children: React.ReactNode }) =>
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
         <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-10" style={{ padding: "24px 18px" }}>
           <div className="flex items-center gap-2 mb-6">
-            <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center shrink-0">
               <AlertCircle className="w-6 h-6 text-yellow-600" />
             </div>
 
@@ -107,7 +107,7 @@ const InstitutionLayout = async ({ children }: { children: React.ReactNode }) =>
 
           <div className="bg-blue-50 border border-blue-200 rounded-sm p-4 mb-6" style={{ padding: "8px 12px" }}>
             <div className="flex items-center gap-1">
-              <Mail className="w-5 h-5 text-black-500 flex-shrink-0" />
+              <Mail className="w-5 h-5 text-black-500 shrink-0" />
               <div className="text-left flex items-center gap-1 flex-wrap"> 
                 Need Help? Contact us at
                 <a
@@ -121,7 +121,7 @@ const InstitutionLayout = async ({ children }: { children: React.ReactNode }) =>
           </div>
 
           <div className="flex items-start gap-2 text-xs text-gray-500" style={{ marginTop: "8px" }}>
-            <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
             <p className="text-left">
               Approval typically takes 1-2 business days. Thank you for your patience.
             </p>
@@ -134,7 +134,7 @@ const InstitutionLayout = async ({ children }: { children: React.ReactNode }) =>
   return (
     <div className="flex min-h-screen flex-col">
       <InstitutionNavbar session={session} />
-      <main className="mx-auto w-full max-w-330 px-8 pb-16 pt-28 md:px-32 md:pb-20">
+      <main className="mx-auto w-full max-w-330 px-8 pb-16 pt-24 md:px-16">
         {children}
       </main>
     </div>

@@ -41,10 +41,10 @@ const InstitutionProfilePage = async () => {
   }
 
   return (
-    <div className="mx-auto w-full max-w-330 px-8 py-4 md:px-32">
+    <div className="mx-auto w-full max-w-330">
       
       {/* ================= TOMBOL BACK ================= */}
-      <div className="mb-2">
+      <div>
         <Link 
           href="/institution" 
           className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-green-800 transition-colors"

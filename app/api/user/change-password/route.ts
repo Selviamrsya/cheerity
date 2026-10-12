@@ -3,6 +3,7 @@ import { getSession, auth } from "@/lib/auth";
 import { db } from "@/app/database/drizzle";
 import { users } from "@/app/database/schema";
 import { eq } from "drizzle-orm";
+import { hashPassword, verifyPassword } from "better-auth/crypto"; // <-- Import dari crypto better-auth
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,23 +39,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Verify current password using better-auth
-    const isCurrentPasswordValid = await auth.api.verifyPassword({
-      password: currentPassword,
-      hash: user.password,
+    // Verify current password using better-auth api (butuh body & headers)
+    const isCurrentPasswordValid = await verifyPassword({
+        password: currentPassword,
+        hash: user.password,
     });
 
     if (!isCurrentPasswordValid) {
       return NextResponse.json({ error: "Current password is incorrect" }, { status: 400 });
     }
 
-    // Hash new password using better-auth
-    const hashedNewPassword = await auth.api.hashPassword(newPassword);
+    // Hash new password using better-auth crypto helper (langsung string)
+    const hashedNewPassword = await hashPassword(newPassword);
 
     await db
       .update(users)
       .set({ password: hashedNewPassword })
-      .where(eq(users.id, session.user.id));
+      .where(eq(users.id, session.session.userId ?? session.user.id)); // sesuaikan ID user session kamu
 
     return NextResponse.json({ success: true });
   } catch (error) {

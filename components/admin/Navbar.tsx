@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Bell, Check, User, Globe } from "lucide-react";
+import { LogOut, Bell, User, Globe, CheckCheck } from "lucide-react";
 import { getNotifications, markNotificationRead } from "@/lib/actions/donation";
 import { authClient } from "@/lib/auth-client";
 
@@ -68,6 +68,13 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ session }) => {
     );
   };
 
+  // Handler untuk Mark All as Read
+  const handleMarkAllRead = async () => {
+    const unreadItems = notifications.filter((n) => !n.isRead);
+    await Promise.all(unreadItems.map((n) => markNotificationRead(n.id)));
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+  };
+
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const adminInitial = session?.user?.name
@@ -79,9 +86,9 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ session }) => {
 
   return (
     <header className="fixed top-0 right-0 left-0 z-50 border-b border-outline bg-white/95 shadow-[0_4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md">
-      <nav className="mx-auto flex h-[72px] w-full max-w-345 items-center justify-between px-4 md:px-6 flex items-center justify-between">
+      <nav className="mx-auto flex h-[72px] w-full max-w-345 items-center justify-between px-4 md:px-6">
         {/* Left: Logo with subtle Admin indicator */}
-        <Link href="/admin" className="flex items-center flex items-center gap-2.5">
+        <Link href="/admin" className="flex items-center gap-2.5">
           <Image src="/assets/logo.png" alt="Cheerity" width={140} height={36} priority />
         </Link>
 
@@ -122,10 +129,22 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ session }) => {
             {/* Notification dropdown */}
             {notifOpen && (
               <div className="absolute top-12 right-0 z-100 w-80 overflow-hidden rounded-sm border border-outline bg-white shadow-lg">
-                <div className="flex items-center justify-between border-b border-outline bg-gray-50 px-4 py-3">
-                  <span className="font-semibold text-sm">Notifications</span>
+                <div className="flex flex-col border-b border-outline bg-gray-50 px-4 py-3 gap-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-sm">Notifications</span>
+                    {unreadCount > 0 && (
+                      <span className="rounded-full bg-primary px-2 py-0.5 text-[11px] text-white">{unreadCount} new</span>
+                    )}
+                  </div>
+                  {/* Tombol Mark All Read ditaro di bawah judul */}
                   {unreadCount > 0 && (
-                    <span className="rounded-full bg-primary px-2 py-0.5 text-[11px] text-white">{unreadCount} new</span>
+                    <button
+                      onClick={handleMarkAllRead}
+                      className="flex items-center gap-1 text-xs font-medium text-primary hover:underline cursor-pointer bg-transparent border-none w-fit p-0 mt-0.5"
+                    >
+                      <CheckCheck className="w-3.5 h-3.5" />
+                      Mark all read
+                    </button>
                   )}
                 </div>
                 <div className="max-h-70 overflow-y-auto">
@@ -135,12 +154,14 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ session }) => {
                     notifications.map((n) => (
                       <div
                         key={n.id}
-                        className={`cursor-pointer border-b border-gray-100 px-4 py-3 transition-colors hover:bg-gray-50 data-[unread=true]:bg-green-50 ${!n.isRead ? "unread" : ""}`}
+                        className={`cursor-pointer border-b border-gray-100 px-4 py-3 transition-colors hover:bg-gray-50 ${
+                          !n.isRead ? "bg-green-50/60 font-medium" : "bg-white"
+                        }`}
                         onClick={() => handleMarkRead(n.id)}
                       >
                         <div className="text-[13px] font-semibold text-gray-900">{n.title}</div>
                         <div className="mt-0.5 text-xs text-gray-600">{n.message}</div>
-                        {n.isRead && <Check className="notif-read-icon h-3 w-3" />}
+                        {/* Ikon checklist <Check /> sudah dihapus */}
                       </div>
                     ))
                   )}

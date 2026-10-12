@@ -12,7 +12,7 @@ const InstitutionHistoryPage = async () => {
   const records = await getInstitutionDonationHistory(institutionId);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-2">
       <InstitutionHistoryClient
         institutionId={institutionId}
         records={records}

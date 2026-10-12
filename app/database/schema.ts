@@ -28,7 +28,6 @@ export const DONATION_CAMPAIGN_STATUS = pgEnum("donation_campaign_status", [
 
 export const DONATION_REQUEST_STATUS = pgEnum("donation_request_status", [
   "PENDING",
-  "APPROVED",
   "REJECTED",
   "ON_PROGRESS",
   "WAITING_FOR_DOCUMENTATION",
@@ -121,7 +120,6 @@ export const donateRecords = pgTable("donate_records", {
     .notNull()
     .references(() => donations.id),
   donorName: varchar("donor_name", { length: 255 }),
-  isAnonymous: boolean("is_anonymous").default(false).notNull(),
   phoneNumber: varchar("phone_number", { length: 20 }),
   city: varchar("city", { length: 100 }),
   state: varchar("state", { length: 100 }),
@@ -140,12 +138,9 @@ export const donateRecords = pgTable("donate_records", {
   documentationPhoto: text("documentation_photo"),
   rejectionReason: text("rejection_reason"),
   cancelReason: text("cancel_reason"),
-  // Timestamps for each status transition
+  // Timestamps
   requestDate: timestamp("request_date", { withTimezone: true }).defaultNow(),
-  approvalDate: timestamp("approval_date", { withTimezone: true }),
-  deliveryDate: timestamp("delivery_date", { withTimezone: true }),
-  arrivedDate: timestamp("arrived_date", { withTimezone: true }),
-  completedDate: timestamp("completed_date", { withTimezone: true }),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 

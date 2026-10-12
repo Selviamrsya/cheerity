@@ -71,7 +71,7 @@ const InstitutionSidebar: React.FC<InstitutionSidebarProps> = ({ session }) => {
       {/* User Info & Logout */}
       <div className="pt-6 border-t border-gray-100 space-y-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-green-100 text-green-800 flex items-center justify-center font-bold text-base flex-shrink-0">
+          <div className="w-10 h-10 rounded-full bg-green-100 text-green-800 flex items-center justify-center font-bold text-base shrink-0">
             {session?.user?.name?.charAt(0)?.toUpperCase() || "I"}
           </div>
           <div className="overflow-hidden">

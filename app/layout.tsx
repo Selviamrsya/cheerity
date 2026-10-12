@@ -4,9 +4,7 @@ import { ReactNode } from "react";
 import { Toaster } from "@/components/ui/toast";
 
 export const metadata: Metadata = {
-  title: "Cheerity — Give a Box, Light a Future",
-  description:
-    "Cheerity is a donation platform",
+  title: "Cheerity",
 };
 
 const RootLayout = ({ children }: { children: ReactNode }) => {

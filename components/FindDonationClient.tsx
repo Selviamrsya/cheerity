@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Search } from "lucide-react";
+import { Search, ChevronDown } from "lucide-react";
 import DonationCard from "@/components/DonationCard";
 import { getDonationsWithDistance } from "@/lib/actions/donation";
 import { DONATION_CATEGORIES, DISTANCE_FILTERS } from "@/constants";
@@ -43,7 +43,11 @@ const FindDonationClient: React.FC<FindDonationClientProps> = ({
       search === "" ||
       d.title.toLowerCase().includes(search.toLowerCase()) ||
       d.institutionName.toLowerCase().includes(search.toLowerCase());
-    return matchSearch;
+    const matchDistance =
+      maxDistance === undefined ||
+      d.distanceKm === null ||
+      d.distanceKm <= maxDistance;
+    return matchSearch && matchDistance;
   }).sort((a, b) => {
     if (a.distanceKm === null && b.distanceKm === null) return 0;
     if (a.distanceKm === null) return 1;
@@ -58,7 +62,7 @@ const FindDonationClient: React.FC<FindDonationClientProps> = ({
       userLng,
       category: cat || undefined,
       maxDistanceKm: dist,
-      limit: 4,
+      limit: 50,
     });
     setDonations(results as Donation[]);
     setIsLoading(false);
@@ -78,53 +82,66 @@ const FindDonationClient: React.FC<FindDonationClientProps> = ({
   return (
     <div className="w-full">
       {/* Page header */}
-      <div className="mt-2 mb-3 md:mt-4">
-        <h1 className="font-poppins text-[22px] font-bold text-on-surface md:text-[26px]">Find a Donation</h1>
-        <p className="max-w-[560px] text-[15px] text-on-surface-variant">
+      <div className="mt-2 mb-3">
+        <h1 className="font-poppins text-[22px] font-medium tracking-tight text-on-surface md:text-[26px]">Find a Donation</h1>
+        <p className="max-w-140 text-[15px] text-on-surface-variant">
           Browse donation campaigns from verified institutions near you.
         </p>
       </div>
 
-      {/* Search + Filters */}
+     {/* Search + Filters */}
       <div className="mt-2 mb-4 flex flex-wrap gap-2">
         {/* Search */}
-        <div className="flex min-w-[240px] flex-1 items-center gap-1.5 rounded-sm border border-outline bg-white px-3.5 flex-1">
+        <div className="flex min-w-[240px] flex-1 items-center gap-1.5 rounded-sm border border-outline bg-white px-3.5">
           <Search className="h-4 w-4" style={{ color: "var(--color-on-surface-variant)" }} />
           <input
             type="text"
             placeholder="Search donations or institutions..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full border-none py-2.5 text-sm outline-none"
+            className="w-full border-none py-2.5 text-sm outline-none bg-transparent"
           />
         </div>
 
         {/* Category filter */}
-        <select
-          value={category}
-          onChange={(e) => handleCategoryChange(e.target.value)}
-          className={`cursor-pointer appearance-none rounded-sm border border-outline bg-white bg-[length:14px_14px] bg-[position:right_10px_center] bg-no-repeat py-2.5 pr-8 pl-3.5 text-sm text-on-surface outline-none transition-colors hover:border-slate-300 focus:border-primary bg-[url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")] w-auto`}
-        >
-          <option value="">All Categories</option>
-          {DONATION_CATEGORIES.map((c) => (
-            <option key={c.value} value={c.value}>
-              {c.label}
-            </option>
-          ))}
-        </select>
+        <div className="relative flex items-center">
+          <select
+            value={category}
+            onChange={(e) => handleCategoryChange(e.target.value)}
+            className="cursor-pointer appearance-none rounded-sm border border-outline bg-white py-2.5 pr-10 pl-3.5 text-sm text-on-surface outline-none transition-colors hover:border-slate-300 focus:border-primary w-auto"
+          >
+            <option value="">All Categories</option>
+            {DONATION_CATEGORIES.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+          <ChevronDown 
+            className="absolute right-3.5 h-4 w-4 pointer-events-none" 
+            style={{ color: "var(--color-on-surface-variant)" }} 
+          />
+        </div>
+
         {/* Distance filter */}
-        <select
-          value={maxDistance ?? ""}
-          onChange={(e) => handleDistanceChange(e.target.value)}
-          className={`cursor-pointer appearance-none rounded-sm border border-outline bg-white bg-[length:14px_14px] bg-[position:right_10px_center] bg-no-repeat py-2.5 pr-8 pl-3.5 text-sm text-on-surface outline-none transition-colors hover:border-slate-300 focus:border-primary bg-[url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")] w-auto`}
-        >
-          <option value="">Any Distance</option>
-          {DISTANCE_FILTERS.map((d) => (
-            <option key={d.value} value={d.value}>
-              Within {d.label}
-            </option>
-          ))}
-        </select>
+        <div className="relative flex items-center">
+          <select
+            value={maxDistance ?? ""}
+            onChange={(e) => handleDistanceChange(e.target.value)}
+            className="cursor-pointer appearance-none rounded-sm border border-outline bg-white py-2.5 pr-10 pl-3.5 text-sm text-on-surface outline-none transition-colors hover:border-slate-300 focus:border-primary w-auto"
+          >
+            <option value="">Any Distance</option>
+            {DISTANCE_FILTERS.map((d) => (
+              <option key={d.value} value={d.value}>
+                Within {d.label}
+              </option>
+            ))}
+          </select>
+          <ChevronDown 
+            className="absolute right-3.5 h-4 w-4 pointer-events-none" 
+            style={{ color: "var(--color-on-surface-variant)" }} 
+          />
+        </div>
       </div>
 
       {/* Results count */}

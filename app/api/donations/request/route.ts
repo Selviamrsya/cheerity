@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create donation request
+    // Create donation request (collected count will update when approved)
     const [newRequest] = await db
       .insert(donateRecords)
       .values({
@@ -102,14 +102,6 @@ export async function POST(request: NextRequest) {
         status: "PENDING",
       })
       .returning();
-
-    // Update donation collected count
-    await db
-      .update(donations)
-      .set({
-        collected: donation.collected + quantity,
-      })
-      .where(eq(donations.id, donationId));
 
     revalidatePath("/donations/[id]");
     revalidatePath("/history");

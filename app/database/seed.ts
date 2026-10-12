@@ -17,25 +17,51 @@ import { hashPassword } from "better-auth/crypto";
 
 const seed = async () => {
   console.log("Seeding database...");
+try {
+    // 1. Tentukan atau cari user admin berdasarkan email
+    const adminEmail = "selviam2017@gmail.com";
+    const hashedPasswordAdmin = await hashPassword("Admin1234");
 
-  try {
-    // Insert admin user
-    const hashedAdmin = await hashPassword("Admin1234");
-    
-    await db
-      .insert(users)
-      .values({
-        email: "selviam2017@gmail.com",
-        password: hashedAdmin,
+    // Cek apakah user admin sudah ada di database
+    const [existingAdmin] = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, adminEmail))
+      .limit(1);
+
+    let adminId = existingAdmin?.id;
+
+    if (!adminId) {
+      adminId = crypto.randomUUID();
+      await db.insert(users).values({
+        id: adminId,
+        email: adminEmail,
+        password: hashedPasswordAdmin,
         name: "Admin Cheerity",
         role: "ADMIN",
         status: "APPROVED",
-        fullName: "Admin Cheerity"
+        fullName: "Admin Cheerity",
+      });
+      console.log("Admin user inserted:", adminEmail);
+    } else {
+      adminId = existingAdmin.id;
+      console.log("Admin user already exists, using existing ID:", adminId);
+    }
+
+    // 2. Masukkan ke tabel account menggunakan ID admin yang pasti ada
+    await db
+      .insert(account)
+      .values({
+        id: crypto.randomUUID(),
+        userId: adminId,
+        accountId: adminId,
+        providerId: "credential",
+        password: hashedPasswordAdmin,
       })
       .onConflictDoNothing();
 
-    console.log("Admin user inserted: selviam2017@gmail.com / Admin1234");
-
+    console.log("Admin account credential linked successfully.");
+    
     // Insert a dummy institution for seeding donations
     const hashedInst = await hashPassword("Institusi1234");
     

@@ -94,31 +94,34 @@ const DonationUploadForm: React.FC<DonationUploadFormProps> = ({ institutionId }
   };
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="relative flex flex-col shadow-[0_1px_3px_rgba(0,0,0,0.04)] space-y-6">
+    <form onSubmit={form.handleSubmit(onSubmit)} className="relative flex flex-col shadow-[0_1px_3px_rgba(0,0,0,0.04)] space-y-4">
       {errorMessage && (
-        <div className="p-4 bg-red-50 text-red-700 rounded-xl text-sm border border-red-100">
+        <div className="p-4 bg-red-50 text-red-700 rounded-xl text-sm border border-red-100 mb-4">
           {errorMessage}
         </div>
       )}
 
       {/* Title */}
-      <div className="mb-5 flex flex-col gap-1.5">
-        <label className="font-inter text-[13.5px] font-semibold text-gray-700">Title *</label>
+      <div className="flex flex-col gap-1">
+        <label className="font-inter text-sm font-medium text-gray-700">Title *</label>
         <input
           type="text"
           placeholder="e.g. Baju Anak SD Layak Pakai"
           {...form.register("title")}
-          className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-8 py-[11px] md:px-10 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400"
+          className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-3 py-2 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400"
         />
         {form.formState.errors.title && (
-          <p className="mt-0.5 text-xs text-red-600">{form.formState.errors.title.message}</p>
+          <p className="mt-1 text-xs text-red-600">{form.formState.errors.title.message}</p>
         )}
       </div>
 
       {/* Category */}
-      <div className="mb-5 flex flex-col gap-1.5">
-        <label className="font-inter text-[13.5px] font-semibold text-gray-700">Category *</label>
-        <select {...form.register("category")} className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-8 py-[11px] md:px-10 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400">
+      <div className="flex flex-col gap-1">
+        <label className="font-inter text-sm font-medium text-gray-700">Category *</label>
+        <select 
+          {...form.register("category")} 
+          className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-3 py-2 font-inter text-sm text-on-surface outline-none transition-all hover:border-gray-300 focus:border-gray-400"
+        >
           {DONATION_CATEGORIES.map((c) => (
             <option key={c.value} value={c.value}>
               {c.label}
@@ -126,32 +129,31 @@ const DonationUploadForm: React.FC<DonationUploadFormProps> = ({ institutionId }
           ))}
         </select>
         {form.formState.errors.category && (
-          <p className="mt-0.5 text-xs text-red-600">{form.formState.errors.category.message}</p>
+          <p className="mt-1 text-xs text-red-600">{form.formState.errors.category.message}</p>
         )}
       </div>
 
       {/* Total Donation Required */}
-      <div className="mb-5 flex flex-col gap-1.5">
-        <label className="font-inter text-[13.5px] font-semibold text-gray-700">Total Donation Required 
-        </label>
-        <p className="text-xs text-gray-500 mt-1.5">Maximum 10,000</p>
+      <div className="flex flex-col gap-1">
+        <label className="font-inter text-sm font-medium text-gray-700">Total Donation Required *</label>
         <input
           type="number"
           min={1}
           max={10000}
           {...form.register("target")}
-          className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-8 py-[11px] md:px-10 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400"
+          className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-3 py-2 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400"
         />
+        <p className="text-xs text-gray-500 mt-0.5">Maximum 10,000</p>
         {form.formState.errors.target && (
-          <p className="mt-0.5 text-xs text-red-600">{form.formState.errors.target.message}</p>
+          <p className="mt-1 text-xs text-red-600">{form.formState.errors.target.message}</p>
         )}
       </div>
 
       {/* Delivery Methods Available */}
-      <div className="mb-5 flex flex-col gap-1.5">
-        <label className="font-inter text-[13.5px] font-semibold text-gray-700">Delivery Methods Available</label>
-        <p className="text-xs text-gray-500 mt-1.5">Check at least 1</p>
-        <div className="space-y-3 pt-1">
+      <div className="flex flex-col gap-1">
+        <label className="font-inter text-sm font-medium text-gray-700">Delivery Methods Available *</label>
+        <p className="text-xs text-gray-500 mb-1">Check at least 1</p>
+        <div className="space-y-2">
           <label className="flex items-center gap-3 cursor-pointer text-sm font-normal text-gray-700">
             <input
               type="checkbox"
@@ -159,7 +161,7 @@ const DonationUploadForm: React.FC<DonationUploadFormProps> = ({ institutionId }
               onChange={() => handleMethodToggle("self_delivery")}
               className="w-4 h-4 rounded border-gray-300 cursor-pointer accent-green-900 text-green-800 focus:ring-green-800"
             />
-            <span> Self Delivery (Donor delivers to institution)</span>
+            <span>Self Delivery (Donor delivers to institution)</span>
           </label>
 
           <label className="flex items-center gap-3 cursor-pointer text-sm font-normal text-gray-700">
@@ -183,27 +185,14 @@ const DonationUploadForm: React.FC<DonationUploadFormProps> = ({ institutionId }
           </label>
         </div>
         {form.formState.errors.deliveryMethods && (
-          <p className="mt-0.5 text-xs text-red-600">{form.formState.errors.deliveryMethods.message}</p>
+          <p className="mt-1 text-xs text-red-600">{form.formState.errors.deliveryMethods.message}</p>
         )}
       </div>
 
       {/* Pickup max distance input if pickup selected */}
       {hasPickup && (
-        <div 
-          className="bg-green-50 rounded-sm border border-green-200"
-          style={{ 
-            padding: "12px", // Memberi jarak lega 24px dari teks ke garis hijau
-            marginTop: "-8px", // Jarak dari checkbox di atasnya
-            display: "flex", 
-            flexDirection: "column", 
-            gap: "2px",
-            marginBottom:"18px"
-          }}
-        >
-          <label 
-            className="font-inter text-[13.5px] font-semibold text-gray-700 text-green-900" 
-            style={{ margin: 0 }} 
-          >
+        <div className="bg-gray-50 rounded-sm border border-gray-200 p-3 flex flex-col gap-1">
+          <label className="font-inter text-sm font-medium text-gray-600">
             Max Pickup Distance (km) *
           </label>
           <input
@@ -212,10 +201,10 @@ const DonationUploadForm: React.FC<DonationUploadFormProps> = ({ institutionId }
             max={100}
             placeholder="e.g. 5 (Maximum distance in km)"
             {...form.register("pickupMaxDistanceKm")}
-            className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-8 py-[11px] md:px-10 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400 bg-white w-full"
+            className="w-full rounded-sm border-[1.5px] border-outline bg-white px-3 py-2 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400"
           />
           {form.formState.errors.pickupMaxDistanceKm && (
-            <p className="mt-0.5 text-xs text-red-600" style={{ marginTop: "4px" }}>
+            <p className="mt-1 text-xs text-red-600">
               {form.formState.errors.pickupMaxDistanceKm.message}
             </p>
           )}
@@ -223,22 +212,22 @@ const DonationUploadForm: React.FC<DonationUploadFormProps> = ({ institutionId }
       )}
 
       {/* Description */}
-      <div className="mb-5 flex flex-col gap-1.5">
-        <label className="font-inter text-[13.5px] font-semibold text-gray-700">Description about your donation *</label>
+      <div className="flex flex-col gap-1">
+        <label className="font-inter text-sm font-medium text-gray-700">Description about your donation *</label>
         <textarea
-          rows={2}
+          rows={3}
           placeholder="Describe your donation request details, condition requirements, etc..."
           {...form.register("description")}
-          className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-8 py-[11px] md:px-10 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400 min-h-20 resize-none"
+          className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-3 py-2 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400 resize-none"
         />
         {form.formState.errors.description && (
-          <p className="mt-0.5 text-xs text-red-600">{form.formState.errors.description.message}</p>
+          <p className="mt-1 text-xs text-red-600">{form.formState.errors.description.message}</p>
         )}
       </div>
 
       {/* Cover Photo */}
-      <div className="mb-5 flex flex-col gap-1.5">
-        <label className="font-inter text-[13.5px] font-semibold text-gray-700">Cover Photo *</label>
+      <div className="flex flex-col gap-1">
+        <label className="font-inter text-sm font-medium text-gray-700">Cover Photo *</label>
         <LocalImageUpload
           value={form.watch("cover") ?? ""}
           onChange={(url) => form.setValue("cover", url, { shouldValidate: true })}
@@ -252,7 +241,7 @@ const DonationUploadForm: React.FC<DonationUploadFormProps> = ({ institutionId }
       <button
         type="submit"
         disabled={isSubmitting}
-        className="relative flex w-full items-center justify-center overflow-hidden rounded-sm bg-primary px-10 md:px-14 py-2 font-inter text-[15px] font-semibold text-white transition-all hover:bg-primary-dark disabled:opacity-50"
+        className="relative flex w-full items-center justify-center overflow-hidden rounded-md bg-primary px-4 py-2.5 font-inter text-sm font-semibold text-white transition-all hover:bg-primary-dark disabled:opacity-50 mt-2"
       >
         {isSubmitting ? "Uploading Donation..." : "Submit Donation"}
       </button>

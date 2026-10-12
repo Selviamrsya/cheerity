@@ -124,7 +124,7 @@ export default function EditAddressModal({ isOpen, onClose }: EditAddressModalPr
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="Nama jalan, nomor rumah, RT/RW, kelurahan"
-                className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-[11px] font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400 min-h-[90px] py-2.5 resize-none text-sm"
+                className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400 min-h-[90px] py-2.5 resize-none text-sm"
                 required
               />
             </div>

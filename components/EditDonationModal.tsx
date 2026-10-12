@@ -78,7 +78,7 @@ export default function EditDonationModal({
   };
 
   return (
-    <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm p-6">
       <div
         className="bg-white w-full max-w-lg rounded-sm p-6 sm:p-8 shadow-2xl border border-gray-100 relative animate-in animate-fade-in zoom-in-95 duration-200"
         style={{ padding: "18px" }}
@@ -91,7 +91,7 @@ export default function EditDonationModal({
           <X className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-green-50 text-green-800 flex items-center justify-center">
             <Edit2 className="w-5 h-5" />
           </div>
@@ -124,13 +124,13 @@ export default function EditDonationModal({
               className="mb-5 flex flex-col gap-1.5"
               style={{ marginBottom: "4px" }}
             >
-              <label className="font-inter text-[13.5px] font-semibold text-gray-700" style={{ marginTop: "18px" }}>Quantity Required</label>
+              <label className="font-inter text-[13.5px] font-semibold text-gray-700" style={{ marginTop: "12px" }}>Quantity Required</label>
               <input
                 type="number"
                 value={target}
                 onChange={(e) => setTarget(e.target.value)}
                 placeholder="Enter quantity"
-                className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-[11px] font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400 text-sm"
+                className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400 text-sm"
                 min="1"
                 required
               />
@@ -142,7 +142,7 @@ export default function EditDonationModal({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Add description or additional notes"
-                className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-[11px] font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400 min-h-22.5 py-2.5 resize-none text-sm"
+                className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400 min-h-22.5 py-2.5 resize-none text-sm"
               />
             </div>
 

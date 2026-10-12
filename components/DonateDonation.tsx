@@ -44,7 +44,6 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
     resolver: zodResolver(donationRequestSchema),
     defaultValues: {
       donorName: defaultName,
-      isAnonymous: false,
       phoneNumber: defaultPhone,
       city: defaultCity,
       state: defaultState,
@@ -63,7 +62,6 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
     },
   });
 
-  const isAnonymous = form.watch("isAnonymous");
   const selectedMethod = form.watch("deliveryMethod");
   const isPickup = selectedMethod === "pickup_by_institution";
 
@@ -94,9 +92,9 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-[999] bg-black/50 backdrop-blur-[4px]" onClick={() => setIsOpen(false)} />
+      <div className="fixed inset-0 z-999 bg-black/50 backdrop-blur-xs" onClick={() => setIsOpen(false)} />
 
-      <div className="fixed top-1/2 left-1/2 z-[1000] max-h-[90vh] w-[90%] max-w-[600px] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl bg-white p-5 shadow-xl sm:p-7">
+      <div className="fixed top-1/2 left-1/2 z-1000 max-h-[90vh] w-[90%] max-w-md -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl bg-white p-5 shadow-xl sm:p-7">
         <div className="mb-5 flex items-center justify-between border-b border-outline pb-3">
           <h2 className="text-lg font-bold sm:text-xl">Donation Request</h2>
           <button
@@ -110,7 +108,7 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
 
         {submitted ? (
           <div className="p-5 text-center">
-            <div className="mx-auto mb-4 flex h-[60px] w-[60px] items-center justify-center rounded-full bg-primary-100 text-[28px] text-primary">&#10003;</div>
+            <div className="mx-auto mb-4 flex h-15 w-15 items-center justify-center rounded-full bg-primary-100 text-[28px] text-primary">&#10003;</div>
             <h3>Request Submitted!</h3>
             <p>
               Your donation request has been submitted. The institution will
@@ -128,7 +126,7 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-3.5">
             <div className="mb-3 rounded-lg border border-green-200 bg-green-50 p-3.5">
               <div className="flex items-start gap-2">
-                <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" style={{ color: "var(--color-primary-700)" }} />
+                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" style={{ color: "var(--color-primary-700)" }} />
                 <ul className="text-sm" style={{ color: "var(--color-primary-700)" }}>
                   <li>Your registration will be reviewed within 24 hours</li>
                   <li>You will receive a confirmation once reviewed</li>
@@ -143,39 +141,12 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
             )}
 
             <div className="mt-4 mb-2 text-sm font-bold tracking-wide text-primary-900 uppercase">Personal Information</div>
-
-            <div className="mb-5 flex flex-col gap-1.5">
-              <label className="flex items-center gap-2 cursor-pointer text-sm font-medium">
-                <input
-                  type="checkbox"
-                  {...form.register("isAnonymous")}
-                  className="h-4 w-4 accent-green-700"
-                />
-                <span>Donate as Anonymous</span>
-              </label>
-            </div>
-
-            {!isAnonymous && (
-              <div className="mb-5 flex flex-col gap-1.5">
-                <label className="font-inter text-[13.5px] font-semibold text-gray-700">Your Name</label>
-                <input
-                  type="text"
-                  {...form.register("donorName")}
-                  className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-[11px] font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400"
-                  placeholder="Full name"
-                />
-                {form.formState.errors.donorName && (
-                  <p className="mt-0.5 text-xs text-red-600">{form.formState.errors.donorName.message}</p>
-                )}
-              </div>
-            )}
-
             <div className="mb-5 flex flex-col gap-1.5">
               <label className="font-inter text-[13.5px] font-semibold text-gray-700">Phone Number</label>
               <input
                 type="tel"
                 {...form.register("phoneNumber")}
-                className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-[11px] font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400"
+                className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400"
                 placeholder="e.g. 081234567890"
               />
               {form.formState.errors.phoneNumber && (
@@ -199,7 +170,7 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
 
             <div className="mb-5 flex flex-col gap-1.5">
               <label className="font-inter text-[13.5px] font-semibold text-gray-700">Full Address</label>
-              <input type="text" {...form.register("address")} className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-[11px] font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400" />
+              <input type="text" {...form.register("address")} className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400" />
               {form.formState.errors.address && <p className="mt-0.5 text-xs text-red-600">{form.formState.errors.address.message}</p>}
             </div>
 
@@ -212,7 +183,7 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
                 min={1}
                 max={10000}
                 {...form.register("quantity")}
-                className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-[11px] font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400"
+                className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400"
               />
               {form.formState.errors.quantity && (
                 <p className="mt-0.5 text-xs text-red-600">{form.formState.errors.quantity.message}</p>
@@ -223,7 +194,7 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
               <label className="font-inter text-[13.5px] font-semibold text-gray-700">Notes (optional)</label>
               <textarea
                 {...form.register("notes")}
-                className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-[11px] font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400 min-h-20 resize-none"
+                className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400 min-h-20 resize-none"
                 rows={3}
                 placeholder="Any additional information about the items..."
               />
@@ -241,7 +212,8 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
 
             <div className="mb-5 flex flex-col gap-1.5">
               <label className="font-inter text-[13.5px] font-semibold text-gray-700">Delivery Method</label>
-              <select {...form.register("deliveryMethod")} className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-[11px] font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400">
+              <select {...form.register("deliveryMethod")} 
+              className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400">
                 {availableDeliveryMethods.map((m) => (
                   <option key={m} value={m}>
                     {DELIVERY_METHOD_LABELS[m] ?? m}
@@ -262,7 +234,7 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
                     <input
                       type="date"
                       {...form.register("estimatedPickupDate")}
-                      className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-[11px] font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400"
+                      className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400"
                       min={new Date().toISOString().split("T")[0]}
                     />
                   </div>
@@ -271,7 +243,7 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
                     <input
                       type="time"
                       {...form.register("estimatedPickupTime")}
-                      className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-[11px] font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400"
+                      className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400"
                     />
                   </div>
                 </div>
@@ -280,7 +252,7 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
 
             <button 
              type="submit" 
-             className="font-medium text-white inline-flex w-auto items-center justify-center gap-2 rounded-sm bg-primary px-6 py-2 font-inter text-[15px] font-semibold text-white transition-all hover:bg-primary-dark disabled:opacity-50"
+             className="text-white inline-flex w-auto items-center justify-center gap-2 rounded-sm bg-primary px-6 py-2 font-inter text-[15px] font-semibold transition-all hover:bg-primary-dark disabled:opacity-50"
              style={{width:"auto", padding:"10px 24px"}}
              disabled={isSubmitting}>
               {isSubmitting ? "Submitting..." : "Submit Request"}

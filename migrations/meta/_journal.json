@@ -29,6 +29,20 @@
       "when": 1790911727172,
       "tag": "0003_stormy_otto_octavius",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791276373205,
+      "tag": "0004_rich_eternity",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791343152137,
+      "tag": "0005_abnormal_unicorn",
+      "breakpoints": true
     }
   ]
 }

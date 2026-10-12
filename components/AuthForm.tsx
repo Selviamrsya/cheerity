@@ -213,14 +213,14 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
   if (isSubmitted) {
     return (
       <div className={cardClass}>
-      <div className="flex flex-col items-center justify-center py-8 text-center">
-        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-100 text-primary">
+      <div className="flex flex-col items-center justify-center py-4 text-center">
+        <div className="mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-primary-100 text-primary">
           <Check className="h-8 w-8" />
         </div>
-        <h2 className="font-poppins mt-2 mb-3 text-2xl font-bold">
+        <h2 className="font-poppins mb-2 text-2xl font-bold">
           {role === "institution" ? "Application Submitted!" : "Account Created!"}
         </h2>
-        <p className="mb-6 max-w-md text-sm text-on-surface-variant">
+        <p className="mb-2 max-w-md text-sm text-on-surface-variant">
           {role === "institution"
             ? "Your institution application has been submitted. Our admin team will review it shortly. You will be notified via email."
             : "Your account has been created. Welcome to the Cheerity community!"}
@@ -431,7 +431,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
               onAddressSelect={handleInstitutionAddressSelect}
               onClear={() => setInstitutionAddressValid(false)}
             />
-            <p className="mt-1 text-xs text-on-surface-variant">
+            <p className="text-xs text-on-surface-variant">
               Search and select your institution address from the suggestions. This is required for location services.
             </p>
           </div>
@@ -458,7 +458,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
               className={`${formControlClass} min-h-20 resize-none`}
               {...institutionSignUpForm.register("address")}
             />
-            <p className="mt-1 text-xs text-on-surface-variant">
+            <p className="text-xs text-on-surface-variant">
               Add specific details to help couriers or pickup services find your location easily.
             </p>
           </div>

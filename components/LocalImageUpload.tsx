@@ -62,7 +62,7 @@ const LocalImageUpload: React.FC<LocalImageUploadProps> = ({
   return (
     <div>
       <div
-        className="rounded-sm border-2 border-dashed border-gray-300 bg-gray-50 p-8 text-center transition-all hover:border-primary hover:bg-primary-50 sm:p-16"
+        className="group relative flex h-60 w-full cursor-pointer items-center justify-center overflow-hidden rounded-sm border-2 border-dashed border-gray-300 bg-gray-50 text-center transition-all hover:border-gray-400 hover:bg-gray-200"
         onClick={() => !isUploading && inputRef.current?.click()}
         style={{ cursor: isUploading ? "not-allowed" : "pointer" }}
       >
@@ -75,12 +75,16 @@ const LocalImageUpload: React.FC<LocalImageUploadProps> = ({
         />
 
         {value ? (
-          <div className="relative max-h-60 w-full overflow-hidden rounded-md">
-            <img src={value} alt="Preview" className="h-60 w-full object-cover" />
+          <div className="absolute inset-0 h-full w-full">
+            <img
+              src={value}
+              alt="Preview"
+              className="h-full w-full object-cover"
+            />
             <button
               type="button"
               onClick={handleRemove}
-              className="absolute top-2 right-2 cursor-pointer rounded-full border-none bg-black/60 p-1.5 text-white transition-colors hover:bg-red-600/80"
+              className="absolute top-2 right-2 z-10 cursor-pointer rounded-full border-none bg-black/60 p-1.5 text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-600/80"
               aria-label="Remove image"
             >
               <X className="h-4 w-4" />
@@ -92,8 +96,8 @@ const LocalImageUpload: React.FC<LocalImageUploadProps> = ({
             <p className="text-sm font-medium text-on-surface">Uploading...</p>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-2">
-            <ImagePlus className="h-8 w-8" style={{ color: "var(--color-on-surface-variant)" }} />
+          <div className="flex flex-col items-center gap-2 p-4">
+            <ImagePlus className="h-8 w-8 text-gray-400" />
             <p className="text-sm font-medium text-on-surface">{placeholder}</p>
             <p className="text-xs text-gray-400">JPEG, PNG, WebP up to 5MB</p>
           </div>

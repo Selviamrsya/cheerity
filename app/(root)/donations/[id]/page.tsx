@@ -69,8 +69,8 @@ const DonationDetailPage = async ({
   return (
     <div className="mx-auto w-full max-w-345 px-8 pb-10 md:px-32 md:pb-14">
       <DonationDetailClient
-        donation={donation}
-        user={userProfile}
+        record={donation}
+        userType={session?.user?.role === "INSTITUTION" ? "institution" : "user"}
       />
     </div>
   );

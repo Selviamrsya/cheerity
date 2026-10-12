@@ -321,20 +321,20 @@ const ManageDonationsClient = ({ donations }: ManageDonationsClientProps) => {
       {mounted && confirmModal.isOpen && (
         <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-          style={{ padding: '16px' }}
+          style={{ padding: '32px' }}
           onClick={() => setConfirmModal({ isOpen: false, donationId: null })}
         >
           <div
             className="bg-white shadow-lg max-w-md w-full"
             style={{
-              padding: '32px',
+              padding: '24px',
               borderRadius: '12px'
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <h3
               className="font-semibold text-gray-900"
-              style={{ fontSize: '20px', marginBottom: '12px' }}
+              style={{ fontSize: '20px', marginBottom: '4px' }}
             >
               Confirm Mark as Done
             </h3>
@@ -342,7 +342,7 @@ const ManageDonationsClient = ({ donations }: ManageDonationsClientProps) => {
               className="text-gray-600"
               style={{
                 fontSize: '14px',
-                marginBottom: '32px',
+                marginBottom: '16px',
                 lineHeight: '1.6'
               }}
             >
@@ -357,7 +357,7 @@ const ManageDonationsClient = ({ donations }: ManageDonationsClientProps) => {
                 className="font-medium text-white inline-flex w-auto items-center justify-center gap-2 rounded-sm bg-primary px-6 py-2 font-inter text-[15px] font-semibold text-white transition-all hover:bg-primary-dark disabled:opacity-50"
                 style={{ width: "auto", padding: "10px 24px" }}
               >
-                Yes, Close Donation
+                Close Donation
               </button>
               <button
                 onClick={() => setConfirmModal({ isOpen: false, donationId: null })}

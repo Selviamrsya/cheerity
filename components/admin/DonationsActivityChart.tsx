@@ -121,18 +121,26 @@ export default function DonationsActivityChart({ data }: DonationsActivityChartP
 
         {/* Filter Tabs: Weekly | Monthly | Yearly */}
         <div className="inline-flex self-start rounded-lg border border-outline bg-surface-container p-1 sm:self-auto">
-          {(["weekly", "monthly", "yearly"] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => {
-                setPeriod(tab);
-                setHoveredIndex(null);
-              }}
-              className={`cursor-pointer rounded-md border-none bg-transparent px-4 py-1.5 font-inter text-xs font-medium capitalize text-text-muted transition-all hover:text-text-main data-[active=true]:bg-surface data-[active=true]:text-primary-900 data-[active=true]:shadow-sm ${period === tab ? "active" : ""}`}
-            >
-              {tab}
-            </button>
-          ))}
+          {(["weekly", "monthly", "yearly"] as const).map((tab) => {
+            const isActive = period === tab;
+            return (
+              <button
+                key={tab}
+                onClick={() => {
+                  setPeriod(tab);
+                  setHoveredIndex(null);
+                }}
+                data-active={isActive}
+                className={`cursor-pointer rounded-md border-none px-4 py-1.5 font-inter text-xs font-medium capitalize transition-all ${
+                  isActive
+                    ? "bg-surface text-primary-900 shadow-sm font-semibold"
+                    : "bg-transparent text-text-muted hover:text-text-main"
+                }`}
+              >
+                {tab}
+              </button>
+            );
+          })}
         </div>
       </div>
 

@@ -34,24 +34,24 @@ const AdminDashboardPage = async () => {
   const pendingInstitutions = institutionsList.filter((inst) => inst.status === "PENDING");
   const displayInstitutions = pendingInstitutions.length > 0 ? pendingInstitutions : institutionsList.slice(0, 5);
 
-  const getStatusBadge = (status: string | null) => {
-    switch (status) {
+  const getStatusBadge = (instStatus: string | null) => {
+    switch (instStatus) {
       case "PENDING":
         return (
-          <span className="inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-0.5 font-inter text-xs font-semibold border border-warning-border bg-warning-bg text-warning">
-            <Clock className="w-3.5 h-3.5" /> Pending Review
+          <span className="inline-flex w-fit items-center rounded-full px-2.5 py-0.5 font-inter text-xs font-semibold bg-warning-bg text-warning">
+            Pending Review
           </span>
         );
       case "APPROVED":
         return (
-          <span className="inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-0.5 font-inter text-xs font-semibold border border-success-border bg-success-bg text-success">
-            <CheckCircle2 className="w-3.5 h-3.5" /> Approved
+          <span className="inline-flex w-fit items-center rounded-full px-2.5 py-0.5 font-inter text-xs font-semibold bg-success-bg text-success">
+            Approved
           </span>
         );
       case "REJECTED":
         return (
-          <span className="inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-0.5 font-inter text-xs font-semibold border border-danger-border bg-danger-bg text-danger">
-            <XCircle className="w-3.5 h-3.5" /> Rejected
+          <span className="inline-flex w-fit items-center rounded-full px-2.5 py-0.5 font-inter text-xs font-semibold bg-danger-bg text-danger">
+            Rejected
           </span>
         );
       default:
@@ -96,11 +96,11 @@ const AdminDashboardPage = async () => {
         </div>
 
         {/* 3. On Review Institution */}
-        <div className={`flex flex-col justify-between gap-1 rounded-sm border border-card-border bg-surface px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)] ${stats.pendingInstitutions > 0 ? "border-warning-border bg-warning-bg" : ""}`}>
+        <div className="flex flex-col justify-between gap-1 rounded-sm border border-card-border bg-surface px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
           <div className="flex items-center justify-between text-xs">
             On Review Institution
           </div>
-          <div className={`font-poppins text-2xl font-extrabold leading-tight tracking-tight text-text-main ${stats.pendingInstitutions > 0 ? "text-warning" : ""}`}>
+          <div className="font-poppins text-2xl font-extrabold leading-tight tracking-tight text-text-main">
             {stats.pendingInstitutions}
           </div>
         </div>
@@ -151,7 +151,7 @@ const AdminDashboardPage = async () => {
       </div>
 
       {/* Institution Verification Requests Table */}
-      <div className="flex flex-col px-8 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)] md:px-32">
+      <div className="flex flex-col shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
         <div className="flex flex-col border-b border-card-border sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
@@ -159,7 +159,7 @@ const AdminDashboardPage = async () => {
                 Institution Verification Requests
               </h2>
               {stats.pendingInstitutions > 0 && (
-                <span className="inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-0.5 font-inter text-xs font-semibold border border-warning-border bg-warning-bg text-warning">
+                <span className="inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-0.5 font-inter text-xs font-semibold bg-warning-bg text-warning">
                   {stats.pendingInstitutions} pending
                 </span>
               )}

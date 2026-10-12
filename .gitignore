@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# test/debug files
+check-user-coords.ts
+check_db.ts
+fix-db.js
+test-db.js
+test-drizzle.ts
+test-hash.ts
+test-signup.ts

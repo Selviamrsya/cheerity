@@ -3,6 +3,7 @@ import { getSession, auth } from "@/lib/auth";
 import { db } from "@/app/database/drizzle";
 import { institutions } from "@/app/database/schema";
 import { eq } from "drizzle-orm";
+import { hashPassword, verifyPassword } from "better-auth/crypto";
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,9 +40,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify current password using better-auth
-    const isCurrentPasswordValid = await auth.api.verifyPassword({
-      password: currentPassword,
-      hash: institution.password,
+    const isCurrentPasswordValid = await verifyPassword({
+        password: currentPassword,
+        hash: institution.password,
     });
 
     if (!isCurrentPasswordValid) {
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Hash new password using better-auth
-    const hashedNewPassword = await auth.api.hashPassword(newPassword);
+    const hashedNewPassword = await hashPassword(newPassword);
 
     await db
       .update(institutions)

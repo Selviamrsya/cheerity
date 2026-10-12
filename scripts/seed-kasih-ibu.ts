@@ -15,9 +15,11 @@ async function main() {
 
   const email = "selviamrsya@gmail.com";
   const passwordText = "KasihIbu1234";
-  const hashedPassword = await hashPassword({ password: passwordText });
+  
+  // LANGSUNG MASUKKAN STRING, TANPA { password: ... } DAN TANPA .hash
+  const hashedPassword = await hashPassword(passwordText);
 
-  // 1. Remove from users table if exists so NextAuth doesn't conflict and pick user role
+  // 1. Remove from users table if exists
   const existingUser = await db.select().from(users).where(eq(users.email, email)).limit(1);
   if (existingUser.length > 0) {
     console.log(`Found existing user with email ${email}, removing from users table to prevent auth collision...`);
@@ -35,7 +37,7 @@ async function main() {
       .update(institutions)
       .set({
         institutionName: "Yayasan Kasih Ibu",
-        password: hashedPassword.hash,
+        password: hashedPassword, // <-- Pakai variabel string biasa
         status: "APPROVED",
         phoneNumber: "081234567890",
         city: "Jakarta Pusat",
@@ -51,7 +53,7 @@ async function main() {
       .values({
         institutionName: "Yayasan Kasih Ibu",
         email,
-        password: hashedPassword.hash,
+        password: hashedPassword, // <-- Pakai variabel string biasa
         phoneNumber: "081234567890",
         city: "Jakarta Pusat",
         state: "DKI Jakarta",

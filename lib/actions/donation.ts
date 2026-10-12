@@ -12,6 +12,39 @@ import {
 import { revalidatePath } from "next/cache";
 import { sendEmail, emailTemplates } from "@/lib/email";
 
+// Get single donation campaign detail (for donation request form page)
+export const getDonationCampaignById = async (id: string) => {
+  try {
+    const [campaign] = await db
+      .select({
+        id: donations.id,
+        title: donations.title,
+        description: donations.description,
+        category: donations.category,
+        cover: donations.cover,
+        target: donations.target,
+        collected: donations.collected,
+        deliveryMethods: donations.deliveryMethods,
+        hasPickupService: donations.hasPickupService,
+        pickupMaxDistanceKm: donations.pickupMaxDistanceKm,
+        status: donations.status,
+        institutionId: donations.institutionId,
+        institutionName: institutions.institutionName, // Dijamin string karena innerJoin
+        institutionCity: institutions.city,
+        institutionState: institutions.state,
+      })
+      .from(donations)
+      .innerJoin(institutions, eq(donations.institutionId, institutions.id)) // <--- Ubah ke innerJoin
+      .where(eq(donations.id, id))
+      .limit(1);
+
+    return campaign ?? null;
+  } catch (error) {
+    console.error("Error fetching donation campaign by ID:", error);
+    return null;
+  }
+};
+
 // Create a donation campaign (institution only)
 export const createDonation = async (params: {
   institutionId: string;
@@ -115,35 +148,44 @@ export const getDonationsWithDistance = async (params: {
 
 // Get single donation detail
 export const getDonationById = async (id: string) => {
-  const [donation] = await db
+  const [record] = await db
     .select({
-      id: donations.id,
+      id: donateRecords.id,
+      status: donateRecords.status,
+      quantity: donateRecords.quantity,
+      deliveryMethod: donateRecords.deliveryMethod,
+      notes: donateRecords.notes,
+      donorPhoto: donateRecords.donorPhoto,
+      estimatedPickupDate: donateRecords.estimatedPickupDate,
+      estimatedPickupTime: donateRecords.estimatedPickupTime,
+      requestDate: donateRecords.requestDate,
+      updatedAt: donateRecords.updatedAt,
+      documentationPhoto: donateRecords.documentationPhoto,
+      rejectionReason: donateRecords.rejectionReason,
+      cancelReason: donateRecords.cancelReason,
+      // Data dari tabel donations
       title: donations.title,
       category: donations.category,
-      description: donations.description,
       cover: donations.cover,
-      target: donations.target,
-      collected: donations.collected,
-      deliveryMethods: donations.deliveryMethods,
-      hasPickupService: donations.hasPickupService,
-      pickupMaxDistanceKm: donations.pickupMaxDistanceKm,
-      status: donations.status,
-      createdAt: donations.createdAt,
-      institutionId: institutions.id,
+      description: donations.description,
+      // Data dari tabel institutions
       institutionName: institutions.institutionName,
-      institutionCity: institutions.city,
-      institutionState: institutions.state,
-      institutionDescription: institutions.description,
-      institutionWebsite: institutions.websiteOrSocial,
-      institutionLat: institutions.latitude,
-      institutionLng: institutions.longitude,
+      // Data dari tabel donate_records sendiri
+      donorName: donateRecords.donorName,
+      phoneNumber: donateRecords.phoneNumber,
+      city: donateRecords.city,
+      state: donateRecords.state,
+      zipCode: donateRecords.zipCode,
+      address: donateRecords.address,
+      userId: donateRecords.userId,
     })
-    .from(donations)
+    .from(donateRecords)
+    .innerJoin(donations, eq(donateRecords.donationId, donations.id))
     .innerJoin(institutions, eq(donations.institutionId, institutions.id))
-    .where(eq(donations.id, id))
+    .where(eq(donateRecords.id, id))
     .limit(1);
 
-  return donation ?? null;
+  return record ?? null;
 };
 
 // Submit a donation request (user/donor)
@@ -151,7 +193,6 @@ export const submitDonationRequest = async (params: {
   userId: string;
   donationId: string;
   donorName?: string;
-  isAnonymous: boolean;
   phoneNumber: string;
   city: string;
   state: string;
@@ -180,8 +221,7 @@ export const submitDonationRequest = async (params: {
       .values({
         userId: params.userId,
         donationId: params.donationId,
-        donorName: params.isAnonymous ? null : (params.donorName ?? null),
-        isAnonymous: params.isAnonymous,
+        donorName: params.donorName,
         phoneNumber: params.phoneNumber,
         city: params.city,
         state: params.state,
@@ -214,7 +254,7 @@ export const submitDonationRequest = async (params: {
   }
 };
 
-// Institution approves a donation request
+// Institution approves a donation request (PENDING -> ON_PROGRESS directly)
 export const approveDonationRequest = async (recordId: string, _institutionId?: string) => {
   try {
     const [record] = await db
@@ -246,19 +286,38 @@ export const approveDonationRequest = async (recordId: string, _institutionId?: 
       .where(eq(donateRecords.id, recordId))
       .limit(1);
 
+    // Set directly to ON_PROGRESS (no APPROVED step)
     await db
       .update(donateRecords)
       .set({
-        status: "APPROVED",
-        approvalDate: new Date(),
+        status: "ON_PROGRESS",
+        updatedAt: new Date(),
       })
       .where(eq(donateRecords.id, recordId));
+
+    // Update donation collected count when accepted
+    const [donationData] = await db
+      .select({ target: donations.target, collected: donations.collected })
+      .from(donations)
+      .where(eq(donations.id, record.donationId))
+      .limit(1);
+
+    const newCollected = (donationData?.collected ?? 0) + record.quantity;
+    const isComplete = newCollected >= (donationData?.target ?? 0);
+
+    await db
+      .update(donations)
+      .set({
+        collected: newCollected,
+        status: isComplete ? "COMPLETED" : "ACTIVE",
+      })
+      .where(eq(donations.id, record.donationId));
 
     await db.insert(notifications).values({
       recipientId: record.userId,
       recipientType: "USER",
-      title: "Donation Request Approved",
-      message: "Your donation request has been approved! Please prepare for delivery.",
+      title: "Donation Request Accepted",
+      message: "Your donation request has been accepted! The item is now on progress.",
       type: "REQUEST_APPROVED",
       relatedId: recordId,
     });
@@ -273,6 +332,7 @@ export const approveDonationRequest = async (recordId: string, _institutionId?: 
     }
 
     revalidatePath("/institution/history");
+    revalidatePath("/donations/[id]");
     return { success: true };
   } catch (error) {
     console.error("Approve request error:", error);
@@ -314,9 +374,11 @@ export const rejectDonationRequest = async (
       .set({
         status: "REJECTED",
         rejectionReason: reason ?? null,
-        approvalDate: new Date(),
+        updatedAt: new Date(),
       })
       .where(eq(donateRecords.id, recordId));
+
+    // No need to update collected count since PENDING requests don't affect it
 
     await db.insert(notifications).values({
       recipientId: record.userId,
@@ -339,6 +401,7 @@ export const rejectDonationRequest = async (
     }
 
     revalidatePath("/institution/history");
+    revalidatePath("/donations/[id]");
     return { success: true };
   } catch (error) {
     console.error("Reject request error:", error);
@@ -346,12 +409,13 @@ export const rejectDonationRequest = async (
   }
 };
 
-// Institution marks delivery in progress
+// Institution marks delivery in progress (now unused directly, but kept for compatibility)
+// Accept moves directly to ON_PROGRESS via approveDonationRequest
 export const markOnProgress = async (recordId: string) => {
   try {
     await db
       .update(donateRecords)
-      .set({ status: "ON_PROGRESS", deliveryDate: new Date() })
+      .set({ status: "ON_PROGRESS", updatedAt: new Date() })
       .where(eq(donateRecords.id, recordId));
 
     revalidatePath("/institution/history");
@@ -373,45 +437,14 @@ export const markArrived = async (recordId: string, proofPhoto: string) => {
 
     if (!record) return { success: false, error: "Record not found." };
 
-    // Get user email and donation info
-    const [userAndDonation] = await db
-      .select({
-        userEmail: users.email,
-        donationTitle: donations.title,
-        institutionName: institutions.institutionName,
-      })
-      .from(users)
-      .innerJoin(donateRecords, eq(users.id, donateRecords.userId))
-      .innerJoin(donations, eq(donateRecords.donationId, donations.id))
-      .innerJoin(institutions, eq(donations.institutionId, institutions.id))
-      .where(eq(donateRecords.id, recordId))
-      .limit(1);
-
     await db
       .update(donateRecords)
       .set({
         status: "WAITING_FOR_DOCUMENTATION",
         arrivalProofPhoto: proofPhoto,
-        arrivedDate: new Date(),
+        updatedAt: new Date(),
       })
       .where(eq(donateRecords.id, recordId));
-
-    const [donationData] = await db
-      .select({ target: donations.target, collected: donations.collected })
-      .from(donations)
-      .where(eq(donations.id, record.donationId))
-      .limit(1);
-
-    const newCollected = (donationData?.collected ?? 0) + record.quantity;
-    const isComplete = newCollected >= (donationData?.target ?? 0);
-
-    await db
-      .update(donations)
-      .set({
-        collected: newCollected,
-        status: isComplete ? "COMPLETED" : "ACTIVE",
-      })
-      .where(eq(donations.id, record.donationId));
 
     await db.insert(notifications).values({
       recipientId: record.userId,
@@ -421,16 +454,6 @@ export const markArrived = async (recordId: string, proofPhoto: string) => {
       type: "ARRIVED",
       relatedId: recordId,
     });
-
-    // Send email to donatur
-    if (userAndDonation?.userEmail) {
-      const template = emailTemplates.donationArrived(
-        userAndDonation.donationTitle,
-        userAndDonation.institutionName
-      );
-      await sendEmail({ to: userAndDonation.userEmail, ...template });
-    }
-
     revalidatePath("/institution/history");
     revalidatePath("/history");
     return { success: true };
@@ -441,6 +464,7 @@ export const markArrived = async (recordId: string, proofPhoto: string) => {
 };
 
 // Institution marks donation as complete (ON_PROGRESS -> WAITING_FOR_DOCUMENTATION)
+// This is called when institution clicks "Mark Done" - moves to documentation stage
 export const markDonationComplete = async (recordId: string) => {
   try {
     const [record] = await db
@@ -455,14 +479,17 @@ export const markDonationComplete = async (recordId: string) => {
 
     await db
       .update(donateRecords)
-      .set({ status: "WAITING_FOR_DOCUMENTATION" })
+      .set({
+        status: "WAITING_FOR_DOCUMENTATION",
+        updatedAt: new Date(),
+      })
       .where(eq(donateRecords.id, recordId));
 
     await db.insert(notifications).values({
       recipientId: record.userId,
       recipientType: "USER",
-      title: "Donation Complete - Upload Documentation",
-      message: "Your donation has been marked as complete. Please upload the required documentation.",
+      title: "Donation Arrived",
+      message: "Your donation has arrived at the institution and is waiting for documentation.",
       type: "ARRIVED",
       relatedId: recordId,
     });
@@ -513,26 +540,11 @@ export const uploadDocumentationAndComplete = async (recordId: string, documenta
       .set({
         status: "COMPLETED",
         documentationPhoto: documentationPhoto,
-        completedDate: new Date(),
+        updatedAt: new Date(),
       })
       .where(eq(donateRecords.id, recordId));
 
-    const [donationData] = await db
-      .select({ target: donations.target, collected: donations.collected })
-      .from(donations)
-      .where(eq(donations.id, record.donationId))
-      .limit(1);
-
-    const newCollected = (donationData?.collected ?? 0) + record.quantity;
-    const isComplete = newCollected >= (donationData?.target ?? 0);
-
-    await db
-      .update(donations)
-      .set({
-        collected: newCollected,
-        status: isComplete ? "COMPLETED" : "ACTIVE",
-      })
-      .where(eq(donations.id, record.donationId));
+    // Collected count already updated when approved, no need to update here
 
     await db.insert(notifications).values({
       recipientId: record.userId,
@@ -545,7 +557,7 @@ export const uploadDocumentationAndComplete = async (recordId: string, documenta
 
     // Send email to donatur
     if (userAndDonation?.userEmail) {
-      const template = emailTemplates.donationArrived(
+      const template = emailTemplates.donationCompleted(
         userAndDonation.donationTitle,
         userAndDonation.institutionName
       );
@@ -569,7 +581,12 @@ export const rejectDonationFromProgress = async (
 ) => {
   try {
     const [record] = await db
-      .select({ userId: donateRecords.userId, status: donateRecords.status })
+      .select({
+        userId: donateRecords.userId,
+        status: donateRecords.status,
+        donationId: donateRecords.donationId,
+        quantity: donateRecords.quantity,
+      })
       .from(donateRecords)
       .where(eq(donateRecords.id, recordId))
       .limit(1);
@@ -598,6 +615,23 @@ export const rejectDonationFromProgress = async (
       })
       .where(eq(donateRecords.id, recordId));
 
+    // Decrease collected count since this was previously approved
+    const [donationData] = await db
+      .select({ collected: donations.collected })
+      .from(donations)
+      .where(eq(donations.id, record.donationId))
+      .limit(1);
+
+    const newCollected = Math.max(0, (donationData?.collected ?? 0) - record.quantity);
+
+    await db
+      .update(donations)
+      .set({
+        collected: newCollected,
+        status: "ACTIVE", // Reopen donation if it was completed
+      })
+      .where(eq(donations.id, record.donationId));
+
     await db.insert(notifications).values({
       recipientId: record.userId,
       recipientType: "USER",
@@ -620,6 +654,7 @@ export const rejectDonationFromProgress = async (
 
     revalidatePath("/institution/history");
     revalidatePath("/history");
+    revalidatePath("/donations/[id]");
     return { success: true };
   } catch (error) {
     console.error("Reject donation error:", error);
@@ -627,7 +662,7 @@ export const rejectDonationFromProgress = async (
   }
 };
 
-// Cancel donation from APPROVED status (for both donor and institution)
+// Cancel donation from ON_PROGRESS status (for both donor and institution)
 export const cancelDonation = async (
   recordId: string,
   reason?: string
@@ -638,12 +673,13 @@ export const cancelDonation = async (
         userId: donateRecords.userId,
         donationId: donateRecords.donationId,
         status: donateRecords.status,
+        quantity: donateRecords.quantity,
       })
       .from(donateRecords)
       .where(eq(donateRecords.id, recordId))
       .limit(1);
 
-    if (!record || record.status !== "APPROVED") {
+    if (!record || record.status !== "ON_PROGRESS") {
       return { success: false, error: "Record not found or invalid status." };
     }
 
@@ -677,6 +713,23 @@ export const cancelDonation = async (
         cancelReason: reason ?? null,
       })
       .where(eq(donateRecords.id, recordId));
+
+    // Decrease collected count since this was previously accepted
+    const [donationData] = await db
+      .select({ collected: donations.collected })
+      .from(donations)
+      .where(eq(donations.id, record.donationId))
+      .limit(1);
+
+    const newCollected = Math.max(0, (donationData?.collected ?? 0) - record.quantity);
+
+    await db
+      .update(donations)
+      .set({
+        collected: newCollected,
+        status: "ACTIVE", // Reopen donation if it was completed
+      })
+      .where(eq(donations.id, record.donationId));
 
     // Notify user
     await db.insert(notifications).values({
@@ -713,6 +766,7 @@ export const cancelDonation = async (
 
     revalidatePath("/institution/history");
     revalidatePath("/history");
+    revalidatePath("/donations/[id]");
     return { success: true };
   } catch (error) {
     console.error("Cancel donation error:", error);
@@ -729,10 +783,7 @@ export const getUserDonationHistory = async (userId: string) => {
       quantity: donateRecords.quantity,
       deliveryMethod: donateRecords.deliveryMethod,
       requestDate: donateRecords.requestDate,
-      approvalDate: donateRecords.approvalDate,
-      deliveryDate: donateRecords.deliveryDate,
-      arrivedDate: donateRecords.arrivedDate,
-      arrivalProofPhoto: donateRecords.arrivalProofPhoto,
+      updatedAt: donateRecords.updatedAt,
       documentationPhoto: donateRecords.documentationPhoto,
       rejectionReason: donateRecords.rejectionReason,
       cancelReason: donateRecords.cancelReason,
@@ -757,7 +808,6 @@ export const getInstitutionDonationHistory = async (institutionId: string) => {
         id: donateRecords.id,
         status: donateRecords.status,
         donorName: donateRecords.donorName,
-        isAnonymous: donateRecords.isAnonymous,
         phoneNumber: donateRecords.phoneNumber,
         city: donateRecords.city,
         quantity: donateRecords.quantity,
@@ -767,8 +817,7 @@ export const getInstitutionDonationHistory = async (institutionId: string) => {
         estimatedPickupDate: donateRecords.estimatedPickupDate,
         estimatedPickupTime: donateRecords.estimatedPickupTime,
         requestDate: donateRecords.requestDate,
-        approvalDate: donateRecords.approvalDate,
-        arrivalProofPhoto: donateRecords.arrivalProofPhoto,
+        updatedAt: donateRecords.updatedAt,
         documentationPhoto: donateRecords.documentationPhoto,
         rejectionReason: donateRecords.rejectionReason,
         cancelReason: donateRecords.cancelReason,
@@ -782,6 +831,50 @@ export const getInstitutionDonationHistory = async (institutionId: string) => {
   } catch (error) {
     console.error("Error fetching institution donation history:", error);
     return [];
+  }
+};
+
+// Get a single donation record by ID (for detail page)
+export const getDonationRecordById = async (recordId: string) => {
+  try {
+    const [record] = await db
+      .select({
+        id: donateRecords.id,
+        status: donateRecords.status,
+        quantity: donateRecords.quantity,
+        deliveryMethod: donateRecords.deliveryMethod,
+        notes: donateRecords.notes,
+        donorPhoto: donateRecords.donorPhoto,
+        estimatedPickupDate: donateRecords.estimatedPickupDate,
+        estimatedPickupTime: donateRecords.estimatedPickupTime,
+        requestDate: donateRecords.requestDate,
+        updatedAt: donateRecords.updatedAt,
+        documentationPhoto: donateRecords.documentationPhoto,
+        rejectionReason: donateRecords.rejectionReason,
+        cancelReason: donateRecords.cancelReason,
+        title: donations.title,
+        category: donations.category,
+        cover: donations.cover,
+        description: donations.description,
+        institutionName: institutions.institutionName,
+        donorName: donateRecords.donorName,
+        phoneNumber: donateRecords.phoneNumber,
+        city: donateRecords.city,
+        state: donateRecords.state,
+        zipCode: donateRecords.zipCode,
+        address: donateRecords.address,
+        userId: donateRecords.userId,
+      })
+      .from(donateRecords)
+      .innerJoin(donations, eq(donateRecords.donationId, donations.id))
+      .innerJoin(institutions, eq(donations.institutionId, institutions.id))
+      .where(eq(donateRecords.id, recordId))
+      .limit(1);
+
+    return record ?? null;
+  } catch (error) {
+    console.error("Error fetching donation record:", error);
+    return null;
   }
 };
 

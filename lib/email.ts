@@ -1,5 +1,3 @@
-// Simple email service using Resend directly
-const RESEND_API_KEY = process.env.RESEND_TOKEN;
 const RESEND_FROM_EMAIL = "Cheerity <onboarding@resend.dev>";
 
 export async function sendEmail({
@@ -12,21 +10,27 @@ export async function sendEmail({
   html: string;
 }) {
   try {
-    if (!RESEND_API_KEY) {
+    const resendApiKey = process.env.RESEND_TOKEN;
+
+    if (!resendApiKey) {
       console.warn("RESEND_API_KEY not configured, skipping email");
       return;
     }
+    const actualTarget = process.env.NODE_ENV === "development" ? "selviam2017@gmail.com" : to;
+    const finalSubject = process.env.NODE_ENV === "development" && to !== "selviam2017@gmail.com" 
+      ? `[Original To: ${to}] ${subject}` 
+      : subject;
 
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${RESEND_API_KEY}`,
+        "Authorization": `Bearer ${resendApiKey}`, 
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         from: RESEND_FROM_EMAIL,
-        to: [to],
-        subject,
+        to: [actualTarget],
+        subject: finalSubject,
         html,
       }),
     });
@@ -34,10 +38,11 @@ export async function sendEmail({
     if (!response.ok) {
       const error = await response.text();
       console.error("Email send failed:", error);
+    } else {
+      console.log("Email sent successfully!");
     }
   } catch (error) {
     console.error("Email send error:", error);
-    // Don't throw - email failure should not block main actions
   }
 }
 
@@ -81,16 +86,16 @@ export const emailTemplates = {
     `,
   }),
 
-  donationArrived: (donationTitle: string, institutionName: string) => ({
-    subject: "Your Donation Has Arrived!",
+  donationCompleted: (donationTitle: string, institutionName: string) => ({
+    subject: "Your Donation is Completed!",
     html: `
-      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #166534;">Your Donation Has Arrived!</h2>
-        <p>${institutionName} has confirmed that your donation for "${donationTitle}" has arrived safely.</p>
-        <p>They have uploaded proof of arrival. You can view it in your donation history.</p>
-        <p>Thank you for your generosity!</p>
-        <p style="color: #6b7280; font-size: 12px;">Cheerity - Bring Cheer</p>
-      </div>
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #166534;">Donation Completed!</h2>
+      <p>Great news! ${institutionName} has confirmed the arrival and uploaded the documentation proof for your donation "${donationTitle}".</p>
+      <p>You can now view the proof of delivery in your donation history.</p>
+      <p>Thank you for your incredible generosity!</p>
+      <p style="color: #6b7280; font-size: 12px;">Cheerity - Bring Cheer</p>
+    </div>
     `,
   }),
 

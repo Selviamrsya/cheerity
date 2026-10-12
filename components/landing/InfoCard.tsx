@@ -26,7 +26,6 @@ export function InfoCard({
     </div>
   );
 }
-
 export function TutorialStep({
   src,
   alt,
@@ -41,12 +40,23 @@ export function TutorialStep({
   return (
     <div
       className={cn(
-        "flex flex-col items-center rounded-md p-6 md:p-8 text-center",
+        // Padding sangat tipis di HP (p-1), normal di layar besar (md:p-6)
+        "flex flex-col items-center rounded-md p-1 md:p-6 text-center",
         delay
       )}
     >
-      <Image src={src} alt={alt} width={64} height={64} className="mb-3 h-14 w-14 object-contain" />
-      <p className="font-inter text-sm leading-relaxed text-white">{text}</p>
+      <Image 
+        src={src} 
+        alt={alt} 
+        width={64} 
+        height={64} 
+        className="mb-1.5 h-8 w-8 md:h-14 md:w-14 object-contain" 
+      />
+      
+      {/* Teks diperkecil drastis jadi text-[9px] atau text-[10px] di HP */}
+      <p className="font-inter text-[9px] sm:text-[10px] md:text-xs leading-tight md:leading-relaxed text-white">
+        {text}
+      </p>
     </div>
   );
 }

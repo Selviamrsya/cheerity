@@ -187,7 +187,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                         </span>
                       )}
                     </div>
-                    {isSelected && <Check className="w-4 h-4 text-green-800 flex-shrink-0" />}
+                    {isSelected && <Check className="w-4 h-4 text-green-800 shrink-0" />}
                   </button>
                 );
               })

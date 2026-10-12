@@ -200,7 +200,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="flex-1 border border-gray-300 rounded-sm bg-white text-gray-900 text-sm font-sans focus:outline-none focus:border-green-800 focus:ring-1 focus:ring-green-800 placeholder:text-gray-400 placeholder:font-normal"
+                className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400"
                 style={{ padding: "8px" }}
                 required
               />
@@ -219,7 +219,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
                 type="text"
                 value={formData.fullName}
                 onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                className="flex-1 border border-gray-300 rounded-sm bg-white text-gray-900 text-sm font-sans focus:outline-none focus:border-green-800 focus:ring-1 focus:ring-green-800 placeholder:text-gray-400 placeholder:font-normal"
+                className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400"
                 style={{ padding: "8px" }}
                 required
               />
@@ -250,7 +250,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
                 value={formData.phoneNumber}
                 onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
                 placeholder="e.g. +628123456789"
-                className="flex-1 border border-gray-300 rounded-sm bg-white text-gray-900 text-sm font-sans focus:outline-none focus:border-green-800 focus:ring-1 focus:ring-green-800 placeholder:text-gray-400 placeholder:font-normal"
+                className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400"
                 style={{ padding: "8px" }}
               />
             )}
@@ -268,7 +268,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
                 type="date"
                 value={formData.birthdate}
                 onChange={(e) => setFormData({ ...formData, birthdate: e.target.value })}
-                className="flex-1 border border-gray-300 rounded-sm bg-white text-gray-900 text-sm font-sans focus:outline-none focus:border-green-800 focus:ring-1 focus:ring-green-800 placeholder:text-gray-400 placeholder:font-normal"
+                className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400"
                 style={{ padding: "8px" }}
               />
             )}
@@ -317,8 +317,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
                     value={formData.detailedAddress}
                     onChange={(e) => setFormData(prev => ({ ...prev, detailedAddress: e.target.value }))}
                     placeholder="Additional details like landmark, gate color, building name, floor, etc."
-                    /* Tambahkan focus:ring-1 focus:ring-green-800 di sini */
-                    className="w-full border border-gray-300 rounded-sm bg-white text-gray-900 text-sm font-sans placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:border-green-800 focus:ring-1 focus:ring-green-800"
+                    className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400"
                     style={{ padding: "8px" }}
                   />
                 </div>
@@ -396,13 +395,13 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
           <button
             type="button"
             onClick={() => setShowPasswordSection(true)}
-            className="text-xs font-semibold text-gray-500 hover:text-green-800 transition-colors cursor-pointer"
+            className="text-md font-semibold text-gray-500 hover:text-green-800 transition-colors cursor-pointer"
           >
             Change Password
           </button>
         ) : (
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-gray-700 mt-6">Change Password</h3>
+            <h3 className="text-md font-semibold text-gray-700 mt-6">Change Password</h3>
 
             {/* Current Password */}
             <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
@@ -413,7 +412,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
                   value={passwordData.currentPassword}
                   onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
                   placeholder="Enter current password"
-                  className="w-full border border-gray-300 rounded-sm bg-white text-gray-900 text-sm font-sans focus:outline-none focus:border-green-800 focus:ring-1 focus:ring-green-800 placeholder:text-gray-400 placeholder:font-normal pr-9"
+                  className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400 pr-9"
                   style={{ padding: "8px" }}
                 />
                 <button
@@ -436,7 +435,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
                   value={passwordData.newPassword}
                   onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
                   placeholder="Min. 6 characters"
-                  className="w-full border border-gray-300 rounded-sm bg-white text-gray-900 text-sm font-sans focus:outline-none focus:border-green-800 focus:ring-1 focus:ring-green-800 placeholder:text-gray-400 placeholder:font-normal pr-9"
+                  className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400 pr-9"
                   style={{ padding: "8px" }}
                 />
                 <button
@@ -459,7 +458,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
                   value={passwordData.confirmPassword}
                   onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                   placeholder="Re-enter new password"
-                  className="w-full border border-gray-300 rounded-sm bg-white text-gray-900 text-sm font-sans focus:outline-none focus:border-green-800 focus:ring-1 focus:ring-green-800 placeholder:text-gray-400 placeholder:font-normal pr-9"
+                  className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400 pr-9"
                   style={{ padding: "8px" }}
                 />
                 <button
@@ -489,9 +488,8 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
               <button
                 onClick={handleChangePassword}
                 disabled={isChangingPassword}
-                className="font-medium text-white inline-flex w-auto items-center justify-center gap-2 rounded-sm bg-primary px-6 py-2 font-inter text-[15px] font-semibold text-white transition-all hover:bg-primary-dark disabled:opacity-50"
-                style={{ width: "auto", padding: "10px 24px" }}
-              >
+                className="inline-flex items-center justify-center gap-2 rounded-sm bg-primary px-4 py-1.5 font-inter text-sm font-semibold text-white transition-all hover:bg-primary-dark disabled:opacity-50 cursor-pointer"
+                >
                 {isChangingPassword ? (
                   <>
                     <Loader2 className="w-3 h-3 animate-spin" />
@@ -504,8 +502,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
               <button
                 onClick={handleCancelPassword}
                 disabled={isChangingPassword}
-                className="inline-flex w-auto items-center justify-center gap-2 rounded-sm border border-outline bg-white px-6 py-2 font-inter text-[15px] font-semibold text-on-surface transition-all hover:bg-bg-light disabled:opacity-50"
-                style={{ padding: "10px 24px" }}
+                className="inline-flex items-center justify-center gap-2 rounded-sm border border-outline bg-white px-4 py-1.5 font-inter text-sm font-semibold text-on-surface transition-all hover:bg-bg-light disabled:opacity-50 cursor-pointer"
               >
                 Cancel
               </button>

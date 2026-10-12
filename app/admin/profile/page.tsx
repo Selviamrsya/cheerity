@@ -6,6 +6,9 @@ import { users } from "@/app/database/schema";
 import { eq } from "drizzle-orm";
 import AdminProfileForm from "@/components/admin/AdminProfileForm";
 import { headers } from "next/headers";
+import Link from "next/link";
+import {ArrowLeft} from "lucide-react";
+
 
 const AdminProfilePage = async () => {
   const reqHeaders = await headers();
@@ -32,10 +35,13 @@ const AdminProfilePage = async () => {
 
   return (
     <div className="w-full space-y-6">
-      {/* Back button */}
-      <div className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-green-800 transition-colors">
-        ← Back to Dashboard
-      </div>
+      <Link
+        href="/admin" 
+        className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-green-800 transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        <span>Back to Dashboard</span>
+      </Link>
 
       {/* Main Details Card */}
       <div className="flex w-full flex-col gap-6 px-0 py-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] sm:p-0">

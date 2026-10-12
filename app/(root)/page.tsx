@@ -71,7 +71,7 @@ const Home = async () => {
 
       <section className="mx-auto w-full max-w-345 px-8 py-12 md:px-32 md:py-36">
         <div className="mx-auto mb-8 max-w-2xl text-center">
-          <h2 className="font-poppins text-2xl font-bold text-text-main md:text-3xl">
+          <h2 className="font-poppins text-2xl font-semibold text-text-main md:text-3xl">
             One platform, Two ways to make an impact
           </h2>
           <p className="mt-2 font-inter text-sm leading-relaxed text-text-muted md:text-base">
@@ -96,24 +96,24 @@ const Home = async () => {
       </section>
 
       <section className="bg-primary text-white">
-        <div className="mx-auto w-full max-w-345 px-8 py-12 md:px-32 md:py-24">
-          <h2 className="mb-8 text-center font-poppins text-2xl font-bold md:text-3xl">
-            How it works
-          </h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            {tutorialSteps.map((step, index) => (
-              <TutorialStep
-                key={step.alt}
-                {...step}
-                delay={cn("animate-fade-in", ["delay-100", "delay-200", "delay-300", "delay-400", "delay-500"][index])}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
+  <div className="mx-auto w-full max-w-345 px-2 py-8 md:px-32 md:py-20">
+    <h2 className="mb-8 text-center font-poppins text-2xl font-semibold md:text-3xl">
+      How it works
+    </h2>
+    <div className="grid grid-cols-5 gap-1 md:gap-4">
+      {tutorialSteps.map((step, index) => (
+        <TutorialStep
+          key={step.alt}
+          {...step}
+          delay={cn("animate-fade-in", ["delay-100", "delay-200", "delay-300", "delay-400", "delay-500"][index])}
+        />
+      ))}
+    </div>
+  </div>
+</section>
 
       <section className="mx-auto w-full max-w-345 px-8 py-12 md:px-32 md:py-24">
-        <h2 className="mb-8 text-center font-poppins text-2xl font-bold text-text-main md:text-3xl">
+        <h2 className="mb-8 text-center font-poppins text-2xl font-semibold text-text-main md:text-3xl">
           Discover Donations Inspired by What You Care About
         </h2>
 
@@ -158,7 +158,7 @@ const Home = async () => {
 
       <section className="bg-primary-50">
         <div className="mx-auto w-full max-w-3xl px-8 py-12 text-center md:px-12 md:py-16">
-          <h2 className="font-poppins text-2xl font-bold text-text-main md:text-3xl">
+          <h2 className="font-poppins text-2xl font-semibold text-text-main md:text-3xl">
             About Us
           </h2>
           <p className="mt-4 font-inter text-sm leading-relaxed text-on-surface md:text-base">

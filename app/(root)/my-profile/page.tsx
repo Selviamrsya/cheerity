@@ -41,35 +41,37 @@ const ProfilePage = async () => {
   }
 
   return (
-    <div className="mx-auto w-full max-w-330 px-8 py-4 md:px-16">
-      {/* Back button */}
-      <div className="mb-2" style={{marginTop:"24px"}}>
-        <Link 
-          href="/" 
-          className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-green-800 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back</span>
-        </Link>
-      </div>
-
-      <div className="bg-white p-2 md:p-4">
-        <div
-          className="flex items-center justify-between pb-6 border-b border-gray-100"
-          style={{ paddingBottom: "12px" }}
-        >
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-green-800 text-white flex items-center justify-center font-bold text-2xl">
-              {user.fullName?.charAt(0).toUpperCase() || "U"}
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{user.fullName || "User"}</h1>
-              <p className="text-sm text-gray-500 capitalize">{user.role?.toLowerCase()} Profile</p>
-            </div>
-          </div>
+    <div className="mx-auto w-full max-w-330 px-8 py-4 min-h-[calc(100vh-100px)] flex flex-col justify-between">
+      <div>
+        {/* Back button */}
+        <div className="mb-4 mt-8">
+          <Link 
+            href="/" 
+            className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-green-800 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back</span>
+          </Link>
         </div>
 
-        <ProfileEditForm user={user} />
+        <div className="bg-white p-2 md:p-4 mb-8">
+          <div
+            className="flex items-center justify-between pb-6 border-b border-gray-100"
+            style={{ paddingBottom: "12px" }}
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-green-800 text-white flex items-center justify-center font-bold text-2xl">
+                {user.fullName?.charAt(0).toUpperCase() || "U"}
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">{user.fullName || "User"}</h1>
+                <p className="text-sm text-gray-500 capitalize">{user.role?.toLowerCase()} Profile</p>
+              </div>
+            </div>
+          </div>
+
+          <ProfileEditForm user={user} />
+        </div>
       </div>
     </div>
   );

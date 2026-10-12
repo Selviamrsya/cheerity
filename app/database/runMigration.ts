@@ -104,7 +104,6 @@ async function run() {
         "user_id" uuid NOT NULL REFERENCES "users"("id"),
         "donation_id" uuid NOT NULL REFERENCES "donations"("id"),
         "donor_name" varchar(255),
-        "is_anonymous" boolean DEFAULT false NOT NULL,
         "phone_number" varchar(20),
         "city" varchar(100),
         "state" varchar(100),

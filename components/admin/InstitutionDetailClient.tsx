@@ -14,11 +14,9 @@ import {
   ExternalLink,
   Loader2,
   Edit2,
-  Power,
-  PowerOff,
-  AlertTriangle,
 } from "lucide-react";
 import LocationFields from "@/components/LocationFields";
+import RejectModal from "@/components/RejectModal"; // <-- Import RejectModal
 
 interface InstitutionDetailClientProps {
   institution: {
@@ -93,6 +91,10 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
 
   // Reject action (for pending review) - performs DELETE
   const handleRejectSubmit = async () => {
+    if (!rejectionReason.trim()) {
+      setErrorMsg("Please enter the reason for rejection.");
+      return;
+    }
     setIsSubmitting(true);
     setActionType("reject");
     setErrorMsg(null);
@@ -153,13 +155,12 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
     setErrorMsg(null);
   };
 
-
   const registrationDate = institution.createdAt
     ? new Date(institution.createdAt).toLocaleDateString("id-ID", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    })
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
     : "-";
 
   return (
@@ -187,9 +188,7 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
 
       {/* Main Details Card */}
       <div className="flex w-full flex-col gap-6 px-0 py-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] sm:p-0">
-        {/* Header with Title */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-gray-100"
-        >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-gray-100">
           <div>
             <h1 className="mb-1 font-poppins text-[22px] font-medium tracking-tight text-text-main md:text-[26px]">Institution Detail</h1>
             <p className="font-inter text-[13.5px] leading-relaxed text-text-muted">ID: {institution.id}</p>
@@ -205,9 +204,7 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
 
           <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
             <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Institution Name</span>
-            <span className="text-[13.5px] font-medium text-text-main font-bold">
-              {institution.institutionName}
-            </span>
+            <span className="text-[13.5px] font-medium text-text-main">{institution.institutionName}</span>
           </div>
 
           <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
@@ -217,9 +214,7 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
 
           <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
             <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Phone Number</span>
-            <span className="text-[13.5px] font-medium text-text-main">
-              {institution.phoneNumber || "-"}
-            </span>
+            <span className="text-[13.5px] font-medium text-text-main">{institution.phoneNumber || "-"}</span>
           </div>
 
           <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
@@ -240,15 +235,17 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
                   <span className="text-[13.5px] font-medium text-text-main">
                     {currentAddress.address || "-"}
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => setIsEditingAddress(true)}
-                    className="inline-flex items-center gap-1.5 px-6 py-3 text-xs font-semibold text-gray-500 hover:text-green-800 cursor-pointer"
-                    style={{ padding: "8px 12px" }}
-                  >
-                    <Edit2 className="w-3.5 h-3.5" />
-                    <span>Change address</span>
-                  </button>
+                  {currentStatus === "APPROVED" && (
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingAddress(true)}
+                      className="inline-flex items-center gap-1.5 px-6 py-3 text-xs font-semibold text-gray-500 hover:text-green-800 cursor-pointer"
+                      style={{ padding: "8px 12px" }}
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                      <span>Change address</span>
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-3 w-full">
@@ -286,7 +283,7 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
                       type="button"
                       onClick={handleSaveAddress}
                       disabled={isSubmitting}
-                      className="font-medium text-white inline-flex w-auto items-center justify-center gap-2 rounded-sm bg-primary px-6 py-2 font-inter text-[15px] font-semibold text-white transition-all hover:bg-primary-dark disabled:opacity-50"
+                      className="text-white inline-flex w-auto items-center justify-center gap-2 rounded-sm bg-primary px-6 py-2 font-inter text-[15px] font-semibold transition-all hover:bg-primary-dark disabled:opacity-50"
                       style={{ width: "auto", padding: "10px 24px" }}
                     >
                       {isSubmitting && actionType === "updateAddress" ? (
@@ -320,7 +317,7 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
                 href={institution.websiteOrSocial}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[13.5px] font-medium text-text-main text-green-800 underline inline-flex items-center gap-1.5"
+                className="text-[13.5px] hover:text-green-800 font-medium text-text-main underline inline-flex items-center gap-1.5"
               >
                 <span>{institution.websiteOrSocial}</span>
                 <ExternalLink className="w-3.5 h-3.5" />
@@ -331,8 +328,7 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
           <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
             <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Description</span>
             <p className="text-[13.5px] font-medium text-text-main text-xs sm:text-sm leading-relaxed whitespace-pre-line">
-              {institution.description ||
-                "Tidak ada deskripsi yang dicantumkan."}
+              {institution.description || "Tidak ada deskripsi yang dicantumkan."}
             </p>
           </div>
 
@@ -353,7 +349,7 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
                     href={institution.verificationEvidence}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-xs font-bold text-green-800 hover:text-green-950 hover:underline"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-black-600 hover:text-green-800 hover:underline"
                   >
                     <FileText className="w-3.5 h-3.5" />
                     <span>Open full-size file</span>
@@ -368,32 +364,22 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
           </div>
         </div>
 
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-1">
-          <div className="flex flex-col gap-2">
+        <div className="pt-6 flex flex-col items-stretch gap-4 w-full">
+          <div className="flex items-center justify-between">
             <div className="text-xs text-gray-500 font-medium">
               Account Status:{" "}
               <strong className="text-gray-800">{currentStatus}</strong>
             </div>
-
-
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="w-full">
             {currentStatus === "PENDING" && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setRejectModalOpen(true)}
-                  disabled={isSubmitting}
-                  className="cursor-pointer rounded-md border border-danger-border bg-danger-bg px-6 py-2.5 font-inter text-[12.5px] font-medium text-danger transition-all hover:bg-danger-border w-full sm:w-auto"
-                >
-                  Reject
-                </button>
+              <div className="grid grid-cols-2 gap-2 w-full">
                 <button
                   type="button"
                   onClick={handleApprove}
                   disabled={isSubmitting}
-                  className="inline-flex items-center gap-2 rounded-md border-none bg-primary-800 px-6 py-2.5 font-inter text-[12.5px] font-medium text-surface transition-colors hover:bg-primary-900 w-full sm:w-auto justify-center"
+                  className="flex items-center justify-center gap-2 rounded-sm border-none bg-primary-800 px-4 py-2 font-inter text-[13px] font-semibold text-surface transition-colors hover:bg-primary-900 w-full"
                 >
                   {isSubmitting && actionType === "approve" ? (
                     <>
@@ -404,60 +390,31 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
                     "Accept"
                   )}
                 </button>
-              </>
+                <button
+                  type="button"
+                  onClick={() => setRejectModalOpen(true)}
+                  disabled={isSubmitting}
+                  className="cursor-pointer flex items-center justify-center rounded-md bg-red-600 px-4 py-2 font-inter text-[13px] font-semibold text-white transition-all hover:bg-red-700 active:bg-red-800 disabled:opacity-50 w-full"
+                >
+                  Reject
+                </button>
+              </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Reject Modal */}
-      {rejectModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="bg-white w-full max-w-md rounded-sm p-6 sm:p-8 shadow-2xl border border-gray-100 space-y-4">
-            <h3 className="text-base font-bold text-gray-900">
-              Tolak Pendaftaran Institusi
-            </h3>
-            <p className="text-xs text-gray-500 leading-relaxed">
-              Masukkan alasan penolakan berkas. Email pemberitahuan akan otomatis dikirimkan ke pihak institusi. <strong>Setelah ditolak, seluruh data institusi akan dihapus dan email tersebut dapat digunakan kembali untuk pendaftaran baru.</strong>
-            </p>
-
-            <textarea
-              rows={4}
-              value={rejectionReason}
-              onChange={(e) => setRejectionReason(e.target.value)}
-              placeholder="Contoh: Dokumen operasional telah kedaluwarsa...."
-              className="w-full p-3 text-xs border border-gray-200 rounded-sm focus:outline-none focus:border-green-800 resize-none"
-            />
-
-            <div className="flex gap-2.5 justify-end pt-2">
-              <button
-                type="button"
-                onClick={() => setRejectModalOpen(false)}
-                className="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-sm cursor-pointer"
-              >
-                Batal
-              </button>
-              <button
-                type="button"
-                onClick={handleRejectSubmit}
-                disabled={isSubmitting}
-                className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-sm transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center gap-2"
-              >
-                {isSubmitting && actionType === "reject" ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Menolak...</span>
-                  </>
-                ) : (
-                  "Konfirmasi Penolakan"
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-
+      <RejectModal
+        isOpen={rejectModalOpen}
+        onClose={() => setRejectModalOpen(false)}
+        title="Reject Institution Request"
+        description="Enter the reason for rejection. A notification email will be automatically sent to the institution."
+        reason={rejectionReason}
+        onReasonChange={setRejectionReason}
+        onSubmit={handleRejectSubmit}
+        isLoading={isSubmitting && actionType === "reject"}
+        placeholder="Enter your reason here"
+      />
     </div>
   );
 };

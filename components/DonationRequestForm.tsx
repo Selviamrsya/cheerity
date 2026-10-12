@@ -3,8 +3,9 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Package, AlertCircle, Truck, Upload, X } from "lucide-react";
+import { Package, AlertCircle } from "lucide-react";
 import { CATEGORY_LABELS, DELIVERY_METHOD_LABELS } from "@/constants";
+import LocalImageUpload from "@/components/LocalImageUpload"; // Menggunakan reusable component
 
 interface DonationRequestFormProps {
   donation: {
@@ -59,11 +60,10 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
     deliveryMethod: "",
     estimatedPickupDate: "",
     estimatedPickupTime: "",
-    photo: null as File | null,
+    photo: "", // Menggunakan string URL dari LocalImageUpload
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   const calculateDistance = (
     lat1: number,
@@ -141,26 +141,9 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
     }
   };
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        setErrors((prev) => ({ ...prev, photo: "Photo must be less than 5MB" }));
-        return;
-      }
-
-      setFormData((prev) => ({ ...prev, photo: file }));
-      setPhotoPreview(URL.createObjectURL(file));
-      if (errors.photo) {
-        setErrors((prev) => ({ ...prev, photo: "" }));
-      }
-    }
-  };
-
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    // Name and phone are auto-filled from profile, so we just check if they exist
     if (!formData.name.trim()) {
       newErrors.name = "Please update your name in profile first";
     }
@@ -169,7 +152,6 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
       newErrors.phone = "Please update your phone in profile first";
     }
 
-    // Address is auto-filled from profile, so we just check if it exists
     if (!formData.address.trim()) {
       newErrors.address = "Please update your address in profile first";
     }
@@ -180,7 +162,7 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
       newErrors.quantity = `Maximum quantity is ${donation.target - donation.collected} items`;
     }
 
-    if (!formData.photo) {
+    if (!formData.photo.trim()) {
       newErrors.photo = "Photo is required as proof";
     }
 
@@ -211,21 +193,8 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
     setIsSubmitting(true);
 
     try {
-      const photoFormData = new FormData();
-      photoFormData.append("file", formData.photo!);
-      photoFormData.append("folder", "donation-proofs");
-
-      const uploadResponse = await fetch("/api/upload", {
-        method: "POST",
-        body: photoFormData,
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error("Failed to upload photo");
-      }
-
-      const { url: photoUrl } = await uploadResponse.json();
-
+      // LocalImageUpload sudah otomatis mengunggah file ke API/storage dan mengembalikan URL,
+      // sehingga kita bisa langsung mengirim formData.photo ke backend.
       const response = await fetch("/api/donations/request", {
         method: "POST",
         headers: {
@@ -241,7 +210,7 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
           zipCode: formData.zipCode,
           quantity: parseInt(formData.quantity),
           notes: formData.notes,
-          donorPhoto: photoUrl,
+          donorPhoto: formData.photo, // URL string dari LocalImageUpload
           deliveryMethod: formData.deliveryMethod,
           estimatedPickupDate: formData.estimatedPickupDate || null,
           estimatedPickupTime: formData.estimatedPickupTime || null,
@@ -267,17 +236,18 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
 
   const pickupDistanceWarning = !isPickupAvailable() && donation.hasPickupService && donation.pickupMaxDistanceKm;
   const distanceInfo = getDistanceInfo();
+
   return (
-    <div className="max-w-350 mx-auto px-8 md:px-32 mb-16" >
+    <div className="max-w-350 mx-auto px-8 md:px-32 mb-16">
       <div className="mb-2" style={{ marginTop: "56px" }}>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Request Donation</h1>
+        <h1 className="text-3xl font-semibold text-gray-900">Request Donation</h1>
         <p className="text-gray-600">Fill in the details to request this donation</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3" >
+      <div className="grid grid-cols-1 lg:grid-cols-3">
         {/* Donation Summary */}
         <div className="lg:col-span-1">
-          <div className="bg-white p-2 sticky top-24">
+          <div className="bg-white sticky top-24">
             {donation.cover ? (
               <img
                 src={donation.cover}
@@ -294,14 +264,14 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
               {donation.title}
             </h2>
 
-            <div className="flex justify-between items-start mb-3" style={{ padding: "6px 0 6px 0" }}>
+            <div className="flex justify-between items-start mb-1" style={{ padding: "6px 0 6px 0" }}>
               <p className="text-sm font-medium text-gray-700">Institution</p>
               <span className="text-sm text-gray-600 text-right">
                 {donation.institutionName}
               </span>
             </div>
 
-            <div className="flex justify-between items-start mb-3" style={{ paddingBottom: "6px" }}>
+            <div className="flex justify-between items-start mb-1" style={{ paddingBottom: "6px" }}>
               <p className="text-sm font-medium text-gray-700">Location</p>
               <span className="text-sm text-gray-600 text-right">
                 {[donation.institutionCity, donation.institutionState]
@@ -330,7 +300,7 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
               </span>
             </div>
 
-            <div className="mt-6 mb-6">
+            <div className="mt-2 mb-6">
               <div className="flex justify-between items-center mb-2" style={{ marginBottom: "6px" }}>
                 <p className="text-sm font-medium text-gray-700">Progress</p>
                 <p className="text-sm text-gray-600">
@@ -353,11 +323,11 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
 
         {/* Form */}
         <div className="lg:col-span-2">
-          <form onSubmit={handleSubmit} className="px-2 md:px-4">
-            <div className="mb-2">
+          <form onSubmit={handleSubmit} className="px-2 md:px-6">
+            <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Personal Information</h3>
 
-              <div className="mt-4">
+              <div className="mt-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1" style={{ marginBottom: "4px" }}>
                   Full Name
                 </label>
@@ -370,11 +340,12 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
                   className="w-full px-3 py-2 border border-gray-300 rounded-sm bg-gray-50 text-gray-600 focus:outline-none"
                   style={{
                     padding: "6px 0 6px 6px",
-                    marginBottom: "8px"
+                    marginBottom: "4px"
                   }}
                 />
                 {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
               </div>
+
               <div className="mt-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1" style={{ marginBottom: "4px" }}>
                   Phone Number
@@ -388,11 +359,12 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
                   className="w-full px-3 py-2 border border-gray-300 rounded-sm bg-gray-50 text-gray-600 focus:outline-none"
                   style={{
                     padding: "6px 0 6px 6px",
-                    marginBottom: "8px"
+                    marginBottom: "4px"
                   }}
                 />
                 {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
               </div>
+
               <div className="mt-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1" style={{ marginBottom: "4px" }}>
                   Address
@@ -412,7 +384,7 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
                 {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address}</p>}
               </div>
 
-              <div className="grid grid-cols-3 gap-4 mt-2">
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1" style={{ marginBottom: "4px" }}>City</label>
                   <input
@@ -460,7 +432,8 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
                   />
                 </div>
               </div>
-              <div className="mt-1">
+
+              <div className="mt-2">
                 <Link
                   href="/my-profile"
                   className="text-sm text-gray-400 hover:text-green-700 underline"
@@ -468,15 +441,14 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
                   Want to change address or personal info? Edit in profile
                 </Link>
               </div>
-
             </div>
 
             {/* Donation Details */}
             <div className="mb-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4" style={{ marginBottom: "8px", marginTop: "16px" }}>Donation Details</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4" style={{ marginBottom: "4px", marginTop: "12px" }}>Donation Details</h3>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1" style={{ marginBottom: "4px" }}>
+                <label className="block text-sm font-medium text-gray-700" style={{ marginBottom: "4px" }}>
                   Quantity
                 </label>
                 <input
@@ -491,13 +463,13 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
                     padding: "6px 0 6px 6px"
                   }}
                 />
-                <p className="text-xs text-gray-500 mt-1" style={{ marginBottom: "8px" }}>
+                <p className="text-xs text-gray-500 mt-1" style={{ marginBottom: "4px" }}>
                   Maximum available: {donation.target - donation.collected} items
                 </p>
                 {errors.quantity && <p className="text-red-500 text-sm mt-1" style={{ marginBottom: "8px" }}>{errors.quantity}</p>}
               </div>
 
-              <div className="mt-4">
+              <div className="mt-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1" style={{ marginBottom: "4px" }}>
                   Additional Notes
                 </label>
@@ -510,73 +482,35 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
                   className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-1 focus:ring-green-700"
                   style={{
                     padding: "6px 0 6px 6px",
-                    marginBottom: "8px"
+                    marginBottom: "4px"
                   }}
                 />
               </div>
 
+              {/* Mengganti custom upload manual dengan reusable component LocalImageUpload */}
               <div className="mt-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1" style={{ marginBottom: "4px" }}>
-                  Donation Photo
+                  Donation Photo *
                 </label>
-                <div
-                  className={`rounded-sm border-2 border-dashed border-gray-300 bg-gray-50 p-8 text-center transition-all hover:border-primary hover:bg-primary-50 sm:p-16 flex flex-col items-center justify-center rounded-md overflow-hidden ${photoPreview ? 'border-0' : 'border-2 border-dashed border-gray-300'}`}
-                  style={{
-                    padding: photoPreview ? "0" : "48px",
-                    position: "relative",
-                    marginBottom: "18px",
-                    height: "300px",
-                    width: "100%"
+                <LocalImageUpload
+                  value={formData.photo}
+                  onChange={(url) => {
+                    setFormData((prev) => ({ ...prev, photo: url }));
+                    if (url && errors.photo) {
+                      setErrors((prev) => ({ ...prev, photo: "" }));
+                    }
                   }}
-                >
-                  {!photoPreview && (
-                    <input
-                      id="photo-upload"
-                      name="photo"
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoChange}
-                      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer", zIndex: 10 }}
-                    />
-                  )}
-
-                  {photoPreview ? (
-                    <div className="absolute inset-0 w-full h-full group z-0">
-                      <img
-                        src={photoPreview}
-                        alt="Preview"
-                        className="w-full h-full object-cover"
-                      />
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setFormData((prev) => ({ ...prev, photo: null }));
-                          setPhotoPreview(null);
-                        }}
-                        className="absolute top-2 right-2 cursor-pointer rounded-full border-none bg-black/60 p-1.5 text-white transition-colors hover:bg-red-600/80 absolute top-3 right-3 bg-white bg-opacity-75 hover:bg-red-500 hover:text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all z-20"
-                        aria-label="Remove photo"
-                      >
-                        <X className="h-5 w-5" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center gap-2 flex flex-col items-center justify-center text-center pointer-events-none">
-                      <Upload className="h-8 w-8 mb-2" style={{ color: "var(--color-on-surface-variant)" }} />
-                      <p className="text-sm font-medium text-on-surface text-sm text-gray-600">Click or drag and drop to upload</p>
-                      <p className="text-xs text-gray-400 text-xs text-gray-400 mt-1">PNG, JPG, GIF up to 5MB</p>
-                    </div>
-                  )}
-                </div>
-
-                {errors.photo && <p className="text-red-500 text-sm mt-1" style={{ marginBottom: "18px" }}>{errors.photo}</p>}
+                  folder="donation-proofs"
+                  placeholder="Upload documentation photo *"
+                />
+                {errors.photo && <p className="text-red-500 text-sm mt-1" style={{ marginBottom: "8px" }}>{errors.photo}</p>}
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2" style={{ marginBottom: "2px" }}>Delivery Method</h3>
+
+              <h3 className="text-lg font-semibold text-gray-900 mt-4">Delivery Method</h3>
               <p className="text-sm text-gray-600 mb-4" style={{ marginBottom: "4px" }}>Select one delivery method for your donation:</p>
 
               {pickupDistanceWarning && (
-                <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md flex items-start gap-3" style={{ marginBottom: "6px" }}>
+                <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md flex items-start gap-2" style={{ marginBottom: "6px" }}>
                   <AlertCircle className="h-5 w-5 text-yellow-600 shrink-0 mt-0.5" />
                   <div>
                     <p className="text-sm text-yellow-800">
@@ -589,16 +523,15 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
                 </div>
               )}
 
-              <div className="space-y-2" >
+              <div className="space-y-2">
                 {availableDeliveryMethods.map((method) => (
                   <label
                     key={method}
                     style={{ padding: "6px 0 6px 6px" }}
-                    className={`flex items-center p-4 mt-2 border rounded-sm cursor-pointer transition-colors ${formData.deliveryMethod === method
-                      ? "border-green-500 bg-green-50"
+                    className={`flex items-center p-4 mt-1 border rounded-sm cursor-pointer transition-colors ${formData.deliveryMethod === method
+                      ? "bg-green-800 text-white"
                       : "border-gray-300 hover:border-gray-400"
-                      }`
-                    }
+                      }`}
                   >
                     <input
                       type="radio"
@@ -668,19 +601,20 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
                   <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md flex items-start gap-3">
                     <AlertCircle className="h-5 w-5 text-yellow-600 shrink-0 mt-0.5" />
                     <p className="text-sm text-yellow-800">
-                      Please ensure someone is available at the specified time. If no one is available for pickup, the request may be cancelled.
+                      The stated time is an estimate and is subject to slight changes. Please ensure you are at the location at the scheduled time. If no one is present at the time of pickup, the request may be cancelled
                     </p>
                   </div>
                 </div>
               )}
             </div>
-            <div style={{ marginTop: "18px" }}>
+
+            <div>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="text-white bg-[var(--color-primary)] hover:brightness-90 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="text-white bg-primary hover:brightness-90 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 style={{
-                  width: "100%", /* Membuat tombol memanjang penuh */
+                  width: "100%",
                   padding: "12px 16px",
                   boxSizing: "border-box"
                 }}

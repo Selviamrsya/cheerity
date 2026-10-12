@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Bell, Check } from "lucide-react";
+import { Bell, CheckCheck } from "lucide-react";
 import { getNotifications, markNotificationRead } from "@/lib/actions/donation";
 import {
   NavbarIconButton,
@@ -60,6 +60,13 @@ export function NotificationMenu({
     );
   };
 
+  // Handler untuk Mark All as Read
+  const handleMarkAllRead = async () => {
+    const unreadItems = notifications.filter((n) => !n.isRead);
+    await Promise.all(unreadItems.map((n) => markNotificationRead(n.id)));
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+  };
+
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
@@ -75,12 +82,25 @@ export function NotificationMenu({
 
       {open && (
         <NotifDropdown className="w-[min(20rem,calc(100vw-2rem))]">
-          <NotifHeader>
-            <span className="text-sm font-semibold">Notifications</span>
+          {/* Diubah jadi flex-col supaya tombol Mark all read bisa ditaruh di bawah judul */}
+          <NotifHeader className="flex flex-col items-start gap-1 py-3 px-4">
+            <div className="flex w-full items-center justify-between">
+              <span className="text-sm font-semibold">Notifications</span>
+              {unreadCount > 0 && (
+                <span className="rounded-full bg-primary px-2 py-0.5 text-[11px] text-white">
+                  {unreadCount} new
+                </span>
+              )}
+            </div>
+            {/* Tombol Mark All Read di bawah judul */}
             {unreadCount > 0 && (
-              <span className="rounded-full bg-primary px-2 py-0.5 text-[11px] text-white">
-                {unreadCount} new
-              </span>
+              <button
+                onClick={handleMarkAllRead}
+                className="flex items-center gap-1 text-xs font-medium text-primary hover:underline cursor-pointer bg-transparent border-none p-0 mt-0.5"
+              >
+                <CheckCheck className="w-3.5 h-3.5" />
+                Mark all read
+              </button>
             )}
           </NotifHeader>
           <div className="max-h-[280px] overflow-y-auto">
@@ -99,9 +119,6 @@ export function NotificationMenu({
                     {n.title}
                   </div>
                   <div className="mt-0.5 text-xs text-gray-600">{n.message}</div>
-                  {n.isRead && (
-                    <Check className="mt-1 h-3 w-3 text-primary-700" />
-                  )}
                 </NotifItem>
               ))
             )}

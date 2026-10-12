@@ -11,12 +11,12 @@ const NewDonationPage = async () => {
   const institutionId = session?.user?.id as string;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 md:px-8">
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
           <Link
             href="/institution/donations"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors mb-8"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors mb-4 mt-4"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Go back to Manage Donations</span>

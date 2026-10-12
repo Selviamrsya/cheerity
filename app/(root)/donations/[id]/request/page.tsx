@@ -5,7 +5,7 @@ import { getSession } from "@/lib/auth";
 import { db } from "@/app/database/drizzle";
 import { users, institutions } from "@/app/database/schema";
 import { eq } from "drizzle-orm";
-import { getDonationById } from "@/lib/actions/donation";
+import { getDonationCampaignById } from "@/lib/actions/donation";
 import DonationRequestForm from "@/components/DonationRequestForm";
 import { headers } from "next/headers";
 
@@ -22,7 +22,7 @@ const DonationRequestPage = async ({
     redirect("/sign-in");
   }
 
-  const donation = await getDonationById(id);
+  const donation = await getDonationCampaignById(id);
 
   if (!donation) {
     notFound();
