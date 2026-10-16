@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { db } from "@/app/database/drizzle";
-import { users } from "@/app/database/schema";
+import { users, donatur } from "@/app/database/schema";
 import { eq } from "drizzle-orm";
 import ProfileEditForm from "@/components/ProfileEditForm";
 import { headers } from "next/headers";
@@ -22,17 +22,18 @@ const ProfilePage = async () => {
       id: users.id,
       fullName: users.fullName,
       email: users.email,
-      phoneNumber: users.phoneNumber,
-      birthdate: users.birthdate,
-      address: users.address,
-      city: users.city,
-      state: users.state,
-      zipCode: users.zipCode,
-      latitude: users.latitude,
-      longitude: users.longitude,
+      phoneNumber: donatur.phoneNumber,
+      birthdate: donatur.birthdate,
+      address: donatur.address,
+      city: donatur.city,
+      state: donatur.state,
+      zipCode: donatur.zipCode,
+      latitude: donatur.latitude,
+      longitude: donatur.longitude,
       role: users.role,
     })
     .from(users)
+    .leftJoin(donatur, eq(donatur.userId, users.id))
     .where(eq(users.id, session.user.id))
     .limit(1);
 

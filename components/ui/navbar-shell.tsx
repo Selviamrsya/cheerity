@@ -19,7 +19,7 @@ export function NavbarShell({
           : "border-outline bg-white/95 shadow-[0_4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md"
       )}
     >
-      <nav className="mx-auto flex h-[72px] max-w-345 items-center justify-between px-4 md:px-6">
+      <nav className="mx-auto flex h-18 max-w-345 items-center justify-between px-4 md:px-6">
         {children}
       </nav>
     </header>

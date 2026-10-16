@@ -14,7 +14,6 @@ const InstitutionHistoryPage = async () => {
   return (
     <div className="space-y-2">
       <InstitutionHistoryClient
-        institutionId={institutionId}
         records={records}
       />
     </div>

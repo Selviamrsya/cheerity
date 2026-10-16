@@ -65,7 +65,7 @@ export function ProfileDropdown({
   return (
     <div
       className={cn(
-        "absolute top-12 right-0 z-50 w-[260px] overflow-hidden rounded-sm border border-outline bg-surface p-2 shadow-lg",
+        "absolute top-12 right-0 z-50 w-65 overflow-hidden rounded-sm border border-outline bg-surface p-2 shadow-lg",
         className
       )}
       {...props}

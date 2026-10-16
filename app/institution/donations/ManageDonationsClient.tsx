@@ -17,6 +17,8 @@ interface Donation {
   createdAt: string | null;
   cover: string | null;
   description: string | null;
+  hasPickupService: boolean;
+  pickupMaxDistanceKm: number | null;
 }
 
 interface ManageDonationsClientProps {
@@ -33,11 +35,14 @@ const ManageDonationsClient = ({ donations }: ManageDonationsClientProps) => {
     donationId: null,
     position: null,
   });
-  const [editModal, setEditModal] = useState<{ isOpen: boolean; donationId: string | null; target: number; description: string }>({
+  const [editModal, setEditModal] = useState<{ isOpen: boolean; donationId: string | null; target: number; description: string; deliveryMethods: string[]; hasPickupService: boolean; pickupMaxDistanceKm: number | null }>({
     isOpen: false,
     donationId: null,
     target: 0,
     description: "",
+    deliveryMethods: ["self_delivery"],
+    hasPickupService: false,
+    pickupMaxDistanceKm: null,
   });
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; donationId: string | null }>({
     isOpen: false,
@@ -83,6 +88,9 @@ const ManageDonationsClient = ({ donations }: ManageDonationsClientProps) => {
       donationId: donation.id,
       target: donation.target,
       description: donation.description || "",
+      deliveryMethods: donation.deliveryMethods,
+      hasPickupService: donation.hasPickupService,
+      pickupMaxDistanceKm: donation.pickupMaxDistanceKm,
     });
     setActionMenu({ isOpen: false, donationId: null, position: null });
   };
@@ -310,10 +318,13 @@ const ManageDonationsClient = ({ donations }: ManageDonationsClientProps) => {
       {/* Edit Donation Modal */}
       <EditDonationModal
         isOpen={editModal.isOpen}
-        onClose={() => setEditModal({ isOpen: false, donationId: null, target: 0, description: "" })}
+        onClose={() => setEditModal({ isOpen: false, donationId: null, target: 0, description: "", deliveryMethods: ["self_delivery"], hasPickupService: false, pickupMaxDistanceKm: null })}
         donationId={editModal.donationId}
         initialTarget={editModal.target}
         initialDescription={editModal.description}
+        initialDeliveryMethods={editModal.deliveryMethods}
+        initialHasPickupService={editModal.hasPickupService}
+        initialPickupMaxDistanceKm={editModal.pickupMaxDistanceKm}
         onSave={() => window.location.reload()}
       />
 

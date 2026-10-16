@@ -1,4 +1,3 @@
-// File: C:\Users\Lenovo\Desktop\Next\cheerity\app\institution\history\[id]\page.tsx
 import React from "react";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
@@ -6,13 +5,14 @@ import { getDonationRecordById } from "@/lib/actions/donation";
 import DonationDetailClient from "@/components/DonationDetailClient";
 import { headers } from "next/headers";
 
+// Definisikan tipe PageProps secara presisi untuk Next.js 15
 interface PageProps {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
-
-const InstitutionDonationDetailPage = async ({ params }: PageProps) => {
-  const resolvedParams = await params;
-  const donationId = resolvedParams.id;
+const Page = async ({ params }: PageProps) => {
+  // 2. Unwarp / await params sebelum mengambil id
+  const { id: donationId } = await params;
 
   const reqHeaders = await headers();
   const session = await getSession(reqHeaders);
@@ -34,4 +34,4 @@ const InstitutionDonationDetailPage = async ({ params }: PageProps) => {
   );
 };
 
-export default InstitutionDonationDetailPage;
+export default Page;

@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/app/database/drizzle";
-import { users } from "@/app/database/schema";
+import { donatur } from "@/app/database/schema";
 import { eq } from "drizzle-orm";
 import { getSession } from "@/lib/auth";
 import { geocodeAddress } from "@/lib/geocoding";
@@ -12,17 +12,17 @@ export async function getUserAddress() {
   const session = await getSession(await headers());
   if (!session?.user?.id) return null;
 
-  const [user] = await db
+  const [result] = await db
     .select({
-      address: users.address,
-      city: users.city,
-      state: users.state,
+      address: donatur.address,
+      city: donatur.city,
+      state: donatur.state,
     })
-    .from(users)
-    .where(eq(users.id, session.user.id))
+    .from(donatur)
+    .where(eq(donatur.userId, session.user.id))
     .limit(1);
 
-  return user || null;
+  return result || null;
 }
 
 export async function updateUserAddress(params: {
@@ -41,15 +41,16 @@ export async function updateUserAddress(params: {
     const coords = await geocodeAddress(address || "", city, state);
 
     await db
-      .update(users)
+      .update(donatur)
       .set({
         address: address || null,
         city,
         state,
         latitude: coords?.lat ?? null,
         longitude: coords?.lng ?? null,
+        updatedAt: new Date(),
       })
-      .where(eq(users.id, session.user.id));
+      .where(eq(donatur.userId, session.user.id));
 
     revalidatePath("/");
     revalidatePath("/my-profile");

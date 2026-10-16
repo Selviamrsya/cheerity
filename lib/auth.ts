@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@/app/database/drizzle";
-import { users, institutions, sessions, account, verification } from "@/app/database/schema";
+import { users, donatur, institutions, sessions, account, verification } from "@/app/database/schema";
 import { eq } from "drizzle-orm";
 import { hashPassword } from "better-auth/crypto";
 
@@ -39,7 +39,7 @@ export const auth = betterAuth({
       if (typeof crypto !== "undefined" && crypto.randomUUID) {
         return crypto.randomUUID();
       }
-      return require("crypto").randomUUID();
+      throw new Error("crypto.randomUUID is not available in this environment");
     },
   },
 });
@@ -47,9 +47,11 @@ export const auth = betterAuth({
 // Helper function to safely get session with error handling
 export async function getSession(headers: Headers) {
   try {
-    return await auth.api.getSession({ headers });
+    const session = await auth.api.getSession({ headers });
+    return session;
   } catch (error) {
-    console.error("Failed to get session:", error);
+    // Session query failed - likely invalid or expired token
+    // Return null to treat as unauthenticated
     return null;
   }
 }
@@ -118,21 +120,26 @@ export async function signUpUser(data: {
     const hashedPassword = await hashPassword(data.password);
     const userId = crypto.randomUUID();
 
-    // Insert user record
+    // Insert base user record
     await db.insert(users).values({
       id: userId,
       email: data.email,
       password: hashedPassword,
       name: data.name,
       fullName: data.name,
+      role: "USER",
+      status: "APPROVED",
+    });
+
+    // Insert donatur child record with USER-specific profile data
+    await db.insert(donatur).values({
+      userId: userId,
       birthdate: data.birthdate,
       phoneNumber: data.phoneNumber,
       city: data.city,
       state: data.state,
       zipCode: data.zipCode,
       address: data.address,
-      role: "USER",
-      status: "APPROVED"
     });
 
     // Insert account record for Better Auth credential login
@@ -169,21 +176,18 @@ export async function signUpInstitution(data: {
     const hashedPassword = await hashPassword(data.password);
     const instId = crypto.randomUUID();
 
+    // Insert base user record
     await db.insert(users).values({
       id: instId,
       email: data.email,
       password: hashedPassword,
       name: data.institutionName,
       fullName: data.institutionName,
-      phoneNumber: data.phoneNumber,
-      city: data.city,
-      state: data.state,
-      zipCode: data.zipCode,
-      address: data.address,
       role: "INSTITUTION",
       status: "PENDING",
     });
 
+    // Insert account record for Better Auth credential login
     await db.insert(account).values({
       id: crypto.randomUUID(),
       userId: instId,
@@ -192,8 +196,10 @@ export async function signUpInstitution(data: {
       password: hashedPassword,
     });
 
+    // Insert institution child record
     await db.insert(institutions).values({
       id: instId,
+      userId: instId,
       institutionName: data.institutionName,
       email: data.email,
       password: hashedPassword,

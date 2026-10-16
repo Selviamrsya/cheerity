@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Update institution profile (address can be updated, but verificationEvidence cannot)
-    const updateData: any = {
+    const updateData: Record<string, string | null> = {
       institutionName: institutionName.trim(),
       email: trimmedEmail,
       phoneNumber: phoneNumber ? phoneNumber.trim() : null,

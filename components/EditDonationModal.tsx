@@ -9,6 +9,9 @@ interface EditDonationModalProps {
   donationId: string | null;
   initialTarget: number;
   initialDescription: string;
+  initialDeliveryMethods: string[];
+  initialHasPickupService: boolean;
+  initialPickupMaxDistanceKm: number | null;
   onSave: () => void;
 }
 
@@ -18,10 +21,15 @@ export default function EditDonationModal({
   donationId,
   initialTarget,
   initialDescription,
+  initialDeliveryMethods,
+  initialHasPickupService,
+  initialPickupMaxDistanceKm,
   onSave,
 }: EditDonationModalProps) {
   const [target, setTarget] = useState(initialTarget.toString());
   const [description, setDescription] = useState(initialDescription);
+  const [selectedMethods, setSelectedMethods] = useState<string[]>(initialDeliveryMethods);
+  const [pickupMaxDistanceKm, setPickupMaxDistanceKm] = useState(initialPickupMaxDistanceKm?.toString() || "");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,12 +38,27 @@ export default function EditDonationModal({
     if (isOpen) {
       setTarget(initialTarget.toString());
       setDescription(initialDescription);
+      setSelectedMethods(initialDeliveryMethods);
+      setPickupMaxDistanceKm(initialPickupMaxDistanceKm?.toString() || "");
       setError(null);
       setSuccess(false);
     }
-  }, [isOpen, initialTarget, initialDescription]);
+  }, [isOpen, initialTarget, initialDescription, initialDeliveryMethods, initialPickupMaxDistanceKm]);
 
   if (!isOpen) return null;
+
+  const handleMethodToggle = (method: "self_delivery" | "third_party_courier" | "pickup_by_institution") => {
+    let updated: string[];
+    if (selectedMethods.includes(method)) {
+      if (selectedMethods.length === 1) return;
+      updated = selectedMethods.filter((m) => m !== method);
+    } else {
+      updated = [...selectedMethods, method];
+    }
+    setSelectedMethods(updated);
+  };
+
+  const hasPickup = selectedMethods.includes("pickup_by_institution");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,6 +66,11 @@ export default function EditDonationModal({
     const targetNumber = parseInt(target);
     if (isNaN(targetNumber) || targetNumber <= 0) {
       setError("Quantity must be a valid positive number.");
+      return;
+    }
+
+    if (hasPickup && (!pickupMaxDistanceKm || parseInt(pickupMaxDistanceKm) <= 0)) {
+      setError("Please enter a valid pickup distance.");
       return;
     }
 
@@ -57,6 +85,9 @@ export default function EditDonationModal({
           donationId,
           target: targetNumber,
           description: description.trim(),
+          deliveryMethods: selectedMethods,
+          hasPickupService: hasPickup,
+          pickupMaxDistanceKm: hasPickup ? parseInt(pickupMaxDistanceKm) : null,
         }),
       });
 
@@ -145,6 +176,59 @@ export default function EditDonationModal({
                 className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400 min-h-22.5 py-2.5 resize-none text-sm"
               />
             </div>
+
+            <div className="mb-5 flex flex-col gap-1.5">
+              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Delivery Methods Available</label>
+              <p className="text-xs text-gray-500">Check at least 1</p>
+              <div className="space-y-2">
+                <label className="flex items-center gap-3 cursor-pointer text-sm font-normal text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={selectedMethods.includes("self_delivery")}
+                    onChange={() => handleMethodToggle("self_delivery")}
+                    className="w-4 h-4 rounded border-gray-300 cursor-pointer accent-green-900 text-green-800 focus:ring-green-800"
+                  />
+                  <span>Self Delivery (Donor delivers to institution)</span>
+                </label>
+
+                <label className="flex items-center gap-3 cursor-pointer text-sm font-normal text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={selectedMethods.includes("third_party_courier")}
+                    onChange={() => handleMethodToggle("third_party_courier")}
+                    className="w-4 h-4 rounded border-gray-300 accent-green-900 text-green-800 focus:ring-green-800"
+                  />
+                  <span>Third Party Courier Service</span>
+                </label>
+
+                <label className="flex items-center gap-3 cursor-pointer text-sm font-normal text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={selectedMethods.includes("pickup_by_institution")}
+                    onChange={() => handleMethodToggle("pickup_by_institution")}
+                    className="w-4 h-4 rounded border-gray-300 accent-green-900 text-green-800 focus:ring-green-800"
+                  />
+                  <span>Pickup Service by Institution</span>
+                </label>
+              </div>
+            </div>
+
+            {hasPickup && (
+              <div className="mb-5 bg-gray-50 rounded-sm border border-gray-200 p-3 flex flex-col gap-1.5">
+                <label className="font-inter text-[13.5px] font-semibold text-gray-600">
+                  Max Pickup Distance (km)
+                </label>
+                <input
+                  type="number"
+                  value={pickupMaxDistanceKm}
+                  onChange={(e) => setPickupMaxDistanceKm(e.target.value)}
+                  min={1}
+                  max={100}
+                  placeholder="e.g. 5"
+                  className="w-full rounded-sm border-[1.5px] border-outline bg-white px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400"
+                />
+              </div>
+            )}
 
             <div className="pt-3 flex gap-2 justify-end border-t border-gray-100">
               <button

@@ -1,8 +1,7 @@
 import React from "react";
-import Image from "next/image";
 import { getSession } from "@/lib/auth";
 import { db } from "@/app/database/drizzle";
-import { users } from "@/app/database/schema";
+import { donatur } from "@/app/database/schema";
 import { eq } from "drizzle-orm";
 import { getDonationsWithDistance } from "@/lib/actions/donation";
 import DonationCard from "@/components/DonationCard";
@@ -51,9 +50,9 @@ const Home = async () => {
 
   if (session?.user?.id && (session.user.role === "USER" || session.user.role === "ADMIN")) {
     const [userData] = await db
-      .select({ latitude: users.latitude, longitude: users.longitude })
-      .from(users)
-      .where(eq(users.id, session.user.id))
+      .select({ latitude: donatur.latitude, longitude: donatur.longitude })
+      .from(donatur)
+      .where(eq(donatur.userId, session.user.id))
       .limit(1);
     userLat = userData?.latitude ?? null;
     userLng = userData?.longitude ?? null;
@@ -96,21 +95,21 @@ const Home = async () => {
       </section>
 
       <section className="bg-primary text-white">
-  <div className="mx-auto w-full max-w-345 px-2 py-8 md:px-32 md:py-20">
-    <h2 className="mb-8 text-center font-poppins text-2xl font-semibold md:text-3xl">
-      How it works
-    </h2>
-    <div className="grid grid-cols-5 gap-1 md:gap-4">
-      {tutorialSteps.map((step, index) => (
-        <TutorialStep
-          key={step.alt}
-          {...step}
-          delay={cn("animate-fade-in", ["delay-100", "delay-200", "delay-300", "delay-400", "delay-500"][index])}
-        />
-      ))}
-    </div>
-  </div>
-</section>
+        <div className="mx-auto w-full max-w-345 px-2 py-8 md:px-32 md:py-20">
+          <h2 className="mb-8 text-center font-poppins text-2xl font-semibold md:text-3xl">
+            How it works
+          </h2>
+          <div className="grid grid-cols-5 gap-1 md:gap-4">
+            {tutorialSteps.map((step, index) => (
+              <TutorialStep
+                key={step.alt}
+                {...step}
+                delay={cn("animate-fade-in", ["delay-100", "delay-200", "delay-300", "delay-400", "delay-500"][index])}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
 
       <section className="mx-auto w-full max-w-345 px-8 py-12 md:px-32 md:py-24">
         <h2 className="mb-8 text-center font-poppins text-2xl font-semibold text-text-main md:text-3xl">
@@ -122,7 +121,7 @@ const Home = async () => {
             No active donation campaigns yet. Check back soon!
           </p>
         ) : (
-          <div className={cn(donationGridClass, "xl:grid-cols-3")}>
+          <div className={cn(donationGridClass, "grid-cols-2 xl:grid-cols-3")}>
             {donations.map((donation, index) => (
               <div
                 key={donation.id}
@@ -136,6 +135,7 @@ const Home = async () => {
                   institutionCity={donation.institutionCity}
                   institutionState={donation.institutionState}
                   distanceKm={donation.distanceKm}
+                  drivingDistanceKm={donation.drivingDistanceKm}
                   collected={donation.collected}
                   target={donation.target}
                   category={donation.category}

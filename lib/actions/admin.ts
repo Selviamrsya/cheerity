@@ -1,10 +1,10 @@
 "use server";
 
-import { eq, count, desc, sql, ilike, and, inArray } from "drizzle-orm";
+import { eq, count, desc, ilike, and, inArray } from "drizzle-orm";
 import { db } from "@/app/database/drizzle";
 import { users, institutions, donations, donateRecords, sessions, account, notifications } from "@/app/database/schema";
 import { revalidatePath } from "next/cache";
-import { getSession, auth } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 import { geocodeAddress } from "@/lib/geocoding";
 import { sendEmail, emailTemplates } from "@/lib/email";
 import { headers } from "next/headers";
@@ -63,7 +63,7 @@ export const getDonationCategoriesStats = async () => {
 
     // Group by category and calculate percentage
     const total = categoryStats.reduce((sum, cat) => sum + cat.count, 0);
-    
+
     return categoryStats.map((cat) => ({
       category: cat.category,
       count: cat.count,
@@ -72,6 +72,74 @@ export const getDonationCategoriesStats = async () => {
   } catch (error) {
     console.error("Error in getDonationCategoriesStats:", error);
     return [];
+  }
+};
+
+// Get donation categories distribution with period filter (weekly, monthly, yearly)
+export const getDonationCategoriesStatsWithPeriod = async () => {
+  try {
+    const records = await db
+      .select({
+        category: donations.category,
+        requestDate: donateRecords.requestDate,
+      })
+      .from(donateRecords)
+      .innerJoin(donations, eq(donateRecords.donationId, donations.id));
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    // Helper function to filter records by period
+    const filterByPeriod = (period: "weekly" | "monthly" | "yearly") => {
+      const filtered = records.filter((r) => {
+        if (!r.requestDate) return false;
+        const rDate = new Date(r.requestDate);
+
+        switch (period) {
+          case "weekly":
+            const weekAgo = new Date(now);
+            weekAgo.setDate(now.getDate() - 7);
+            return rDate >= weekAgo;
+          case "monthly":
+            return (
+              rDate.getFullYear() === currentYear &&
+              rDate.getMonth() === currentMonth
+            );
+          case "yearly":
+            return rDate.getFullYear() === currentYear;
+          default:
+            return true;
+        }
+      });
+
+      // Group by category
+      const categoryMap = new Map<string, number>();
+      filtered.forEach((r) => {
+        const cat = r.category || "Unknown";
+        categoryMap.set(cat, (categoryMap.get(cat) || 0) + 1);
+      });
+
+      const total = filtered.length;
+      return Array.from(categoryMap.entries()).map(([category, count]) => ({
+        category,
+        count,
+        percentage: total > 0 ? Math.round((count / total) * 100) : 0,
+      }));
+    };
+
+    return {
+      weekly: filterByPeriod("weekly"),
+      monthly: filterByPeriod("monthly"),
+      yearly: filterByPeriod("yearly"),
+    };
+  } catch (error) {
+    console.error("Error in getDonationCategoriesStatsWithPeriod:", error);
+    return {
+      weekly: [],
+      monthly: [],
+      yearly: [],
+    };
   }
 };
 
@@ -253,7 +321,7 @@ export const approveInstitution = async (institutionId: string) => {
 // Admin rejects an institution - performs DELETE with cascade
 export const rejectInstitution = async (
   institutionId: string,
-  reason?: string
+  _reason?: string
 ) => {
   try {
     const institution = await getInstitutionById(institutionId);

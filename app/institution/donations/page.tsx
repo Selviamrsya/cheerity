@@ -16,6 +16,7 @@ const ManageDonationsPage = async () => {
     ...d,
     createdAt: d.createdAt ? d.createdAt.toISOString() : null,
     status: d.status || "ACTIVE",
+    hasPickupService: d.hasPickupService ?? false,
   }));
 
   return <ManageDonationsClient donations={formattedDonations} />;

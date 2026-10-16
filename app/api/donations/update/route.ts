@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 
 export async function POST(request: NextRequest) {
   try {
-    const { donationId, target, description } = await request.json();
+    const { donationId, target, description, deliveryMethods, hasPickupService, pickupMaxDistanceKm } = await request.json();
 
     if (!donationId) {
       return NextResponse.json({ error: "Donation ID is required" }, { status: 400 });
@@ -33,6 +33,9 @@ export async function POST(request: NextRequest) {
       .set({
         target: target !== undefined ? target : existingDonation[0].target,
         description: description !== undefined ? description : existingDonation[0].description,
+        deliveryMethods: deliveryMethods !== undefined ? deliveryMethods : existingDonation[0].deliveryMethods,
+        hasPickupService: hasPickupService !== undefined ? hasPickupService : existingDonation[0].hasPickupService,
+        pickupMaxDistanceKm: pickupMaxDistanceKm !== undefined ? pickupMaxDistanceKm : existingDonation[0].pickupMaxDistanceKm,
       })
       .where(eq(donations.id, donationId));
 

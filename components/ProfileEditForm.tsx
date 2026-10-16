@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import { Edit2, Loader2, Eye, EyeOff } from "lucide-react";
 import LocationFields from "@/components/LocationFields";
 import AddressSearch from "@/components/AddressSearch";
+import MapPicker from "@/components/MapPicker";
+import { ReverseGeocodeResult } from "@/lib/reverseGeocoding";
 
 interface User {
   id: string;
@@ -125,6 +127,17 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
       longitude: data.longitude,
     }));
     setAddressValid(true);
+  };
+
+  const handleMapAddressChange = (addressData: ReverseGeocodeResult) => {
+    if (addressData.success) {
+      setFormData(prev => ({
+        ...prev,
+        state: addressData.state,
+        city: addressData.city,
+        zipCode: addressData.zipCode,
+      }));
+    }
   };
 
   const handleCancel = () => {
@@ -308,6 +321,30 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
                   </p>
                 </div>
 
+                {formData.latitude && formData.longitude && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Fine-tune Location
+                    </label>
+                    <p className="text-xs text-gray-500 mb-2">
+                      Drag the red marker to adjust the exact location for precise pickup/delivery. Address fields will auto-update based on the pin location.
+                    </p>
+                    <MapPicker
+                      latitude={formData.latitude}
+                      longitude={formData.longitude}
+                      onLocationChange={(lat, lng) => {
+                        setFormData(prev => ({
+                          ...prev,
+                          latitude: lat,
+                          longitude: lng,
+                        }));
+                      }}
+                      onAddressChange={handleMapAddressChange}
+                      height="300px"
+                    />
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Detailed Address (optional)
@@ -323,7 +360,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
                 </div>
 
                 <div className="bg-gray-100 p-3 rounded-sm">
-                  <p className="text-xs text-gray-600 mb-2">Location details (auto-filled from address search):</p>
+                  <p className="text-xs text-gray-600 mb-2">Location details (auto-filled from address search, you can edit):</p>
                   <LocationFields
                     stateValue={formData.state}
                     cityValue={formData.city}

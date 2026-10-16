@@ -11,6 +11,7 @@ import {
 } from "@/app/database/schema";
 import { revalidatePath } from "next/cache";
 import { sendEmail, emailTemplates } from "@/lib/email";
+import { fetchOSRMDistances, OSDestination } from "@/lib/utils/osrm";
 
 // Get single donation campaign detail (for donation request form page)
 export const getDonationCampaignById = async (id: string) => {
@@ -83,6 +84,7 @@ export const createDonation = async (params: {
 
 // Get all active donations with distance from user's location
 // Uses Haversine formula in SQL to calculate straight-line distance
+// Then enriches with OSRM driving distance for the top 20 results
 export const getDonationsWithDistance = async (params: {
   userLat?: number | null;
   userLng?: number | null;
@@ -90,17 +92,19 @@ export const getDonationsWithDistance = async (params: {
   maxDistanceKm?: number;
   limit?: number;
 }) => {
-  const { userLat, userLng, category, maxDistanceKm, limit = 50 } = params;
+  const { userLat, userLng, category, maxDistanceKm, limit = 20 } = params;
 
   const hasLocation = userLat != null && userLng != null;
 
   // Haversine formula calculates straight-line distance in km
   const distanceExpr = hasLocation
-    ? sql<number>`ROUND(CAST(6371 * acos(
-        LEAST(1.0, cos(radians(${userLat})) * cos(radians(${institutions.latitude})) *
-        cos(radians(${institutions.longitude}) - radians(${userLng})) +
-        sin(radians(${userLat})) * sin(radians(${institutions.latitude})))
-      ) AS numeric), 1)`
+    ? sql<number>`ROUND(CAST(
+        6371 * 2 * ASIN(SQRT(
+          POWER(SIN(RADIANS(${institutions.latitude} - ${userLat}) / 2), 2) +
+          COS(RADIANS(${userLat})) * COS(RADIANS(${institutions.latitude})) *
+          POWER(SIN(RADIANS(${institutions.longitude} - ${userLng}) / 2), 2)
+        ))
+      AS numeric), 1)`
     : sql<number>`NULL`;
 
   const results = await db
@@ -137,13 +141,46 @@ export const getDonationsWithDistance = async (params: {
     .orderBy(hasLocation ? distanceExpr : desc(donations.createdAt))
     .limit(limit);
 
+  let enrichedResults = results.map((d) => ({
+  ...d,
+  drivingDistanceKm: d.distanceKm as number | null,
+}));
+
+  // Enrich with OSRM driving distance if user location is available
+  if (hasLocation && results.length > 0) {
+    const destinations: OSDestination[] = results
+      .filter((d) => d.institutionLat != null && d.institutionLng != null)
+      .map((d) => ({
+        id: d.id,
+        lat: d.institutionLat!,
+        lng: d.institutionLng!,
+      }));
+
+    if (destinations.length > 0) {
+      const osrmResults = await fetchOSRMDistances(userLat!, userLng!, destinations);
+
+      // Create a map for quick lookup
+      const osrmMap = new Map(osrmResults.map((r) => [r.id, r.drivingDistanceKm]));
+
+      // Enrich results with driving distance
+      enrichedResults = results.map((d) => {
+        const drivingDistanceKm = osrmMap.get(d.id);
+        return {
+          ...d,
+          // Fallback to Haversine distance if OSRM fails
+          drivingDistanceKm: drivingDistanceKm ?? d.distanceKm,
+        };
+      });
+    }
+  }
+
   if (maxDistanceKm && hasLocation) {
-    return results.filter(
+    return enrichedResults.filter(
       (d) => d.distanceKm === null || Number(d.distanceKm) <= maxDistanceKm
     );
   }
 
-  return results;
+  return enrichedResults;
 };
 
 // Get single donation detail
@@ -911,7 +948,7 @@ export const getInstitutionDonations = async (institutionId: string) => {
 export const getDonorLocationStats = async (institutionId: string) => {
   try {
     if (!institutionId) return [];
-    
+
     const locationStats = await db
       .select({
         city: donateRecords.city,
@@ -924,7 +961,7 @@ export const getDonorLocationStats = async (institutionId: string) => {
 
     // Calculate percentage
     const total = locationStats.reduce((sum, loc) => sum + loc.count, 0);
-    
+
     return locationStats
       .map((loc) => ({
         city: loc.city || "Unknown",
@@ -936,6 +973,86 @@ export const getDonorLocationStats = async (institutionId: string) => {
   } catch (error) {
     console.error("Error in getDonorLocationStats:", error);
     return [];
+  }
+};
+
+// Get donor location distribution with period filter (weekly, monthly, yearly)
+export const getDonorLocationStatsWithPeriod = async (institutionId: string) => {
+  try {
+    if (!institutionId) {
+      return {
+        weekly: [],
+        monthly: [],
+        yearly: [],
+      };
+    }
+
+    const records = await db
+      .select({
+        city: donateRecords.city,
+        requestDate: donateRecords.requestDate,
+      })
+      .from(donateRecords)
+      .innerJoin(donations, eq(donateRecords.donationId, donations.id))
+      .where(eq(donations.institutionId, institutionId));
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    // Helper function to filter records by period
+    const filterByPeriod = (period: "weekly" | "monthly" | "yearly") => {
+      const filtered = records.filter((r) => {
+        if (!r.requestDate) return false;
+        const rDate = new Date(r.requestDate);
+
+        switch (period) {
+          case "weekly":
+            const weekAgo = new Date(now);
+            weekAgo.setDate(now.getDate() - 7);
+            return rDate >= weekAgo;
+          case "monthly":
+            return (
+              rDate.getFullYear() === currentYear &&
+              rDate.getMonth() === currentMonth
+            );
+          case "yearly":
+            return rDate.getFullYear() === currentYear;
+          default:
+            return true;
+        }
+      });
+
+      // Group by city
+      const cityMap = new Map<string, number>();
+      filtered.forEach((r) => {
+        const city = r.city || "Unknown";
+        cityMap.set(city, (cityMap.get(city) || 0) + 1);
+      });
+
+      const total = filtered.length;
+      return Array.from(cityMap.entries())
+        .map(([city, count]) => ({
+          city,
+          count,
+          percentage: total > 0 ? Math.round((count / total) * 100) : 0,
+        }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10); // Top 10 cities
+    };
+
+    return {
+      weekly: filterByPeriod("weekly"),
+      monthly: filterByPeriod("monthly"),
+      yearly: filterByPeriod("yearly"),
+    };
+  } catch (error) {
+    console.error("Error in getDonorLocationStatsWithPeriod:", error);
+    return {
+      weekly: [],
+      monthly: [],
+      yearly: [],
+    };
   }
 };
 

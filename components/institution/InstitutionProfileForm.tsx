@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Edit2, Lock, FileText, ExternalLink, Info, Loader2, Eye, EyeOff } from "lucide-react";
+import { Edit2, FileText, ExternalLink, Info, Loader2, Eye, EyeOff } from "lucide-react";
 
 interface Institution {
   id: string;

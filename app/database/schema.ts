@@ -34,22 +34,18 @@ export const DONATION_REQUEST_STATUS = pgEnum("donation_request_status", [
   "COMPLETED",
 ]);
 
-// Users table - stores individual donors
+// ============================================================
+// ABSTRACT BASE: users
+// Stores only auth + identity fields shared by all roles.
+// Role-specific data lives in child tables (donatur, institutions).
+// Admin has no child table — only uses fields here.
+// ============================================================
 
 export const users = pgTable("users", {
   id: uuid("id").notNull().primaryKey().defaultRandom().unique(),
   fullName: varchar("full_name", { length: 255 }),
   email: text("email").notNull().unique(),
   password: text("password"),
-  birthdate: date("birthdate"),
-  phoneNumber: varchar("phone_number", { length: 20 }),
-  city: varchar("city", { length: 100 }),
-  state: varchar("state", { length: 100 }),
-  zipCode: varchar("zip_code", { length: 20 }),
-  address: text("address"),
-  // Coordinates geocoded from address via Nominatim
-  latitude: doublePrecision("latitude"),
-  longitude: doublePrecision("longitude"),
   role: ROLE_ENUM("role").default("USER"),
   status: STATUS_ENUM("status").default("APPROVED"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
@@ -60,11 +56,45 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
-// Institutions table - stores charity organizations / NGOs
-// hasPickupService moved to per-donation level (donations table)
+// ============================================================
+// CHILD: donatur (role = 'USER')
+// Stores donor-specific profile data.
+// One-to-one with users via userId.
+// Created automatically when a USER registers.
+// ============================================================
+
+export const donatur = pgTable("donatur", {
+  id: uuid("id").notNull().primaryKey().defaultRandom().unique(),
+  userId: uuid("user_id")
+    .notNull()
+    .unique()
+    .references(() => users.id, { onDelete: "cascade" }),
+  birthdate: date("birthdate"),
+  phoneNumber: varchar("phone_number", { length: 20 }),
+  city: varchar("city", { length: 100 }),
+  state: varchar("state", { length: 100 }),
+  zipCode: varchar("zip_code", { length: 20 }),
+  address: text("address"),
+  // Coordinates geocoded from address via Nominatim
+  latitude: doublePrecision("latitude"),
+  longitude: doublePrecision("longitude"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+});
+
+// ============================================================
+// CHILD: institutions (role = 'INSTITUTION')
+// Stores NGO/charity-specific data.
+// One-to-one with users via userId (same UUID shared strategy).
+// ============================================================
 
 export const institutions = pgTable("institutions", {
   id: uuid("id").notNull().primaryKey().defaultRandom().unique(),
+  // FK back to the base users table (institutions.id === users.id)
+  userId: uuid("user_id")
+    .notNull()
+    .unique()
+    .references(() => users.id, { onDelete: "cascade" }),
   institutionName: varchar("institution_name", { length: 255 }).notNull(),
   email: text("email").notNull().unique(),
   password: text("password").notNull(),

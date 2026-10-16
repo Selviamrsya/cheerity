@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Package, AlertCircle } from "lucide-react";
+import { ArrowLeft, Package, AlertCircle } from "lucide-react";
 import { CATEGORY_LABELS, DELIVERY_METHOD_LABELS } from "@/constants";
 import LocalImageUpload from "@/components/LocalImageUpload"; // Menggunakan reusable component
 
@@ -119,8 +119,8 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
     );
 
     return {
-      distance: Math.round(distance * 10) / 10,
-      message: `${Math.round(distance * 10) / 10} km away`
+      distance: Math.round(distance * 100) / 100,
+      message: `${Math.round(distance * 100) / 100} km away`
     };
   };
 
@@ -239,7 +239,16 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
 
   return (
     <div className="max-w-350 mx-auto px-8 md:px-32 mb-16">
-      <div className="mb-2" style={{ marginTop: "56px" }}>
+      {/* Back Button */}
+      <Link
+        href={`/donations/${donation.id}`}
+        className="flex items-center gap-2 text-sm font-medium text-gray-600 mt-12 md:mt-16 hover:text-green-900 transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back to Donation Details
+      </Link>
+
+      <div className="mb-2 mt-4">
         <h1 className="text-3xl font-semibold text-gray-900">Request Donation</h1>
         <p className="text-gray-600">Fill in the details to request this donation</p>
       </div>

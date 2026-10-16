@@ -3,7 +3,6 @@
 import { db } from "@/app/database/drizzle";
 import { users, institutions, account, sessions } from "@/app/database/schema";
 import { eq } from "drizzle-orm";
-import { hashPassword } from "better-auth/crypto";
 
 export async function fixInstitutionUserRecord(institutionId: string) {
   try {

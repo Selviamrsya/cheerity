@@ -2,9 +2,8 @@
 
 import { eq } from "drizzle-orm";
 import { db } from "@/app/database/drizzle";
-import { users, institutions } from "@/app/database/schema";
+import { users, institutions, donatur } from "@/app/database/schema";
 import { signInWithCredentials as betterAuthSignIn, signUpUser as betterAuthSignUpUser, signUpInstitution as betterAuthSignUpInstitution } from "@/lib/auth";
-import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { geocodeAddress } from "@/lib/geocoding";
 import { sendEmail, emailTemplates } from "@/lib/email";
@@ -85,14 +84,22 @@ export const signUpUser = async (params: {
       return result;
     }
 
-    // Update user with geocoded coordinates
-    await db
-      .update(users)
-      .set({
-        latitude: coords?.lat ?? null,
-        longitude: coords?.lng ?? null,
-      })
-      .where(eq(users.email, email));
+    // Update donatur child record with geocoded coordinates
+    const [createdUser] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
+
+    if (createdUser) {
+      await db
+        .update(donatur)
+        .set({
+          latitude: coords?.lat ?? null,
+          longitude: coords?.lng ?? null,
+        })
+        .where(eq(donatur.userId, createdUser.id));
+    }
 
     // Send welcome email (non-blocking)
     const template = emailTemplates.welcomeUser(name);

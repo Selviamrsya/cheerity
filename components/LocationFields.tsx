@@ -68,8 +68,9 @@ const LocationFields: React.FC<LocationFieldsProps> = ({
   }));
 
   // Add current city value to options if it's not in the list (for display purposes)
+  // Also add it to the beginning so it's easily accessible
   if (cityValue && !cityOptions.some((opt: OptionData) => opt.value === cityValue)) {
-    cityOptions.push({ label: cityValue, value: cityValue });
+    cityOptions.unshift({ label: cityValue, value: cityValue });
   }
 
   const handleProvinceSelect = (prov: string) => {
@@ -83,10 +84,8 @@ const LocationFields: React.FC<LocationFieldsProps> = ({
         const cityData = available.find((c: CityData) => c.city === cityValue);
         newCity = cityValue;
         newZip = cityData?.zipCode || "";
-      } else {
-        newCity = available[0].city;
-        newZip = available[0].zipCode;
       }
+      // Removed auto-select of first city - let user choose
     }
 
     if (onLocationChange) {
@@ -112,16 +111,15 @@ const LocationFields: React.FC<LocationFieldsProps> = ({
       });
     }
 
-    const newZip = found?.zipCode || "";
+    // Auto-set zip code if found, otherwise keep current value
+    const newZipCode = found?.zipCode || zipCodeValue || "";
 
     if (onLocationChange) {
-      onLocationChange({ state: stateValue, city, zipCode: newZip });
+      onLocationChange({ state: stateValue, city, zipCode: newZipCode });
     }
 
     onCityChange(city);
-    if (newZip && onZipCodeChange) {
-      onZipCodeChange(newZip);
-    }
+    if (onZipCodeChange) onZipCodeChange(newZipCode);
   };
 
   const getZipCodeOptions = (): OptionData[] => {
@@ -162,12 +160,13 @@ const LocationFields: React.FC<LocationFieldsProps> = ({
       label: zip,
       value: zip,
     }));
-    
+
     // Add current zip code value if it's not in the list (for display purposes)
+    // Also add it to the beginning so it's easily accessible
     if (zipCodeValue && !options.some((opt: OptionData) => opt.value === zipCodeValue)) {
-      options.push({ label: zipCodeValue, value: zipCodeValue });
+      options.unshift({ label: zipCodeValue, value: zipCodeValue });
     }
-    
+
     return options;
   };
 

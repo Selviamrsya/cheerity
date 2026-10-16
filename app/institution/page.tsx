@@ -5,6 +5,7 @@ import {
   getInstitutionDonations,
   getInstitutionDonationHistory,
   getDonorLocationStats,
+  getDonorLocationStatsWithPeriod,
   getInstitutionDonationActivityStats,
 } from "@/lib/actions/donation";
 import { DELIVERY_METHOD_LABELS } from "@/constants";
@@ -25,10 +26,11 @@ const InstitutionDashboardPage = async () => {
   const session = await getSession(reqHeaders);
   const institutionId = session?.user?.id as string;
 
-  const [uploadedDonations, donationHistory, locationStats, activityStats] = await Promise.all([
+  const [uploadedDonations, donationHistory, locationStats, locationStatsWithPeriod, activityStats] = await Promise.all([
     getInstitutionDonations(institutionId),
     getInstitutionDonationHistory(institutionId),
     getDonorLocationStats(institutionId),
+    getDonorLocationStatsWithPeriod(institutionId),
     getInstitutionDonationActivityStats(institutionId),
   ]);
 
@@ -152,11 +154,29 @@ const InstitutionDashboardPage = async () => {
           {locationStats.length > 0 ? (
             <PieChart
               compact
+              withPeriodFilter
               data={locationStats.map((loc) => ({
                 label: loc.city,
                 value: loc.count,
                 percentage: loc.percentage,
               }))}
+              periodData={{
+                weekly: locationStatsWithPeriod.weekly.map((loc) => ({
+                  label: loc.city,
+                  value: loc.count,
+                  percentage: loc.percentage,
+                })),
+                monthly: locationStatsWithPeriod.monthly.map((loc) => ({
+                  label: loc.city,
+                  value: loc.count,
+                  percentage: loc.percentage,
+                })),
+                yearly: locationStatsWithPeriod.yearly.map((loc) => ({
+                  label: loc.city,
+                  value: loc.count,
+                  percentage: loc.percentage,
+                })),
+              }}
               title="Donor Locations"
               subtitle="Top donor cities"
             />

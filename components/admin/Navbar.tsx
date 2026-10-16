@@ -86,7 +86,7 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ session }) => {
 
   return (
     <header className="fixed top-0 right-0 left-0 z-50 border-b border-outline bg-white/95 shadow-[0_4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md">
-      <nav className="mx-auto flex h-[72px] w-full max-w-345 items-center justify-between px-4 md:px-6">
+      <nav className="mx-auto flex h-18 w-full max-w-345 items-center justify-between px-4 md:px-6">
         {/* Left: Logo with subtle Admin indicator */}
         <Link href="/admin" className="flex items-center gap-2.5">
           <Image src="/assets/logo.png" alt="Cheerity" width={140} height={36} priority />
@@ -182,7 +182,7 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ session }) => {
             </button>
 
             {profileOpen && (
-              <div className="absolute top-12 right-0 z-50 w-[260px] overflow-hidden rounded-sm border border-outline bg-surface p-2 shadow-lg">
+              <div className="absolute top-12 right-0 z-50 w-65 overflow-hidden rounded-sm border border-outline bg-surface p-2 shadow-lg">
                 {/* User info header */}
                 <div className="flex items-center gap-3 border-b border-outline px-3 py-2.5">
                   <div className="min-w-0 overflow-hidden">

@@ -2,20 +2,47 @@ import React from "react";
 import { notFound } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { db } from "@/app/database/drizzle";
-import { users } from "@/app/database/schema";
+import { institutions, donations, donatur } from "@/app/database/schema";
 import { eq } from "drizzle-orm";
-import { getDonationById } from "@/lib/actions/donation";
-import DonationDetailClient from "@/components/DonationDetailClient";
+import DonationOverview from "@/components/DonationOverview";
 import { headers } from "next/headers";
+import { fetchSingleRoute } from "@/lib/utils/osrm";
 
-type UserProfile = {
-  id: string;
-  name: string;
-  phone: string | null;
-  city: string | null;
-  state: string | null;
-  zipCode: string | null;
-  address: string | null;
+// Extend getDonationCampaignById to include institution description and website
+const getDonationCampaignWithInstitutionInfo = async (id: string) => {
+  try {
+    const [campaign] = await db
+      .select({
+        id: donations.id,
+        title: donations.title,
+        description: donations.description,
+        category: donations.category,
+        cover: donations.cover,
+        target: donations.target,
+        collected: donations.collected,
+        deliveryMethods: donations.deliveryMethods,
+        hasPickupService: donations.hasPickupService,
+        pickupMaxDistanceKm: donations.pickupMaxDistanceKm,
+        status: donations.status,
+        institutionId: donations.institutionId,
+        institutionName: institutions.institutionName,
+        institutionCity: institutions.city,
+        institutionState: institutions.state,
+        institutionZipCode: institutions.zipCode,
+        institutionAddress: institutions.address,
+        institutionDescription: institutions.description,
+        institutionWebsite: institutions.websiteOrSocial,
+      })
+      .from(donations)
+      .innerJoin(institutions, eq(donations.institutionId, institutions.id))
+      .where(eq(donations.id, id))
+      .limit(1);
+
+    return campaign ?? null;
+  } catch (error) {
+    console.error("Error fetching donation campaign with institution info:", error);
+    return null;
+  }
 };
 
 const DonationDetailPage = async ({
@@ -27,50 +54,84 @@ const DonationDetailPage = async ({
   const reqHeaders = await headers();
   const session = await getSession(reqHeaders);
 
-  const donation = await getDonationById(id);
+  const campaign = await getDonationCampaignWithInstitutionInfo(id);
 
-  if (!donation) {
+  if (!campaign) {
     notFound();
   }
 
-  // 2. Berikan tipe eksplisit pada variabel userProfile
-  let userProfile: UserProfile | null = null;
+  let userLat: number | null = null;
+  let userLng: number | null = null;
 
   if (session?.user?.id && (session.user.role === "USER" || session.user.role === "ADMIN")) {
-    const [u] = await db
-      .select({
-        id: users.id,
-        fullName: users.fullName,
-        phoneNumber: users.phoneNumber,
-        city: users.city,
-        state: users.state,
-        zipCode: users.zipCode,
-        address: users.address,
-        latitude: users.latitude, 
-        longitude: users.longitude,
-      })
-      .from(users)
-      .where(eq(users.id, session.user.id))
+    const [userData] = await db
+      .select({ latitude: donatur.latitude, longitude: donatur.longitude })
+      .from(donatur)
+      .where(eq(donatur.userId, session.user.id))
+      .limit(1);
+    userLat = userData?.latitude ?? null;
+    userLng = userData?.longitude ?? null;
+  }
+
+  // Calculate distance if user has location
+  let distanceKm: number | null = null;
+  let drivingDistanceKm: number | null = null;
+  if (userLat != null && userLng != null && campaign.institutionId) {
+    // Get institution location from institutions table
+    const [institutionData] = await db
+      .select({ latitude: institutions.latitude, longitude: institutions.longitude })
+      .from(institutions)
+      .where(eq(institutions.id, campaign.institutionId))
       .limit(1);
 
-    if (u) {
-      userProfile = {
-        id: u.id,
-        name: u.fullName ?? "", 
-        phone: u.phoneNumber,
-        city: u.city,
-        state: u.state,
-        zipCode: u.zipCode,
-        address: u.address,
-      };
+    if (institutionData?.latitude != null && institutionData?.longitude != null) {
+      // Calculate Haversine (straight-line) distance
+      const R = 6371; // Earth's radius in km
+      const dLat = (institutionData.latitude - userLat) * (Math.PI / 180);
+      const dLon = (institutionData.longitude - userLng) * (Math.PI / 180);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(userLat * (Math.PI / 180)) *
+        Math.cos(institutionData.latitude * (Math.PI / 180)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      distanceKm = Math.round(R * c * 10) / 10;
+
+      // Try to fetch driving distance from OSRM
+      drivingDistanceKm = await fetchSingleRoute(
+        userLat,
+        userLng,
+        institutionData.latitude,
+        institutionData.longitude
+      );
     }
   }
 
   return (
     <div className="mx-auto w-full max-w-345 px-8 pb-10 md:px-32 md:pb-14">
-      <DonationDetailClient
-        record={donation}
-        userType={session?.user?.role === "INSTITUTION" ? "institution" : "user"}
+      <DonationOverview
+        id={campaign.id}
+        title={campaign.title}
+        category={campaign.category}
+        cover={campaign.cover}
+        description={campaign.description}
+        target={campaign.target}
+        collected={campaign.collected}
+        deliveryMethods={campaign.deliveryMethods}
+        hasPickupService={campaign.hasPickupService}
+        pickupMaxDistanceKm={campaign.pickupMaxDistanceKm}
+        institutionId={campaign.institutionId}
+        institutionName={campaign.institutionName}
+        institutionCity={campaign.institutionCity}
+        institutionState={campaign.institutionState}
+        institutionZipCode={campaign.institutionZipCode}
+        institutionAddress={campaign.institutionAddress}
+        institutionDescription={campaign.institutionDescription}
+        institutionWebsite={campaign.institutionWebsite}
+        distanceKm={distanceKm}
+        drivingDistanceKm={drivingDistanceKm}
+        userId={session?.user?.id ?? null}
       />
     </div>
   );

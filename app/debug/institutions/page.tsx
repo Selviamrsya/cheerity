@@ -8,7 +8,7 @@ export default async function DebugInstitutionsPage() {
       <h1 className="text-2xl font-bold mb-6">Debug Institution Status</h1>
 
       {results.length === 0 ? (
-        <p>No institutions found matching "kasih"</p>
+        <p>No institutions found matching &ldquo;kasih&rdquo;</p>
       ) : (
         <div className="space-y-6">
           {results.map((result, idx) => (

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { db } from "@/app/database/drizzle";
-import { users, institutions } from "@/app/database/schema";
+import { users, institutions, donatur } from "@/app/database/schema";
 import { eq } from "drizzle-orm";
 import { getDonationCampaignById } from "@/lib/actions/donation";
 import DonationRequestForm from "@/components/DonationRequestForm";
@@ -52,15 +52,16 @@ const DonationRequestPage = async ({
     .select({
       id: users.id,
       fullName: users.fullName,
-      phoneNumber: users.phoneNumber,
-      city: users.city,
-      state: users.state,
-      zipCode: users.zipCode,
-      address: users.address,
-      latitude: users.latitude,
-      longitude: users.longitude,
+      phoneNumber: donatur.phoneNumber,
+      city: donatur.city,
+      state: donatur.state,
+      zipCode: donatur.zipCode,
+      address: donatur.address,
+      latitude: donatur.latitude,
+      longitude: donatur.longitude,
     })
     .from(users)
+    .leftJoin(donatur, eq(donatur.userId, users.id))
     .where(eq(users.id, session.user.id))
     .limit(1);
 

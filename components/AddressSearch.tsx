@@ -2,6 +2,10 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { MapPin, Loader2, X, Check } from "lucide-react";
+import {
+  INDONESIA_PROVINCES,
+  INDONESIA_CITIES_BY_PROVINCE,
+} from "@/constants/indonesiaLocations";
 
 interface AddressResult {
   display_name: string;
@@ -38,6 +42,101 @@ interface AddressSearchProps {
   initialValue?: string;
   disabled?: boolean;
 }
+
+// Helper function to match API result with static Indonesian location data
+const matchWithIndonesiaData = (
+  apiCity: string,
+  apiState: string,
+  apiZipCode: string
+): { city: string; state: string; zipCode: string } => {
+  const apiCityLower = apiCity.toLowerCase();
+  const apiStateLower = apiState.toLowerCase();
+
+  let matchedProvince = null;
+  let matchedCity = "";
+  let matchedZipCode = "";
+
+  // First, try to find matching city across all provinces (prioritize exact match)
+  for (const [province, cities] of Object.entries(INDONESIA_CITIES_BY_PROVINCE)) {
+    for (const cityData of cities) {
+      const cityLower = cityData.city.toLowerCase();
+      // Prioritize exact match
+      if (apiCityLower === cityLower) {
+        matchedCity = cityData.city;
+        matchedZipCode = cityData.zipCode;
+        matchedProvince = province;
+        break;
+      }
+    }
+    if (matchedCity) break;
+  }
+
+  // If no exact match, try partial matches
+  if (!matchedCity) {
+    for (const [province, cities] of Object.entries(INDONESIA_CITIES_BY_PROVINCE)) {
+      for (const cityData of cities) {
+        const cityLower = cityData.city.toLowerCase();
+        // Check if API city contains the static city name (e.g., "Jakarta Barat" contains "Jakarta Barat")
+        if (apiCityLower.includes(cityLower) && cityLower.length > 5) {
+          matchedCity = cityData.city;
+          matchedZipCode = cityData.zipCode;
+          matchedProvince = province;
+          break;
+        }
+        // Check if static city name contains API city name (e.g., "Jakarta Barat" contains "barat")
+        if (cityLower.includes(apiCityLower) && apiCityLower.length > 3) {
+          matchedCity = cityData.city;
+          matchedZipCode = cityData.zipCode;
+          matchedProvince = province;
+          break;
+        }
+      }
+      if (matchedCity) break;
+    }
+  }
+
+  // If still no city match, try to match province from API state
+  if (!matchedProvince) {
+    for (const province of INDONESIA_PROVINCES) {
+      if (
+        apiStateLower === province.toLowerCase() ||
+        apiStateLower.includes(province.toLowerCase()) ||
+        province.toLowerCase().includes(apiStateLower)
+      ) {
+        matchedProvince = province;
+        break;
+      }
+    }
+
+    // Special handling for Jakarta variations only if no city match yet
+    if (!matchedProvince && (apiCityLower.includes("jakarta") || apiStateLower.includes("jakarta"))) {
+      matchedProvince = "DKI Jakarta";
+    }
+  }
+
+  // If we have province but no city yet, try to match city within that province
+  if (matchedProvince && !matchedCity && INDONESIA_CITIES_BY_PROVINCE[matchedProvince]) {
+    for (const cityData of INDONESIA_CITIES_BY_PROVINCE[matchedProvince]) {
+      const cityLower = cityData.city.toLowerCase();
+      if (apiCityLower.includes(cityLower) || cityLower.includes(apiCityLower)) {
+        matchedCity = cityData.city;
+        matchedZipCode = cityData.zipCode;
+        break;
+      }
+    }
+  }
+
+  // Use API state if still no match but we have it
+  const finalState = matchedProvince || apiState;
+  const finalCity = matchedCity || apiCity;
+  const finalZipCode = matchedZipCode || apiZipCode;
+
+  return {
+    city: finalCity,
+    state: finalState,
+    zipCode: finalZipCode,
+  };
+};
 
 const AddressSearch: React.FC<AddressSearchProps> = ({
   onAddressSelect,
@@ -111,7 +210,7 @@ const AddressSearch: React.FC<AddressSearchProps> = ({
       } else {
         setResults([]);
       }
-    } catch (err) {
+    } catch (_err) {
       setError("Failed to search addresses. Please try again.");
       setResults([]);
     } finally {
@@ -127,13 +226,13 @@ const AddressSearch: React.FC<AddressSearchProps> = ({
       ? `${address.house_number ? address.house_number + " " : ""}${address.road || ""}`.trim()
       : "";
 
-    let city = address.city || address.town || address.village || address.suburb || address.district || address.county || "";
-    let state = address.state || address.region || address.province || "";
-    if (!state && (city.toLowerCase().includes("jakarta") || display_name.toLowerCase().includes("jakarta"))) {
-      state = "DKI Jakarta";
-    }
+    // Get initial values from API
+    const apiCity = address.city || address.town || address.village || address.suburb || address.district || address.county || "";
+    const apiState = address.state || address.region || address.province || "";
+    const apiZipCode = address.postcode || "";
 
-    const zipCode = address.postcode || "";
+    // Match with static Indonesian data for better accuracy
+    const { city, state } = matchWithIndonesiaData(apiCity, apiState, apiZipCode);
 
     // Only show error if absolutely no location info
     if (!city && !state) {
@@ -151,7 +250,7 @@ const AddressSearch: React.FC<AddressSearchProps> = ({
       street,
       city,
       state,
-      zipCode,
+      zipCode: apiZipCode,
       latitude: parseFloat(lat),
       longitude: parseFloat(lon),
     });

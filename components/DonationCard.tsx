@@ -12,6 +12,7 @@ interface DonationCardProps {
   institutionCity: string | null;
   institutionState: string | null;
   distanceKm: number | null;
+  drivingDistanceKm?: number | null;
   collected: number;
   target: number;
   category: string;
@@ -26,12 +27,17 @@ const DonationCard: React.FC<DonationCardProps> = ({
   institutionCity,
   institutionState,
   distanceKm,
+  drivingDistanceKm,
   collected,
   target,
   userId,
 }) => {
   const progress = target > 0 ? Math.min((collected / target) * 100, 100) : 0;
   const location = [institutionCity, institutionState].filter(Boolean).join(", ");
+  const rawDistance = drivingDistanceKm ?? distanceKm;
+  const displayDistance = rawDistance != null 
+    ? Math.round( rawDistance * 100) / 100 
+    : null;
 
   return (
     <div className="overflow-hidden rounded-sm border border-outline bg-white">
@@ -83,7 +89,7 @@ const DonationCard: React.FC<DonationCardProps> = ({
             <span>{location || "Location not set"}</span>
           </div>
           <span className="rounded-full bg-surface-container px-2.5 py-0.5 text-xs font-medium text-on-surface-variant">
-            {distanceKm != null ? `${distanceKm} km away` : "Distance unavailable"}
+            {displayDistance != null ? `${displayDistance} km away` : "Distance unavailable"}
           </span>
         </div>
 

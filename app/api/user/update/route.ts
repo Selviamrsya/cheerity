@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { db } from "@/app/database/drizzle";
-import { users, institutions } from "@/app/database/schema";
+import { users, donatur, institutions } from "@/app/database/schema";
 import { eq, and, ne } from "drizzle-orm";
 import { geocodeAddress } from "@/lib/geocoding";
 
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { fullName, email, phoneNumber, birthdate, address, city, state, zipCode, street, detailedAddress, latitude, longitude } = body;
+    const { fullName, email, phoneNumber, birthdate, address, city, state, zipCode, latitude, longitude } = body;
 
     // Validate required fields
     if (!fullName || fullName.trim() === "") {
@@ -49,42 +49,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email is already in use by an institution account" }, { status: 400 });
     }
 
-    // Prepare update data
-    const updateData: {
-      fullName: string;
-      email: string;
-      phoneNumber: string | null;
-      birthdate: string | null;
-      address: string | null;
-      city: string | null;
-      state: string | null;
-      zipCode: string | null;
-      latitude: number | null;
-      longitude: number | null;
-    } = {
-      fullName: fullName.trim(),
-      email: trimmedEmail,
-      phoneNumber: phoneNumber || null,
-      birthdate: birthdate || null,
-      address: address || null,
-      city: city || null,
-      state: state || null,
-      zipCode: zipCode || null,
-      latitude: null,
-      longitude: null,
-    };
+    // Resolve coordinates
+    let resolvedLat: number | null = null;
+    let resolvedLng: number | null = null;
 
-    // If latitude and longitude are provided from address search, use them directly
-    // Otherwise, if city and state are provided, geocode to get coordinates
     if (latitude != null && longitude != null) {
-      updateData.latitude = latitude;
-      updateData.longitude = longitude;
+      resolvedLat = latitude;
+      resolvedLng = longitude;
     } else if (city && state) {
       try {
         const coordinates = await geocodeAddress(address || "", city, state);
         if (coordinates) {
-          updateData.latitude = coordinates.lat;
-          updateData.longitude = coordinates.lng;
+          resolvedLat = coordinates.lat;
+          resolvedLng = coordinates.lng;
         }
       } catch (error) {
         console.error("Geocoding error:", error);
@@ -92,11 +69,32 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Update user profile
+    // Update base user profile (shared fields)
     await db
       .update(users)
-      .set(updateData)
+      .set({
+        fullName: fullName.trim(),
+        email: trimmedEmail,
+        name: fullName.trim(),
+        updatedAt: new Date(),
+      })
       .where(eq(users.id, session.user.id));
+
+    // Update donatur child record (USER-specific fields)
+    await db
+      .update(donatur)
+      .set({
+        phoneNumber: phoneNumber || null,
+        birthdate: birthdate || null,
+        address: address || null,
+        city: city || null,
+        state: state || null,
+        zipCode: zipCode || null,
+        latitude: resolvedLat,
+        longitude: resolvedLng,
+        updatedAt: new Date(),
+      })
+      .where(eq(donatur.userId, session.user.id));
 
     return NextResponse.json({ success: true });
   } catch (error) {

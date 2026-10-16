@@ -26,12 +26,10 @@ interface InstitutionHistoryRecord {
 }
 
 interface InstitutionHistoryClientProps {
-  institutionId: string;
   records: InstitutionHistoryRecord[];
 }
 
 const InstitutionHistoryClient: React.FC<InstitutionHistoryClientProps> = ({
-  institutionId,
   records,
 }) => {
   const router = useRouter();

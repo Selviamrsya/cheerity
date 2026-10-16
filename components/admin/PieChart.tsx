@@ -12,6 +12,24 @@ interface PieChartProps {
   subtitle?: string;
   colors?: string[];
   compact?: boolean;
+  withPeriodFilter?: boolean;
+  periodData?: {
+    weekly: {
+      label: string;
+      value: number;
+      percentage: number;
+    }[];
+    monthly: {
+      label: string;
+      value: number;
+      percentage: number;
+    }[];
+    yearly: {
+      label: string;
+      value: number;
+      percentage: number;
+    }[];
+  };
 }
 
 const DEFAULT_COLORS = [
@@ -21,11 +39,15 @@ const DEFAULT_COLORS = [
   "var(--color-primary-900)",     
 ];
 
-export default function PieChart({ data, title, subtitle, colors = DEFAULT_COLORS, compact = false }: PieChartProps) {
+export default function PieChart({ data, title, subtitle, colors = DEFAULT_COLORS, compact = false, withPeriodFilter = false, periodData }: PieChartProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [period, setPeriod] = useState<"weekly" | "monthly" | "yearly">("monthly");
+
+  // Use period-specific data if filter is enabled, otherwise use default data
+  const currentData = withPeriodFilter && periodData ? periodData[period] : data;
 
   // Filter out items with value = 0 to prevent empty slices
-  const filteredData = data.filter(item => item.value > 0);
+  const filteredData = currentData.filter(item => item.value > 0);
 
   // Debug: log data
   console.log("PieChart - Original data:", data);
@@ -93,6 +115,32 @@ export default function PieChart({ data, title, subtitle, colors = DEFAULT_COLOR
             <h2 className="font-poppins text-lg font-medium text-text-main">{title}</h2>
             {subtitle && <p className="mt-1 font-inter text-xs text-text-muted">{subtitle}</p>}
           </div>
+
+          {/* Filter Tabs: Weekly | Monthly | Yearly */}
+          {withPeriodFilter && (
+            <div className="inline-flex self-start rounded-lg border border-outline bg-surface-container p-1 sm:self-auto">
+              {(["weekly", "monthly", "yearly"] as const).map((tab) => {
+                const isActive = period === tab;
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => {
+                      setPeriod(tab);
+                      setHoveredIndex(null);
+                    }}
+                    data-active={isActive}
+                    className={`cursor-pointer rounded-md border-none px-4 py-1.5 font-inter text-xs font-medium capitalize transition-all ${
+                      isActive
+                        ? "bg-surface text-primary-900 shadow-sm font-semibold"
+                        : "bg-transparent text-text-muted hover:text-text-main"
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Cek apakah data tersedia */}
@@ -180,6 +228,32 @@ export default function PieChart({ data, title, subtitle, colors = DEFAULT_COLOR
           <h2 className="font-poppins text-lg font-medium text-text-main">{title}</h2>
           {subtitle && <p className="mt-1 font-inter text-xs text-text-muted">{subtitle}</p>}
         </div>
+
+        {/* Filter Tabs: Weekly | Monthly | Yearly */}
+        {withPeriodFilter && (
+          <div className="inline-flex self-start rounded-lg border border-outline bg-surface-container p-1 sm:self-auto">
+            {(["weekly", "monthly", "yearly"] as const).map((tab) => {
+              const isActive = period === tab;
+              return (
+                <button
+                  key={tab}
+                  onClick={() => {
+                    setPeriod(tab);
+                    setHoveredIndex(null);
+                  }}
+                  data-active={isActive}
+                  className={`cursor-pointer rounded-md border-none px-4 py-1.5 font-inter text-xs font-medium capitalize transition-all ${
+                    isActive
+                      ? "bg-surface text-primary-900 shadow-sm font-semibold"
+                      : "bg-transparent text-text-muted hover:text-text-main"
+                  }`}
+                >
+                  {tab}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col sm:flex-row items-center">

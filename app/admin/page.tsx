@@ -6,15 +6,13 @@ import {
   getInstitutions,
   getDonationActivityStats,
   getDonationCategoriesStats,
+  getDonationCategoriesStatsWithPeriod,
 } from "@/lib/actions/admin";
 import DonationsActivityChart from "@/components/admin/DonationsActivityChart";
 import PieChart from "@/components/admin/PieChart";
 import { CATEGORY_LABELS } from "@/constants";
 import {
   ArrowRight,
-  Clock,
-  XCircle,
-  CheckCircle2,
   Eye,
 } from "lucide-react";
 import { headers } from "next/headers";
@@ -23,11 +21,12 @@ const AdminDashboardPage = async () => {
   const reqHeaders = await headers();
   const session = await getSession(reqHeaders);
 
-  const [stats, institutionsList, activityStats, categoryStats] = await Promise.all([
+  const [stats, institutionsList, activityStats, categoryStats, categoryStatsWithPeriod] = await Promise.all([
     getAdminDashboardStats(),
     getInstitutions(),
     getDonationActivityStats(),
     getDonationCategoriesStats(),
+    getDonationCategoriesStatsWithPeriod(),
   ]);
 
   // Prioritize pending institutions
@@ -126,11 +125,29 @@ const AdminDashboardPage = async () => {
           {categoryStats.length > 0 ? (
             <PieChart
               compact
+              withPeriodFilter
               data={categoryStats.map((cat) => ({
                 label: CATEGORY_LABELS[cat.category] || cat.category,
                 value: cat.count,
                 percentage: cat.percentage,
               }))}
+              periodData={{
+                weekly: categoryStatsWithPeriod.weekly.map((cat) => ({
+                  label: CATEGORY_LABELS[cat.category] || cat.category,
+                  value: cat.count,
+                  percentage: cat.percentage,
+                })),
+                monthly: categoryStatsWithPeriod.monthly.map((cat) => ({
+                  label: CATEGORY_LABELS[cat.category] || cat.category,
+                  value: cat.count,
+                  percentage: cat.percentage,
+                })),
+                yearly: categoryStatsWithPeriod.yearly.map((cat) => ({
+                  label: CATEGORY_LABELS[cat.category] || cat.category,
+                  value: cat.count,
+                  percentage: cat.percentage,
+                })),
+              }}
               title="Donation Categories"
               subtitle="By category percentage"
             />

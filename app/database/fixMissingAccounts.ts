@@ -25,12 +25,12 @@ async function fix() {
     try {
       await sql`${stmt}`;
       console.log(`  ✅ ${stmt.slice(0, 80)}...`);
-    } catch (err: any) {
-      if (err.code === "42701") {
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'code' in err && err.code === "42701") {
         // column already exists
         console.log(`  ✓ Already exists, skipping.`);
       } else {
-        console.error(`  ❌ Error:`, err.message);
+        console.error(`  ❌ Error:`, err instanceof Error ? err.message : String(err));
       }
     }
   }

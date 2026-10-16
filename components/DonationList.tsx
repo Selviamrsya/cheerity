@@ -9,6 +9,7 @@ interface Donation {
   institutionCity: string | null;
   institutionState: string | null;
   distanceKm: number | null;
+  drivingDistanceKm?: number | null;
   collected: number;
   target: number;
   category: string;

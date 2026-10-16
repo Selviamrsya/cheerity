@@ -27,9 +27,16 @@ import {
   ProfileSignOutButton,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import type { getSession } from "@/lib/auth"; // 1. Import fungsi/tipe getSession
 
+// 2. Gunakan ReturnType dari getSession agar tipe session selalu synchron
+type SessionType = Awaited<ReturnType<typeof getSession>>;
 
-const Header = ({ session }: { session: any }) => {
+interface HeaderProps {
+  session: SessionType;
+}
+
+const Header = ({ session }: HeaderProps) => {
   const pathname = usePathname();
   const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
@@ -100,7 +107,8 @@ const Header = ({ session }: { session: any }) => {
             ))}
           </ul>
 
-          {session?.user?.role === "USER" && (
+          {/* 3. Pastikan session.user.id dipastikan ada sebelum merender NotificationMenu */}
+          {session?.user?.role === "USER" && session.user.id && (
             <NotificationMenu
               userId={session.user.id}
               role="USER"
@@ -219,7 +227,7 @@ const Header = ({ session }: { session: any }) => {
       </NavbarShell>
 
       {mobileOpen && (
-        <div className="fixed inset-x-0 top-[72px] z-40 border-b border-outline bg-white px-4 py-3 shadow-md md:hidden">
+        <div className="fixed inset-x-0 top-18 z-40 border-b border-outline bg-white px-4 py-3 shadow-md md:hidden">
           <ul className="flex flex-col gap-1">
             {navItems.map((item) => (
               <li key={item.label}>

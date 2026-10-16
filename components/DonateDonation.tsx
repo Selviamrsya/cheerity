@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { X, AlertCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -113,9 +114,9 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
             <p>
               Your donation request has been submitted. The institution will
               review it within 24 hours. Check your{" "}
-              <a href="/history" style={{ color: "var(--color-primary)" }}>
+              <Link href="/history" style={{ color: "var(--color-primary)" }}>
                 history page
-              </a>{" "}
+              </Link>{" "}
               for updates.
             </p>
             <button className="relative flex w-full items-center justify-center overflow-hidden rounded-sm bg-primary px-6 py-2 font-inter text-[15px] font-semibold text-white transition-all hover:bg-primary-dark disabled:opacity-50" onClick={() => setIsOpen(false)}>

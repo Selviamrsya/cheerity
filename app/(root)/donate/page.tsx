@@ -1,7 +1,7 @@
 import React from "react";
 import { getSession } from "@/lib/auth";
 import { db } from "@/app/database/drizzle";
-import { users } from "@/app/database/schema";
+import { donatur } from "@/app/database/schema";
 import { eq } from "drizzle-orm";
 import { getDonationsWithDistance } from "@/lib/actions/donation";
 import FindDonationClient from "@/components/FindDonationClient";
@@ -16,9 +16,9 @@ const DonatePage = async () => {
 
   if (session?.user?.id && (session.user.role === "USER" || session.user.role === "ADMIN")) {
     const [userData] = await db
-      .select({ latitude: users.latitude, longitude: users.longitude })
-      .from(users)
-      .where(eq(users.id, session.user.id))
+      .select({ latitude: donatur.latitude, longitude: donatur.longitude })
+      .from(donatur)
+      .where(eq(donatur.userId, session.user.id))
       .limit(1);
     userLat = userData?.latitude ?? null;
     userLng = userData?.longitude ?? null;
@@ -27,7 +27,7 @@ const DonatePage = async () => {
   const donations = await getDonationsWithDistance({ userLat, userLng, limit: 50 });
 
   return (
-    <div className="mx-auto w-full max-w-345 px-8 pb-10 pt-8 md:px-32 md:pb-12 md:pt-12">
+    <div className="mx-auto w-full px-8 pb-10 pt-8 md:px-32 md:pb-12 md:pt-12">
       <FindDonationClient
         initialDonations={donations as Parameters<typeof FindDonationClient>[0]["initialDonations"]}
         userLat={userLat}

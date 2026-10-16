@@ -13,25 +13,25 @@ const createTables = async () => {
     // Create enums (without IF NOT EXISTS since it's not supported for types in PostgreSQL)
     try {
       await sql`CREATE TYPE "donation_campaign_status" AS ENUM('ACTIVE', 'COMPLETED')`;
-    } catch (e) {
+    } catch (_e) {
       console.log('donation_campaign_status type already exists');
     }
 
     try {
       await sql`CREATE TYPE "donation_request_status" AS ENUM('PENDING', 'APPROVED', 'REJECTED', 'ON_PROGRESS', 'ARRIVED', 'COMPLETED')`;
-    } catch (e) {
+    } catch (_e) {
       console.log('donation_request_status type already exists');
     }
 
     try {
       await sql`CREATE TYPE "role" AS ENUM('USER', 'INSTITUTION', 'ADMIN')`;
-    } catch (e) {
+    } catch (_e) {
       console.log('role type already exists');
     }
 
     try {
       await sql`CREATE TYPE "status" AS ENUM('PENDING', 'APPROVED', 'REJECTED')`;
-    } catch (e) {
+    } catch (_e) {
       console.log('status type already exists');
     }
 

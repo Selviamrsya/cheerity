@@ -16,7 +16,10 @@ import {
   Edit2,
 } from "lucide-react";
 import LocationFields from "@/components/LocationFields";
+import AddressSearch from "@/components/AddressSearch";
+import MapPicker from "@/components/MapPicker";
 import RejectModal from "@/components/RejectModal"; // <-- Import RejectModal
+import { ReverseGeocodeResult } from "@/lib/reverseGeocoding";
 
 interface InstitutionDetailClientProps {
   institution: {
@@ -45,14 +48,59 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionType, setActionType] = useState<string | null>(null);
 
-  // Address edit mode state
-  const [isEditingAddress, setIsEditingAddress] = useState(false);
-  const [addressData, setAddressData] = useState({
-    address: institution.address || "",
+  // Location & Address edit mode state
+  const [isEditingLocation, setIsEditingLocation] = useState(false);
+
+  // Parse address to separate search address and detail address
+  const parseAddress = (fullAddress: string | null) => {
+    if (!fullAddress) return { searchAddress: "", detailAddress: "" };
+    // Try to split by comma - first part is search address, rest is detail
+    const parts = fullAddress.split(",").map((p) => p.trim());
+    if (parts.length > 1) {
+      // If there are city/state in the address, try to keep them in search address
+      const cityPart = parts.find((p) =>
+        p.toLowerCase().includes(institution.city?.toLowerCase() || "")
+      );
+      const statePart = parts.find((p) =>
+        p.toLowerCase().includes(institution.state?.toLowerCase() || "")
+      );
+
+      if (cityPart || statePart) {
+        // Find the index after city/state
+        const cityStateIndex = Math.max(
+          parts.findIndex((p) => p === cityPart),
+          parts.findIndex((p) => p === statePart)
+        );
+        if (cityStateIndex >= 0 && cityStateIndex < parts.length - 1) {
+          return {
+            searchAddress: parts.slice(0, cityStateIndex + 1).join(", "),
+            detailAddress: parts.slice(cityStateIndex + 1).join(", "),
+          };
+        }
+      }
+
+      // Fallback: first part is search, rest is detail
+      return {
+        searchAddress: parts[0],
+        detailAddress: parts.slice(1).join(", "),
+      };
+    }
+    return { searchAddress: fullAddress, detailAddress: "" };
+  };
+
+  const parsedAddress = parseAddress(institution.address);
+
+  const [locationData, setLocationData] = useState({
+    searchAddress: parsedAddress.searchAddress,
+    detailAddress: parsedAddress.detailAddress,
     city: institution.city || "",
     state: institution.state || "",
     zipCode: institution.zipCode || "",
+    latitude: institution.latitude || null,
+    longitude: institution.longitude || null,
   });
+  const [searchQuery, setSearchQuery] = useState("");
+  const [addressValid, setAddressValid] = useState(false);
 
   // Rejection modal state
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
@@ -61,9 +109,10 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // Current display data for address (updated upon save)
-  const [currentAddress, setCurrentAddress] = useState({
-    address: institution.address,
+  // Current display data for location (updated upon save)
+  const [currentLocation, setCurrentLocation] = useState({
+    searchAddress: parsedAddress.searchAddress,
+    detailAddress: parsedAddress.detailAddress,
     city: institution.city,
     state: institution.state,
     zipCode: institution.zipCode,
@@ -113,46 +162,100 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
     }
   };
 
-  // Save updated address
-  const handleSaveAddress = async () => {
-    if (!addressData.address.trim() || !addressData.city.trim() || !addressData.state.trim()) {
-      setErrorMsg("Please fill out full address, province, and city.");
+  // Save updated location
+  const handleSaveLocation = async () => {
+    if (!locationData.searchAddress.trim() || !locationData.city.trim() || !locationData.state.trim()) {
+      setErrorMsg("Please fill out search address, province, and city.");
       return;
     }
 
     setIsSubmitting(true);
-    setActionType("updateAddress");
+    setActionType("updateLocation");
     setErrorMsg(null);
     setSuccessMsg(null);
 
-    const res = await updateInstitutionAddress(institution.id, addressData);
+    // Combine search address and detail address for saving
+    const combinedAddress = locationData.detailAddress.trim()
+      ? `${locationData.searchAddress}, ${locationData.detailAddress}`
+      : locationData.searchAddress;
+
+    const res = await updateInstitutionAddress(institution.id, {
+      ...locationData,
+      address: combinedAddress,
+    });
     setIsSubmitting(false);
 
     if (res.success) {
-      setCurrentAddress({
-        address: addressData.address,
-        city: addressData.city,
-        state: addressData.state,
-        zipCode: addressData.zipCode,
+      setCurrentLocation({
+        searchAddress: locationData.searchAddress,
+        detailAddress: locationData.detailAddress,
+        city: locationData.city,
+        state: locationData.state,
+        zipCode: locationData.zipCode,
       });
-      setIsEditingAddress(false);
-      setSuccessMsg("Alamat institusi berhasil diperbarui!");
+      setIsEditingLocation(false);
+      setSuccessMsg("Lokasi institusi berhasil diperbarui!");
       router.refresh();
     } else {
-      setErrorMsg(res.error ?? "Gagal memperbarui alamat institusi.");
+      setErrorMsg(res.error ?? "Gagal memperbarui lokasi institusi.");
     }
   };
 
-  // Cancel address editing
-  const handleCancelAddressEdit = () => {
-    setAddressData({
-      address: currentAddress.address || "",
-      city: currentAddress.city || "",
-      state: currentAddress.state || "",
-      zipCode: currentAddress.zipCode || "",
+  // Cancel location editing
+  const handleCancelLocationEdit = () => {
+    setLocationData({
+      searchAddress: currentLocation.searchAddress || "",
+      detailAddress: currentLocation.detailAddress || "",
+      city: currentLocation.city || "",
+      state: currentLocation.state || "",
+      zipCode: currentLocation.zipCode || "",
+      latitude: institution.latitude || null,
+      longitude: institution.longitude || null,
     });
-    setIsEditingAddress(false);
+    setSearchQuery("");
+    setIsEditingLocation(false);
+    setAddressValid(false);
     setErrorMsg(null);
+  };
+
+  // Handle address selection from search
+  const handleAddressSelect = (data: {
+    fullAddress: string;
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    latitude: number;
+    longitude: number;
+  }) => {
+    setLocationData(prev => ({
+      ...prev,
+      searchAddress: data.fullAddress,
+      city: data.city,
+      state: data.state,
+      zipCode: data.zipCode,
+      latitude: data.latitude,
+      longitude: data.longitude,
+    }));
+    setSearchQuery(data.fullAddress);
+    setAddressValid(true);
+  };
+
+  // Handle detail address edit - keep search query unchanged
+  const handleDetailAddressChange = (value: string) => {
+    setLocationData(prev => ({ ...prev, detailAddress: value }));
+  };
+
+  // Handle map address change from reverse geocoding
+  const handleMapAddressChange = (addressData: ReverseGeocodeResult) => {
+    if (addressData.success) {
+      setLocationData(prev => ({
+        ...prev,
+        state: addressData.state,
+        city: addressData.city,
+        zipCode: addressData.zipCode,
+      }));
+    }
   };
 
   const registrationDate = institution.createdAt
@@ -217,35 +320,38 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
             <span className="text-[13.5px] font-medium text-text-main">{institution.phoneNumber || "-"}</span>
           </div>
 
-          <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
-            <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Location</span>
-            <span className="text-[13.5px] font-medium text-text-main">
-              {[currentAddress.city, currentAddress.state, currentAddress.zipCode]
-                .filter(Boolean)
-                .join(", ") || "-"}
-            </span>
-          </div>
-
-          {/* Address row with inline editing */}
-          <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3 items-start">
-            <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Address</span>
+          {/* Location & Address row with inline editing */}
+          <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-start sm:gap-3 items-start">
+            <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Location & Address</span>
             <div className="flex-1 w-full">
-              {!isEditingAddress ? (
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-[13.5px] font-medium text-text-main">
-                    {currentAddress.address || "-"}
-                  </span>
-                  {currentStatus === "APPROVED" && (
+              {!isEditingLocation ? (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex-1 space-y-1">
+                      <div className="text-[13.5px] font-medium text-text-main">
+                        {currentLocation.searchAddress || "-"}
+                      </div>
+                      {currentLocation.detailAddress && (
+                        <div className="text-[13.5px] font-medium text-text-main text-gray-600">
+                          {currentLocation.detailAddress}
+                        </div>
+                      )}
+                      <div className="text-[13.5px] font-medium text-text-main text-gray-600">
+                        {[currentLocation.city, currentLocation.state, currentLocation.zipCode]
+                          .filter(Boolean)
+                          .join(", ") || "-"}
+                      </div>
+                    </div>
                     <button
                       type="button"
-                      onClick={() => setIsEditingAddress(true)}
+                      onClick={() => setIsEditingLocation(true)}
                       className="inline-flex items-center gap-1.5 px-6 py-3 text-xs font-semibold text-gray-500 hover:text-green-800 cursor-pointer"
                       style={{ padding: "8px 12px" }}
                     >
                       <Edit2 className="w-3.5 h-3.5" />
-                      <span>Change address</span>
+                      <span>Change location</span>
                     </button>
-                  )}
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-3 w-full">
@@ -255,23 +361,81 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
                     </div>
                   )}
 
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Search Address
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <AddressSearch
+                          onAddressSelect={handleAddressSelect}
+                          onClear={() => {
+                            setAddressValid(false);
+                            setSearchQuery("");
+                          }}
+                          initialValue={searchQuery}
+                        />
+                      </div>
+                      {addressValid && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAddressValid(false);
+                            setSearchQuery("");
+                          }}
+                          className="px-3 py-2 text-xs font-semibold text-gray-600 hover:text-red-600 border border-gray-300 rounded-sm hover:border-red-300 transition-colors"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Search to auto-fill city, state, and zip code. You can edit these fields after selection. Detail address below is for additional information.
+                    </p>
+                  </div>
+
                   <LocationFields
-                    stateValue={addressData.state}
-                    cityValue={addressData.city}
-                    zipCodeValue={addressData.zipCode}
-                    onStateChange={(val) => setAddressData(prev => ({ ...prev, state: val }))}
-                    onCityChange={(val) => setAddressData(prev => ({ ...prev, city: val }))}
-                    onZipCodeChange={(val) => setAddressData(prev => ({ ...prev, zipCode: val }))}
+                    stateValue={locationData.state}
+                    cityValue={locationData.city}
+                    zipCodeValue={locationData.zipCode}
+                    onStateChange={(val) => setLocationData(prev => ({ ...prev, state: val }))}
+                    onCityChange={(val) => setLocationData(prev => ({ ...prev, city: val }))}
+                    onZipCodeChange={(val) => setLocationData(prev => ({ ...prev, zipCode: val }))}
+                    readOnly={false}
                   />
+
+                  {locationData.latitude && locationData.longitude && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Fine-tune Location
+                      </label>
+                      <p className="text-xs text-gray-500 mb-2">
+                        Drag the red marker to adjust the exact location for precise pickup/delivery. Address fields will auto-update based on the pin location.
+                      </p>
+                      <MapPicker
+                        latitude={locationData.latitude}
+                        longitude={locationData.longitude}
+                        onLocationChange={(lat, lng) => {
+                          setLocationData(prev => ({
+                            ...prev,
+                            latitude: lat,
+                            longitude: lng,
+                          }));
+                        }}
+                        onAddressChange={handleMapAddressChange}
+                        height="300px"
+                      />
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1" style={{ marginBottom: "4px", marginTop: "8px" }}>
-                      Full address
+                      Detail address
                     </label>
                     <textarea
                       rows={4}
-                      value={addressData.address}
-                      onChange={(e) => setAddressData(prev => ({ ...prev, address: e.target.value }))}
+                      value={locationData.detailAddress}
+                      onChange={(e) => handleDetailAddressChange(e.target.value)}
                       placeholder="Street name, house number, RT/RW, or another detailed information"
                       className="w-full border border-gray-300 rounded-sm bg-white text-gray-900 text-sm font-sans placeholder:text-gray-400 placeholder:font-normal"
                       style={{ padding: "8px" }}
@@ -281,12 +445,12 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
                   <div className="flex gap-2 justify-end">
                     <button
                       type="button"
-                      onClick={handleSaveAddress}
+                      onClick={handleSaveLocation}
                       disabled={isSubmitting}
                       className="text-white inline-flex w-auto items-center justify-center gap-2 rounded-sm bg-primary px-6 py-2 font-inter text-[15px] font-semibold transition-all hover:bg-primary-dark disabled:opacity-50"
                       style={{ width: "auto", padding: "10px 24px" }}
                     >
-                      {isSubmitting && actionType === "updateAddress" ? (
+                      {isSubmitting && actionType === "updateLocation" ? (
                         <>
                           <Loader2 className="w-3 h-3 animate-spin" />
                           <span>Saving information...</span>
@@ -297,7 +461,7 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
                     </button>
                     <button
                       type="button"
-                      onClick={handleCancelAddressEdit}
+                      onClick={handleCancelLocationEdit}
                       disabled={isSubmitting}
                       className="inline-flex w-auto items-center justify-center gap-2 rounded-sm border border-outline bg-white px-6 py-2 font-inter text-[15px] font-semibold text-on-surface transition-all hover:bg-bg-light disabled:opacity-50"
                       style={{ padding: "10px 24px" }}

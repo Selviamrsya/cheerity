@@ -193,7 +193,7 @@ const map = {
   "navbar scrolled":
     "fixed top-0 right-0 left-0 z-50 border-b border-outline bg-white/95 shadow-[0_4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md",
   "navbar-inner":
-    "mx-auto flex h-[72px] w-full max-w-345 items-center justify-between px-4 md:px-6",
+    "mx-auto flex h-18 w-full max-w-345 items-center justify-between px-4 md:px-6",
   "navbar-logo": "flex items-center",
   "navbar-link":
     "relative bg-transparent px-2.5 py-2 text-sm font-medium text-on-surface-variant no-underline transition-colors after:absolute after:bottom-0 after:left-3.5 after:right-3.5 after:h-0.5 after:origin-center after:scale-x-0 after:rounded-t after:bg-primary after:transition-transform after:content-[''] hover:bg-transparent hover:text-primary hover:after:scale-x-100 data-[active=true]:font-semibold data-[active=true]:text-primary data-[active=true]:after:scale-x-100 md:px-3.5",
@@ -216,7 +216,7 @@ const map = {
   "notif-item-message": "mt-0.5 text-xs text-gray-600",
   "notif-empty": "p-6 text-center text-[13px] text-gray-400",
   "profile-dropdown":
-    "absolute top-12 right-0 z-50 w-[260px] overflow-hidden rounded-sm border border-outline bg-surface p-2 shadow-lg",
+    "absolute top-12 right-0 z-50 w-65 overflow-hidden rounded-sm border border-outline bg-surface p-2 shadow-lg",
   "profile-dropdown-header":
     "flex items-center gap-3 border-b border-outline px-3 py-2.5",
   "profile-dropdown-info": "min-w-0 overflow-hidden",

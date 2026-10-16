@@ -17,6 +17,7 @@ interface Donation {
   institutionCity: string | null;
   institutionState: string | null;
   distanceKm: number | null;
+  drivingDistanceKm?: number | null;
 }
 
 interface FindDonationClientProps {
@@ -43,16 +44,21 @@ const FindDonationClient: React.FC<FindDonationClientProps> = ({
       search === "" ||
       d.title.toLowerCase().includes(search.toLowerCase()) ||
       d.institutionName.toLowerCase().includes(search.toLowerCase());
+    // Use driving distance for filtering if available, otherwise fallback to straight-line distance
+    const effectiveDistance = d.drivingDistanceKm ?? d.distanceKm;
     const matchDistance =
       maxDistance === undefined ||
-      d.distanceKm === null ||
-      d.distanceKm <= maxDistance;
+      effectiveDistance === null ||
+      effectiveDistance <= maxDistance;
     return matchSearch && matchDistance;
   }).sort((a, b) => {
-    if (a.distanceKm === null && b.distanceKm === null) return 0;
-    if (a.distanceKm === null) return 1;
-    if (b.distanceKm === null) return -1;
-    return a.distanceKm - b.distanceKm;
+    // Sort by driving distance if available, otherwise by straight-line distance
+    const aDist = a.drivingDistanceKm ?? a.distanceKm;
+    const bDist = b.drivingDistanceKm ?? b.distanceKm;
+    if (aDist === null && bDist === null) return 0;
+    if (aDist === null) return 1;
+    if (bDist === null) return -1;
+    return aDist - bDist;
   });
 
   const refetch = async (cat: string, dist?: number) => {
@@ -62,7 +68,7 @@ const FindDonationClient: React.FC<FindDonationClientProps> = ({
       userLng,
       category: cat || undefined,
       maxDistanceKm: dist,
-      limit: 50,
+      limit: 20,
     });
     setDonations(results as Donation[]);
     setIsLoading(false);
@@ -89,10 +95,10 @@ const FindDonationClient: React.FC<FindDonationClientProps> = ({
         </p>
       </div>
 
-     {/* Search + Filters */}
+      {/* Search + Filters */}
       <div className="mt-2 mb-4 flex flex-wrap gap-2">
         {/* Search */}
-        <div className="flex min-w-[240px] flex-1 items-center gap-1.5 rounded-sm border border-outline bg-white px-3.5">
+        <div className="flex min-w-[120px] md:min-w-[240px] flex-1 items-center gap-1.5 rounded-sm border border-outline bg-white px-3.5">
           <Search className="h-4 w-4" style={{ color: "var(--color-on-surface-variant)" }} />
           <input
             type="text"
@@ -117,9 +123,9 @@ const FindDonationClient: React.FC<FindDonationClientProps> = ({
               </option>
             ))}
           </select>
-          <ChevronDown 
-            className="absolute right-3.5 h-4 w-4 pointer-events-none" 
-            style={{ color: "var(--color-on-surface-variant)" }} 
+          <ChevronDown
+            className="absolute right-3.5 h-4 w-4 pointer-events-none"
+            style={{ color: "var(--color-on-surface-variant)" }}
           />
         </div>
 
@@ -137,9 +143,9 @@ const FindDonationClient: React.FC<FindDonationClientProps> = ({
               </option>
             ))}
           </select>
-          <ChevronDown 
-            className="absolute right-3.5 h-4 w-4 pointer-events-none" 
-            style={{ color: "var(--color-on-surface-variant)" }} 
+          <ChevronDown
+            className="absolute right-3.5 h-4 w-4 pointer-events-none"
+            style={{ color: "var(--color-on-surface-variant)" }}
           />
         </div>
       </div>
@@ -166,6 +172,7 @@ const FindDonationClient: React.FC<FindDonationClientProps> = ({
                 institutionCity={donation.institutionCity}
                 institutionState={donation.institutionState}
                 distanceKm={donation.distanceKm}
+                drivingDistanceKm={donation.drivingDistanceKm}
                 collected={donation.collected}
                 target={donation.target}
                 category={donation.category}
