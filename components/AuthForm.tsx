@@ -84,7 +84,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
     setIsSubmitting(true);
     setFormError(null);
     try {
-      const { error } = await authClient.signIn.email({
+      const { data: signInResult, error } = await authClient.signIn.email({
         email: data.email,
         password: data.password,
       });
@@ -95,13 +95,26 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
         return;
       }
 
-      // Check role and redirect
-      const roleData = await getUserRole(data.email);
+      // The sign-in response already contains the user record (including
+      // role/status columns). Only fall back to a DB lookup if missing —
+      // institution approval status must always be verified.
+      let role: string | null | undefined = (
+        signInResult?.user as { role?: string | null } | undefined
+      )?.role;
+      let status: string | null | undefined = (
+        signInResult?.user as { status?: string | null } | undefined
+      )?.status;
 
-      if (roleData.role === "ADMIN") {
+      if (!role || (role === "INSTITUTION" && !status)) {
+        const roleData = await getUserRole(data.email);
+        role = role ?? roleData.role;
+        status = status ?? roleData.status;
+      }
+
+      if (role === "ADMIN") {
         router.push("/admin");
-      } else if (roleData.role === "INSTITUTION") {
-        if (roleData.status !== "APPROVED") {
+      } else if (role === "INSTITUTION") {
+        if (status !== "APPROVED") {
           setFormError("Institution account not approved yet.");
           await authClient.signOut(); // Clean up if not approved
           setIsSubmitting(false);
@@ -111,8 +124,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
       } else {
         router.push("/");
       }
-
-      router.refresh();
     } catch (e: unknown) {
       console.error(e);
       setFormError("Something went wrong. Please try again.");

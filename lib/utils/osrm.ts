@@ -15,7 +15,7 @@ export interface OSRMResult {
 }
 
 const OSRM_BASE_URL = "https://router.project-osrm.org/route/v1/driving";
-const BATCH_DELAY_MS = 200; // Delay between batch requests to respect rate limits
+const MAX_CONCURRENT_REQUESTS = 5; // Parallel requests, capped to respect rate limits
 const REQUEST_TIMEOUT_MS = 5000; // Timeout for individual requests
 
 /**
@@ -64,15 +64,9 @@ export async function fetchSingleRoute(
 }
 
 /**
- * Delay helper for rate limiting
- */
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-/**
- * Fetch driving distances to multiple destinations with rate limiting
- * Uses sequential requests with delay to respect OSRM public server rate limits
+ * Fetch driving distances to multiple destinations.
+ * Runs requests in parallel with a concurrency cap to respect OSRM
+ * public server rate limits while avoiding sequential round-trips.
  */
 export async function fetchOSRMDistances(
   userLat: number,
@@ -83,29 +77,25 @@ export async function fetchOSRMDistances(
     return [];
   }
 
-  const results: OSRMResult[] = [];
+  const results: (OSRMResult | undefined)[] = new Array(destinations.length);
+  let nextIndex = 0;
 
-  for (let i = 0; i < destinations.length; i++) {
-    const dest = destinations[i];
-
-    const drivingDistanceKm = await fetchSingleRoute(
-      userLat,
-      userLng,
-      dest.lat,
-      dest.lng
-    );
-
-    results.push({
-      id: dest.id,
-      drivingDistanceKm,
-    });
-
-    // Add delay between requests to respect rate limits
-    // Don't delay after the last request
-    if (i < destinations.length - 1) {
-      await delay(BATCH_DELAY_MS);
+  const worker = async () => {
+    while (nextIndex < destinations.length) {
+      const i = nextIndex++;
+      const dest = destinations[i];
+      const drivingDistanceKm = await fetchSingleRoute(
+        userLat,
+        userLng,
+        dest.lat,
+        dest.lng
+      );
+      results[i] = { id: dest.id, drivingDistanceKm };
     }
-  }
+  };
 
-  return results;
+  const workerCount = Math.min(MAX_CONCURRENT_REQUESTS, destinations.length);
+  await Promise.all(Array.from({ length: workerCount }, () => worker()));
+
+  return results as OSRMResult[];
 }

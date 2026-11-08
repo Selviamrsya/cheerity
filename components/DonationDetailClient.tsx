@@ -59,6 +59,7 @@ const DonationDetailClient: React.FC<DonationDetailClientProps> = ({ record, use
   const [rejectionReason, setRejectionReason] = useState("");
   const [rejectingFromProgressId, setRejectingFromProgressId] = useState<string | null>(null);
   const [rejectionFromProgressReason, setRejectionFromProgressReason] = useState("");
+  const [confirmingDoneId, setConfirmingDoneId] = useState<string | null>(null);
 
   const formatDate = (d: Date | null) => {
     if (!d) return "-";
@@ -398,7 +399,7 @@ const DonationDetailClient: React.FC<DonationDetailClientProps> = ({ record, use
           {record.status === "ON_PROGRESS" && (
             <>
               <button
-                onClick={() => handleMarkDone(record.id)}
+                onClick={() => setConfirmingDoneId(record.id)}
                 disabled={loadingId === record.id}
                 className="flex-1 px-5 py-2 bg-primary hover:bg-green-900 text-white font-semibold text-sm rounded-sm transition-colors disabled:opacity-50 cursor-pointer"
               >
@@ -442,6 +443,44 @@ const DonationDetailClient: React.FC<DonationDetailClientProps> = ({ record, use
         isLoading={loadingId === rejectingFromProgressId}
         placeholder="e.g. Items do not match requirements..."
       />
+
+      {/* Modal Konfirmasi Mark as Done */}
+      {confirmingDoneId && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => setConfirmingDoneId(null)}
+        >
+          <div
+            className="w-full max-w-md rounded-sm border border-gray-100 bg-white p-5 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-base font-semibold text-gray-900">Mark as Done?</h3>
+            <p className="mb-4 mt-1 text-xs leading-relaxed text-gray-500">
+              Are you sure the donation has arrived? This will move the request to the documentation stage.
+            </p>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  handleMarkDone(confirmingDoneId);
+                  setConfirmingDoneId(null);
+                }}
+                disabled={loadingId === confirmingDoneId}
+                className="inline-flex cursor-pointer items-center gap-2 rounded-sm bg-primary px-5 py-2 text-xs font-semibold text-white transition-colors hover:bg-green-900 disabled:opacity-50"
+              >
+                {loadingId === confirmingDoneId ? "Updating..." : "Yes, Mark as Done"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmingDoneId(null)}
+                className="cursor-pointer rounded-sm border border-gray-200 px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -10,6 +10,7 @@ import {
   users,
 } from "@/app/database/schema";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { sendEmail, emailTemplates } from "@/lib/email";
 import { fetchOSRMDistances, OSDestination } from "@/lib/utils/osrm";
 
@@ -150,6 +151,7 @@ export const getDonationsWithDistance = async (params: {
   if (hasLocation && results.length > 0) {
     const destinations: OSDestination[] = results
       .filter((d) => d.institutionLat != null && d.institutionLng != null)
+      .slice(0, 20) // Cap OSRM enrichment to the top 20 nearest results
       .map((d) => ({
         id: d.id,
         lat: d.institutionLat!,
@@ -365,7 +367,7 @@ export const approveDonationRequest = async (recordId: string, _institutionId?: 
         userAndDonation.donationTitle,
         userAndDonation.institutionName
       );
-      await sendEmail({ to: userAndDonation.userEmail, ...template });
+      after(() => sendEmail({ to: userAndDonation.userEmail, ...template }));
     }
 
     revalidatePath("/institution/history");
@@ -434,7 +436,7 @@ export const rejectDonationRequest = async (
         userAndDonation.donationTitle,
         reason
       );
-      await sendEmail({ to: userAndDonation.userEmail, ...template });
+      after(() => sendEmail({ to: userAndDonation.userEmail, ...template }));
     }
 
     revalidatePath("/institution/history");
@@ -598,7 +600,7 @@ export const uploadDocumentationAndComplete = async (recordId: string, documenta
         userAndDonation.donationTitle,
         userAndDonation.institutionName
       );
-      await sendEmail({ to: userAndDonation.userEmail, ...template });
+      after(() => sendEmail({ to: userAndDonation.userEmail, ...template }));
     }
 
     revalidatePath("/institution/history");
@@ -686,7 +688,7 @@ export const rejectDonationFromProgress = async (
         userAndDonation.donationTitle,
         reason
       );
-      await sendEmail({ to: userAndDonation.userEmail, ...template });
+      after(() => sendEmail({ to: userAndDonation.userEmail, ...template }));
     }
 
     revalidatePath("/institution/history");
@@ -798,7 +800,7 @@ export const cancelDonation = async (
         userAndDonation.donationTitle,
         reason
       );
-      await sendEmail({ to: userAndDonation.userEmail, ...template });
+      after(() => sendEmail({ to: userAndDonation.userEmail, ...template }));
     }
 
     revalidatePath("/institution/history");

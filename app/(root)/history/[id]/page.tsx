@@ -5,7 +5,12 @@ import { getDonationRecordById } from "@/lib/actions/donation";
 import DonationDetailClient from "@/components/DonationDetailClient";
 import { headers } from "next/headers";
 
-const DonationDetailPage = async ({ params }: { params: { id: string } }) => {
+const DonationDetailPage = async ({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) => {
+  const { id } = await params;
   const reqHeaders = await headers();
   const session = await getSession(reqHeaders);
 
@@ -13,7 +18,7 @@ const DonationDetailPage = async ({ params }: { params: { id: string } }) => {
     redirect("/sign-in");
   }
 
-  const record = await getDonationRecordById(params.id);
+  const record = await getDonationRecordById(id);
 
   if (!record) {
     redirect("/history");

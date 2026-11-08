@@ -120,35 +120,36 @@ export async function signUpUser(data: {
     const hashedPassword = await hashPassword(data.password);
     const userId = crypto.randomUUID();
 
-    // Insert base user record
-    await db.insert(users).values({
-      id: userId,
-      email: data.email,
-      password: hashedPassword,
-      name: data.name,
-      fullName: data.name,
-      role: "USER",
-      status: "APPROVED",
-    });
+    // Insert base user record, donatur child record, and credential account
+    // in a single transaction so partial signups can't leave orphaned rows.
+    await db.transaction(async (tx) => {
+      await tx.insert(users).values({
+        id: userId,
+        email: data.email,
+        password: hashedPassword,
+        name: data.name,
+        fullName: data.name,
+        role: "USER",
+        status: "APPROVED",
+      });
 
-    // Insert donatur child record with USER-specific profile data
-    await db.insert(donatur).values({
-      userId: userId,
-      birthdate: data.birthdate,
-      phoneNumber: data.phoneNumber,
-      city: data.city,
-      state: data.state,
-      zipCode: data.zipCode,
-      address: data.address,
-    });
+      await tx.insert(donatur).values({
+        userId: userId,
+        birthdate: data.birthdate,
+        phoneNumber: data.phoneNumber,
+        city: data.city,
+        state: data.state,
+        zipCode: data.zipCode,
+        address: data.address,
+      });
 
-    // Insert account record for Better Auth credential login
-    await db.insert(account).values({
-      id: crypto.randomUUID(),
-      userId: userId,
-      accountId: userId,
-      providerId: "credential",
-      password: hashedPassword,
+      await tx.insert(account).values({
+        id: crypto.randomUUID(),
+        userId: userId,
+        accountId: userId,
+        providerId: "credential",
+        password: hashedPassword,
+      });
     });
 
     return { success: true };
@@ -176,42 +177,43 @@ export async function signUpInstitution(data: {
     const hashedPassword = await hashPassword(data.password);
     const instId = crypto.randomUUID();
 
-    // Insert base user record
-    await db.insert(users).values({
-      id: instId,
-      email: data.email,
-      password: hashedPassword,
-      name: data.institutionName,
-      fullName: data.institutionName,
-      role: "INSTITUTION",
-      status: "PENDING",
-    });
+    // Insert base user record, credential account, and institution child
+    // record in a single transaction.
+    await db.transaction(async (tx) => {
+      await tx.insert(users).values({
+        id: instId,
+        email: data.email,
+        password: hashedPassword,
+        name: data.institutionName,
+        fullName: data.institutionName,
+        role: "INSTITUTION",
+        status: "PENDING",
+      });
 
-    // Insert account record for Better Auth credential login
-    await db.insert(account).values({
-      id: crypto.randomUUID(),
-      userId: instId,
-      accountId: instId,
-      providerId: "credential",
-      password: hashedPassword,
-    });
+      await tx.insert(account).values({
+        id: crypto.randomUUID(),
+        userId: instId,
+        accountId: instId,
+        providerId: "credential",
+        password: hashedPassword,
+      });
 
-    // Insert institution child record
-    await db.insert(institutions).values({
-      id: instId,
-      userId: instId,
-      institutionName: data.institutionName,
-      email: data.email,
-      password: hashedPassword,
-      phoneNumber: data.phoneNumber,
-      city: data.city,
-      state: data.state,
-      zipCode: data.zipCode,
-      address: data.address,
-      verificationEvidence: data.verificationEvidence,
-      websiteOrSocial: data.websiteOrSocial,
-      description: data.description,
-      status: "PENDING",
+      await tx.insert(institutions).values({
+        id: instId,
+        userId: instId,
+        institutionName: data.institutionName,
+        email: data.email,
+        password: hashedPassword,
+        phoneNumber: data.phoneNumber,
+        city: data.city,
+        state: data.state,
+        zipCode: data.zipCode,
+        address: data.address,
+        verificationEvidence: data.verificationEvidence,
+        websiteOrSocial: data.websiteOrSocial,
+        description: data.description,
+        status: "PENDING",
+      });
     });
 
     return { success: true };

@@ -5,8 +5,15 @@ import { db } from "@/app/database/drizzle";
 import { users, institutions, donatur } from "@/app/database/schema";
 import { signInWithCredentials as betterAuthSignIn, signUpUser as betterAuthSignUpUser, signUpInstitution as betterAuthSignUpInstitution } from "@/lib/auth";
 import { headers } from "next/headers";
+import { after } from "next/server";
 import { geocodeAddress } from "@/lib/geocoding";
 import { sendEmail, emailTemplates } from "@/lib/email";
+
+// Postgres unique violation (e.g. users.email already registered)
+const isUniqueViolation = (error: unknown) =>
+  (error as { code?: string })?.code === "23505";
+
+const EMAIL_TAKEN_ERROR = "An account with this email already exists.";
 
 export const signInWithCredentials = async (params: {
   email: string;
@@ -56,6 +63,16 @@ export const signUpUser = async (params: {
 }) => {
   const { name, birthdate, phonenumber, email, city, state, zipCode, address, latitude, longitude, password } = params;
 
+  const existingUser = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.email, email))
+    .limit(1);
+
+  if (existingUser.length > 0) {
+    return { success: false, error: EMAIL_TAKEN_ERROR };
+  }
+
   // Use coordinates from address search if provided, otherwise geocode
   let coords = null;
   if (latitude != null && longitude != null) {
@@ -103,7 +120,7 @@ export const signUpUser = async (params: {
 
     // Send welcome email (non-blocking)
     const template = emailTemplates.welcomeUser(name);
-    await sendEmail({ to: email, ...template });
+    after(() => sendEmail({ to: email, ...template }));
 
     // Auto sign in after registration with headers for session
     const reqHeaders = await headers();
@@ -111,6 +128,9 @@ export const signUpUser = async (params: {
     return { success: true };
   } catch (error) {
     console.error("Signup error:", error);
+    if (isUniqueViolation(error)) {
+      return { success: false, error: EMAIL_TAKEN_ERROR };
+    }
     return { success: false, error: "An error occurred during sign up." };
   }
 };
@@ -145,6 +165,18 @@ export const signUpInstitution = async (params: {
     description,
     password,
   } = params;
+
+  // users.email is globally unique across all roles — check it first so a
+  // donor's email can't be reused for an institution registration.
+  const existingUser = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.email, email))
+    .limit(1);
+
+  if (existingUser.length > 0) {
+    return { success: false, error: EMAIL_TAKEN_ERROR };
+  }
 
   const existingInstitution = await db
     .select()
@@ -201,12 +233,15 @@ export const signUpInstitution = async (params: {
     // Notify admin about new institution registration via email
     const adminEmail = process.env.ADMIN_EMAIL || "admin@cheerity.com";
     const adminTemplate = emailTemplates.newInstitutionRegistration(institutionName, email);
-    await sendEmail({ to: adminEmail, ...adminTemplate });
+    after(() => sendEmail({ to: adminEmail, ...adminTemplate }));
 
     // Institution must wait for admin approval before logging in
     return { success: true };
   } catch (error) {
     console.error("Institution signup error:", error);
+    if (isUniqueViolation(error)) {
+      return { success: false, error: EMAIL_TAKEN_ERROR };
+    }
     return { success: false, error: "An error occurred during registration." };
   }
 };

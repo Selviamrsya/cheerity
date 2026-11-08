@@ -81,13 +81,6 @@ export async function fixInstitutionUserRecord(institutionId: string) {
       password: institution.password,
       name: institution.institutionName,
       fullName: institution.institutionName,
-      phoneNumber: institution.phoneNumber,
-      city: institution.city,
-      state: institution.state,
-      zipCode: institution.zipCode,
-      address: institution.address,
-      latitude: institution.latitude,
-      longitude: institution.longitude,
       role: "INSTITUTION",
       status: institution.status,
     });

@@ -4,6 +4,7 @@ import { eq, count, desc, ilike, and, inArray } from "drizzle-orm";
 import { db } from "@/app/database/drizzle";
 import { users, institutions, donations, donateRecords, sessions, account, notifications } from "@/app/database/schema";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { getSession } from "@/lib/auth";
 import { geocodeAddress } from "@/lib/geocoding";
 import { sendEmail, emailTemplates } from "@/lib/email";
@@ -308,7 +309,7 @@ export const approveInstitution = async (institutionId: string) => {
 
     // Send approval email to institution
     const template = emailTemplates.institutionApproved(institution.institutionName);
-    await sendEmail({ to: institution.email, ...template });
+    after(() => sendEmail({ to: institution.email, ...template }));
 
     revalidatePath("/admin/institutions");
     return { success: true };
