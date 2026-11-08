@@ -3,9 +3,15 @@ import { eq } from "drizzle-orm";
 import { db } from "@/app/database/drizzle";
 import { donations } from "@/app/database/schema";
 import { revalidatePath } from "next/cache";
+import { rateLimit, RATE_LIMIT_ERROR } from "@/lib/ratelimit";
 
 export async function POST(request: NextRequest) {
   try {
+    const rl = await rateLimit("donationMutation");
+    if (!rl.allowed) {
+      return NextResponse.json({ error: RATE_LIMIT_ERROR }, { status: 429 });
+    }
+
     const { donationId, target, description, deliveryMethods, hasPickupService, pickupMaxDistanceKm } = await request.json();
 
     if (!donationId) {

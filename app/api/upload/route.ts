@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import ImageKit from "imagekit";
 import config from "@/lib/config";
+import { rateLimit, RATE_LIMIT_ERROR } from "@/lib/ratelimit";
 
 // Allowed image MIME types
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
@@ -8,6 +9,11 @@ const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 
 export async function POST(request: NextRequest) {
   try {
+    const rl = await rateLimit("upload");
+    if (!rl.allowed) {
+      return NextResponse.json({ error: RATE_LIMIT_ERROR }, { status: 429 });
+    }
+
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
     const folder = (formData.get("folder") as string) || "uploads";

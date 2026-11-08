@@ -3,8 +3,14 @@
 import { db } from "@/app/database/drizzle";
 import { users, institutions } from "@/app/database/schema";
 import { eq, ilike } from "drizzle-orm";
+import { rateLimit, RATE_LIMIT_ERROR } from "@/lib/ratelimit";
 
 export async function debugInstitutionStatus(institutionName: string) {
+  const rl = await rateLimit("debug");
+  if (!rl.allowed) {
+    return { error: RATE_LIMIT_ERROR };
+  }
+
   console.log("\n=== Debugging Institution Status ===\n");
 
   const institutionResults = await db

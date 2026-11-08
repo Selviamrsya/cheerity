@@ -3,8 +3,14 @@
 import { db } from "@/app/database/drizzle";
 import { users, institutions, account, sessions } from "@/app/database/schema";
 import { eq } from "drizzle-orm";
+import { rateLimit, RATE_LIMIT_ERROR } from "@/lib/ratelimit";
 
 export async function fixInstitutionUserRecord(institutionId: string) {
+  const rl = await rateLimit("debug");
+  if (!rl.allowed) {
+    return { success: false, error: RATE_LIMIT_ERROR };
+  }
+
   try {
     console.log("=== Starting fix for institution:", institutionId);
 

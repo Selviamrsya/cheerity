@@ -3,6 +3,14 @@ import { debugInstitutionStatus } from "@/lib/actions/debug";
 export default async function DebugInstitutionsPage() {
   const results = await debugInstitutionStatus("kasih");
 
+  if ("error" in results) {
+    return (
+      <div className="p-8 bg-white min-h-screen">
+        <p className="text-red-600">{results.error}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="p-8 bg-white min-h-screen">
       <h1 className="text-2xl font-bold mb-6">Debug Institution Status</h1>

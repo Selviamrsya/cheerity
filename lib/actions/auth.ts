@@ -8,6 +8,7 @@ import { headers } from "next/headers";
 import { after } from "next/server";
 import { geocodeAddress } from "@/lib/geocoding";
 import { sendEmail, emailTemplates } from "@/lib/email";
+import { rateLimit, RATE_LIMIT_ERROR } from "@/lib/ratelimit";
 
 // Postgres unique violation (e.g. users.email already registered)
 const isUniqueViolation = (error: unknown) =>
@@ -20,6 +21,17 @@ export const signInWithCredentials = async (params: {
   password: string;
 }) => {
   const { email, password } = params;
+
+  // Rate limit: per IP + per email untuk cegah brute force
+  const ipLimit = await rateLimit("signIn");
+  if (!ipLimit.allowed) {
+    return { success: false, error: RATE_LIMIT_ERROR };
+  }
+  const emailLimit = await rateLimit("signInEmail", email.trim().toLowerCase());
+  if (!emailLimit.allowed) {
+    return { success: false, error: RATE_LIMIT_ERROR };
+  }
+
   const reqHeaders = await headers();
   return betterAuthSignIn(email, password, reqHeaders);
 };
@@ -62,6 +74,11 @@ export const signUpUser = async (params: {
   password: string;
 }) => {
   const { name, birthdate, phonenumber, email, city, state, zipCode, address, latitude, longitude, password } = params;
+
+  const rl = await rateLimit("signUp");
+  if (!rl.allowed) {
+    return { success: false, error: RATE_LIMIT_ERROR };
+  }
 
   const existingUser = await db
     .select({ id: users.id })
@@ -165,6 +182,11 @@ export const signUpInstitution = async (params: {
     description,
     password,
   } = params;
+
+  const rl = await rateLimit("signUp");
+  if (!rl.allowed) {
+    return { success: false, error: RATE_LIMIT_ERROR };
+  }
 
   // users.email is globally unique across all roles — check it first so a
   // donor's email can't be reused for an institution registration.

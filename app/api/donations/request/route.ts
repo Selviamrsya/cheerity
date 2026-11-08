@@ -4,6 +4,7 @@ import { db } from "@/app/database/drizzle";
 import { donateRecords, donations } from "@/app/database/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { rateLimit, RATE_LIMIT_ERROR } from "@/lib/ratelimit";
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,6 +12,15 @@ export async function POST(request: NextRequest) {
 
     if (!session?.user?.id || session.user.role !== "USER") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const ipLimit = await rateLimit("donationSubmit");
+    if (!ipLimit.allowed) {
+      return NextResponse.json({ error: RATE_LIMIT_ERROR }, { status: 429 });
+    }
+    const userLimit = await rateLimit("donationSubmit", `user:${session.user.id}`);
+    if (!userLimit.allowed) {
+      return NextResponse.json({ error: RATE_LIMIT_ERROR }, { status: 429 });
     }
 
     const body = await request.json();

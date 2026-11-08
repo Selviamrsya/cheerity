@@ -13,6 +13,7 @@ import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { sendEmail, emailTemplates } from "@/lib/email";
 import { fetchOSRMDistances, OSDestination } from "@/lib/utils/osrm";
+import { rateLimit, RATE_LIMIT_ERROR } from "@/lib/ratelimit";
 
 // Get single donation campaign detail (for donation request form page)
 export const getDonationCampaignById = async (id: string) => {
@@ -59,6 +60,11 @@ export const createDonation = async (params: {
   hasPickupService: boolean;
   pickupMaxDistanceKm?: number;
 }) => {
+  const rl = await rateLimit("createDonation");
+  if (!rl.allowed) {
+    return { success: false, error: RATE_LIMIT_ERROR };
+  }
+
   try {
     const [donation] = await db
       .insert(donations)
@@ -244,6 +250,16 @@ export const submitDonationRequest = async (params: {
   estimatedPickupDate?: string;
   estimatedPickupTime?: string;
 }) => {
+  // Rate limit: per IP + per userId
+  const ipLimit = await rateLimit("donationSubmit");
+  if (!ipLimit.allowed) {
+    return { success: false, error: RATE_LIMIT_ERROR };
+  }
+  const userLimit = await rateLimit("donationSubmit", `user:${params.userId}`);
+  if (!userLimit.allowed) {
+    return { success: false, error: RATE_LIMIT_ERROR };
+  }
+
   try {
     const [donation] = await db
       .select({ status: donations.status, institutionId: donations.institutionId, title: donations.title })
@@ -295,6 +311,11 @@ export const submitDonationRequest = async (params: {
 
 // Institution approves a donation request (PENDING -> ON_PROGRESS directly)
 export const approveDonationRequest = async (recordId: string, _institutionId?: string) => {
+  const rl = await rateLimit("donationMutation");
+  if (!rl.allowed) {
+    return { success: false, error: RATE_LIMIT_ERROR };
+  }
+
   try {
     const [record] = await db
       .select({
@@ -385,6 +406,11 @@ export const rejectDonationRequest = async (
   _institutionId?: string,
   reason?: string
 ) => {
+  const rl = await rateLimit("donationMutation");
+  if (!rl.allowed) {
+    return { success: false, error: RATE_LIMIT_ERROR };
+  }
+
   try {
     const [record] = await db
       .select({ userId: donateRecords.userId, status: donateRecords.status })
@@ -451,6 +477,11 @@ export const rejectDonationRequest = async (
 // Institution marks delivery in progress (now unused directly, but kept for compatibility)
 // Accept moves directly to ON_PROGRESS via approveDonationRequest
 export const markOnProgress = async (recordId: string) => {
+  const rl = await rateLimit("donationMutation");
+  if (!rl.allowed) {
+    return { success: false, error: RATE_LIMIT_ERROR };
+  }
+
   try {
     await db
       .update(donateRecords)
@@ -467,6 +498,11 @@ export const markOnProgress = async (recordId: string) => {
 
 // Institution marks goods arrived and uploads proof photo
 export const markArrived = async (recordId: string, proofPhoto: string) => {
+  const rl = await rateLimit("donationMutation");
+  if (!rl.allowed) {
+    return { success: false, error: RATE_LIMIT_ERROR };
+  }
+
   try {
     const [record] = await db
       .select({ donationId: donateRecords.donationId, quantity: donateRecords.quantity, userId: donateRecords.userId })
@@ -505,6 +541,11 @@ export const markArrived = async (recordId: string, proofPhoto: string) => {
 // Institution marks donation as complete (ON_PROGRESS -> WAITING_FOR_DOCUMENTATION)
 // This is called when institution clicks "Mark Done" - moves to documentation stage
 export const markDonationComplete = async (recordId: string) => {
+  const rl = await rateLimit("donationMutation");
+  if (!rl.allowed) {
+    return { success: false, error: RATE_LIMIT_ERROR };
+  }
+
   try {
     const [record] = await db
       .select({ userId: donateRecords.userId, status: donateRecords.status })
@@ -544,6 +585,11 @@ export const markDonationComplete = async (recordId: string) => {
 
 // Institution uploads documentation and completes donation (WAITING_FOR_DOCUMENTATION -> COMPLETED)
 export const uploadDocumentationAndComplete = async (recordId: string, documentationPhoto: string) => {
+  const rl = await rateLimit("donationMutation");
+  if (!rl.allowed) {
+    return { success: false, error: RATE_LIMIT_ERROR };
+  }
+
   try {
     const [record] = await db
       .select({
@@ -618,6 +664,11 @@ export const rejectDonationFromProgress = async (
   institutionId?: string,
   reason?: string
 ) => {
+  const rl = await rateLimit("donationMutation");
+  if (!rl.allowed) {
+    return { success: false, error: RATE_LIMIT_ERROR };
+  }
+
   try {
     const [record] = await db
       .select({
@@ -706,6 +757,11 @@ export const cancelDonation = async (
   recordId: string,
   reason?: string
 ) => {
+  const rl = await rateLimit("donationMutation");
+  if (!rl.allowed) {
+    return { success: false, error: RATE_LIMIT_ERROR };
+  }
+
   try {
     const [record] = await db
       .select({

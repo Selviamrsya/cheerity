@@ -4,6 +4,7 @@ import { db } from "@/app/database/drizzle";
 import { users, donatur, institutions } from "@/app/database/schema";
 import { eq, and, ne } from "drizzle-orm";
 import { geocodeAddress } from "@/lib/geocoding";
+import { rateLimit, RATE_LIMIT_ERROR } from "@/lib/ratelimit";
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,6 +12,11 @@ export async function POST(request: NextRequest) {
 
     if (!session?.user?.id || (session.user.role !== "USER" && session.user.role !== "ADMIN")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const rl = await rateLimit("profileUpdate", session.user.id);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: RATE_LIMIT_ERROR }, { status: 429 });
     }
 
     const body = await request.json();

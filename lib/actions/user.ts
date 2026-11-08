@@ -7,6 +7,7 @@ import { getSession } from "@/lib/auth";
 import { geocodeAddress } from "@/lib/geocoding";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
+import { rateLimit, RATE_LIMIT_ERROR } from "@/lib/ratelimit";
 
 export async function getUserAddress() {
   const session = await getSession(await headers());
@@ -33,6 +34,11 @@ export async function updateUserAddress(params: {
   const session = await getSession(await headers());
   if (!session?.user?.id) {
     return { success: false, error: "Unauthorized" };
+  }
+
+  const rl = await rateLimit("profileUpdate", session.user.id);
+  if (!rl.allowed) {
+    return { success: false, error: RATE_LIMIT_ERROR };
   }
 
   const { address, city, state } = params;

@@ -9,6 +9,7 @@ import { getSession } from "@/lib/auth";
 import { geocodeAddress } from "@/lib/geocoding";
 import { sendEmail, emailTemplates } from "@/lib/email";
 import { headers } from "next/headers";
+import { rateLimit, RATE_LIMIT_ERROR } from "@/lib/ratelimit";
 
 // Get stats for admin dashboard
 export const getAdminDashboardStats = async () => {
@@ -293,6 +294,11 @@ export const getInstitutionById = async (id: string) => {
 
 // Admin approves an institution
 export const approveInstitution = async (institutionId: string) => {
+  const rl = await rateLimit("adminMutation");
+  if (!rl.allowed) {
+    return { success: false, error: RATE_LIMIT_ERROR };
+  }
+
   try {
     const institution = await getInstitutionById(institutionId);
     if (!institution) return { success: false, error: "Institution not found." };
@@ -324,6 +330,11 @@ export const rejectInstitution = async (
   institutionId: string,
   _reason?: string
 ) => {
+  const rl = await rateLimit("adminMutation");
+  if (!rl.allowed) {
+    return { success: false, error: RATE_LIMIT_ERROR };
+  }
+
   try {
     const institution = await getInstitutionById(institutionId);
     if (!institution) return { success: false, error: "Institution not found." };
@@ -397,6 +408,11 @@ export const updateInstitutionAddress = async (
     zipCode?: string;
   }
 ) => {
+  const rl = await rateLimit("adminMutation");
+  if (!rl.allowed) {
+    return { success: false, error: RATE_LIMIT_ERROR };
+  }
+
   try {
     const session = await getSession(await headers());
     if (!session?.user?.id || session.user.role !== "ADMIN") {

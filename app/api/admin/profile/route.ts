@@ -3,9 +3,15 @@ import { getSession } from "@/lib/auth";
 import { db } from "@/app/database/drizzle";
 import { users, institutions } from "@/app/database/schema";
 import { eq, and, ne } from "drizzle-orm";
+import { rateLimit, RATE_LIMIT_ERROR } from "@/lib/ratelimit";
 
 export async function POST(request: NextRequest) {
   try {
+    const rl = await rateLimit("adminMutation");
+    if (!rl.allowed) {
+      return NextResponse.json({ error: RATE_LIMIT_ERROR }, { status: 429 });
+    }
+
     const session = await getSession(request.headers);
 
     if (!session?.user?.id || session.user.role !== "ADMIN") {

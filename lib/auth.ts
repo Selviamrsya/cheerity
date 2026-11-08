@@ -4,6 +4,7 @@ import { db } from "@/app/database/drizzle";
 import { users, donatur, institutions, sessions, account, verification } from "@/app/database/schema";
 import { eq } from "drizzle-orm";
 import { hashPassword } from "better-auth/crypto";
+import { consumeAuthRateLimit } from "@/lib/ratelimit";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -27,6 +28,18 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
+  },
+  rateLimit: {
+    enabled: true,
+    window: 60,
+    max: 100,
+    customRules: {
+      "/sign-in/email": { window: 60, max: 10 },
+      "/sign-up/email": { window: 600, max: 5 },
+    },
+    customStorage: {
+      consume: consumeAuthRateLimit,
+    },
   },
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days

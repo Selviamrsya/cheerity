@@ -4,6 +4,7 @@ import { db } from "@/app/database/drizzle";
 import { institutions } from "@/app/database/schema";
 import { eq } from "drizzle-orm";
 import { hashPassword, verifyPassword } from "better-auth/crypto";
+import { rateLimit, RATE_LIMIT_ERROR } from "@/lib/ratelimit";
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,6 +12,11 @@ export async function POST(request: NextRequest) {
 
     if (!session?.user?.id || session.user.role !== "INSTITUTION") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const rl = await rateLimit("passwordChange", session.user.id);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: RATE_LIMIT_ERROR }, { status: 429 });
     }
 
     const body = await request.json();
