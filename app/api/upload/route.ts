@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import ImageKit from "imagekit";
+import config from "@/lib/config";
 
 // Allowed image MIME types
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
@@ -30,6 +30,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const {
+      env: {
+        imagekit: { publicKey, privateKey, urlEndpoint },
+      },
+    } = config;
+
+    if (!publicKey || !privateKey || !urlEndpoint) {
+      return NextResponse.json(
+        { error: "ImageKit credentials not configured" },
+        { status: 500 }
+      );
+    }
+
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
@@ -37,14 +50,24 @@ export async function POST(request: NextRequest) {
     const ext = file.name.split(".").pop() || "jpg";
     const uniqueName = `${crypto.randomUUID()}.${ext}`;
 
-    // Save to public/uploads/{folder}/
-    const uploadDir = path.join(process.cwd(), "public", "uploads", folder);
-    await mkdir(uploadDir, { recursive: true });
-    await writeFile(path.join(uploadDir, uniqueName), buffer);
+    // Sanitize folder to a safe ImageKit folder path
+    const safeFolder = folder
+      .replace(/[^a-zA-Z0-9\-_\/]/g, "")
+      .replace(/\/{2,}/g, "/")
+      .replace(/^\/+|\/+$/g, "");
 
-    // Return the public URL path
-    const publicPath = `/uploads/${folder}/${uniqueName}`;
-    return NextResponse.json({ url: publicPath });
+    const imagekit = new ImageKit({ publicKey, privateKey, urlEndpoint });
+    const result = await imagekit.upload({
+      file: buffer,
+      fileName: uniqueName,
+      folder: safeFolder || undefined,
+    });
+
+    if (!result?.url) {
+      return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+    }
+
+    return NextResponse.json({ url: result.url });
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json({ error: "Upload failed" }, { status: 500 });
