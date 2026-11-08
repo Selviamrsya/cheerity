@@ -62,7 +62,7 @@ export async function getSession(headers: Headers) {
   try {
     const session = await auth.api.getSession({ headers });
     return session;
-  } catch (error) {
+  } catch {
     // Session query failed - likely invalid or expired token
     // Return null to treat as unauthenticated
     return null;

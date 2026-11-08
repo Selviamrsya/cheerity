@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Plus, Package, Eye, MoreVertical, Check, Edit2 } from "lucide-react";
+import Image from "next/image";
+import { Plus, Eye, MoreVertical, Check, Edit2 } from "lucide-react";
 import { CATEGORY_LABELS, DELIVERY_METHOD_LABELS } from "@/constants";
 import EditDonationModal from "@/components/EditDonationModal";
 
@@ -248,10 +249,12 @@ const ManageDonationsClient = ({ donations }: ManageDonationsClientProps) => {
           onClick={() => setImagePopup({ isOpen: false, imageUrl: null })}
         >
           <div className="relative max-w-2xl max-h-[80vh]">
-            <img
+            <Image
               src={imagePopup.imageUrl}
               alt="Donation cover"
-              className="max-w-full max-h-[80vh] object-contain"
+              width={1600}
+              height={1200}
+              className="max-w-full max-h-[80vh] w-auto h-auto object-contain"
               onClick={(e) => e.stopPropagation()}
             />
             <button

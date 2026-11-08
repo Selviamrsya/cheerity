@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
+import Image from "next/image";
 import { ImagePlus, X, Loader2 } from "lucide-react";
 
 interface LocalImageUploadProps {
@@ -93,10 +94,12 @@ const LocalImageUpload: React.FC<LocalImageUploadProps> = ({
 
         {value ? (
           <div className="absolute inset-0 h-full w-full">
-            <img
+            <Image
               src={value}
               alt="Preview"
-              className="h-full w-full object-cover"
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 640px"
             />
             <button
               type="button"

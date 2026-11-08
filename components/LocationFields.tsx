@@ -58,10 +58,6 @@ const LocationFields: React.FC<LocationFieldsProps> = ({
     });
   }
 
-  // Check if current city is valid for the selected province
-  const isCityValidForProvince = stateValue && cityValue &&
-    INDONESIA_CITIES_BY_PROVINCE[stateValue]?.some((c: CityData) => c.city === cityValue);
-
   const cityOptions: OptionData[] = cityOptionsList.map((c: CityData) => ({
     label: c.city,
     value: c.city,

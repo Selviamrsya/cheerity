@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { MapPin, Loader2, X, Check } from "lucide-react";
 import {
   INDONESIA_PROVINCES,
@@ -152,33 +152,7 @@ const AddressSearch: React.FC<AddressSearchProps> = ({
   const [error, setError] = useState<string | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
 
-  // Debounce search
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (query.length > 3) {
-        searchAddresses(query);
-      } else {
-        setResults([]);
-        setShowResults(false);
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [query]);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setShowResults(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const searchAddresses = async (searchQuery: string) => {
+  const searchAddresses = useCallback(async (searchQuery: string) => {
     if (disabled) return;
 
     setIsLoading(true);
@@ -210,13 +184,39 @@ const AddressSearch: React.FC<AddressSearchProps> = ({
       } else {
         setResults([]);
       }
-    } catch (_err) {
+    } catch {
       setError("Failed to search addresses. Please try again.");
       setResults([]);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [disabled]);
+
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (query.length > 3) {
+        searchAddresses(query);
+      } else {
+        setResults([]);
+        setShowResults(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [query, searchAddresses]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowResults(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleSelect = (result: AddressResult) => {
     const { address, lat, lon, display_name } = result;

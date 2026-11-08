@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, MapPin, Package, Truck } from "lucide-react";
 import { CATEGORY_LABELS, DELIVERY_METHOD_LABELS } from "@/constants";
 
@@ -71,7 +72,7 @@ const DonationOverview: React.FC<DonationOverviewProps> = ({
         {/* Cover image with category badge */}
         <div className="relative h-[250px] w-full shrink-0 overflow-hidden rounded-sm bg-gray-100 md:h-[280px] md:w-[320px]">
           {cover ? (
-            <img src={cover} alt={title} className="h-full w-full object-cover" />
+            <Image src={cover} alt={title} fill className="h-full w-full object-cover" sizes="(max-width: 768px) 100vw, 320px" />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-green-50">
               <Package className="h-18 w-18" style={{ color: "var(--color-surface)" }} />

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, Package, AlertCircle } from "lucide-react";
 import { CATEGORY_LABELS, DELIVERY_METHOD_LABELS } from "@/constants";
 import LocalImageUpload from "@/components/LocalImageUpload"; // Menggunakan reusable component
@@ -258,9 +259,11 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
         <div className="lg:col-span-1">
           <div className="bg-white sticky top-24">
             {donation.cover ? (
-              <img
+              <Image
                 src={donation.cover}
                 alt={donation.title}
+                width={640}
+                height={256}
                 className="w-full h-64 object-cover rounded-sm mb-4"
               />
             ) : (

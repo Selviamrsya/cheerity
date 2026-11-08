@@ -22,7 +22,6 @@ export default function EditDonationModal({
   initialTarget,
   initialDescription,
   initialDeliveryMethods,
-  initialHasPickupService,
   initialPickupMaxDistanceKm,
   onSave,
 }: EditDonationModalProps) {
@@ -101,7 +100,7 @@ export default function EditDonationModal({
         const data = await response.json();
         setError(data.error || "Failed to update donation.");
       }
-    } catch (error) {
+    } catch {
       setError("Failed to update donation.");
     } finally {
       setLoading(false);

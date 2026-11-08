@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { ArrowLeft, CheckCircle2, Clock } from "lucide-react";
 import { CATEGORY_LABELS, DELIVERY_METHOD_LABELS } from "@/constants";
 import {
@@ -327,9 +328,11 @@ const DonationDetailClient: React.FC<DonationDetailClientProps> = ({ record, use
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {record.donorPhoto && (
                   <div>
-                    <img
+                    <Image
                       src={record.donorPhoto}
                       alt="Donor item"
+                      width={640}
+                      height={160}
                       className="w-full h-40 object-cover rounded-sm border border-gray-200"
                     />
                   </div>
@@ -337,9 +340,11 @@ const DonationDetailClient: React.FC<DonationDetailClientProps> = ({ record, use
                 {record.documentationPhoto && (
                   <div>
                     <p className="text-xs text-gray-500 mb-1">Documentation Photo</p>
-                    <img
+                    <Image
                       src={record.documentationPhoto}
                       alt="Documentation"
+                      width={640}
+                      height={160}
                       className="w-full h-40 object-cover rounded-xl border border-gray-200"
                     />
                   </div>

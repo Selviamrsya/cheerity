@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   approveInstitution,
@@ -503,9 +504,11 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
               {institution.verificationEvidence ? (
                 <div className="space-y-2">
                   <div className="rounded-sm border border-gray-200 overflow-hidden max-w-sm bg-gray-50 shadow-2xs">
-                    <img
+                    <Image
                       src={institution.verificationEvidence}
                       alt="Verification Evidence"
+                      width={640}
+                      height={288}
                       className="w-full max-h-72 object-cover"
                     />
                   </div>

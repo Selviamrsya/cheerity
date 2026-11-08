@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { MapPin } from "lucide-react";
 import React from "react";
 
@@ -44,7 +45,7 @@ const DonationCard: React.FC<DonationCardProps> = ({
       {/* Cover image - clickable to view details */}
       <Link href={`/donations/${id}`} className="relative h-50 w-full cursor-pointer overflow-hidden block text-inherit no-underline">
         {cover ? (
-          <img src={cover} alt={title} className="object-cover w-full h-full" />
+          <Image src={cover} alt={title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
         ) : (
           <div
             className="w-full h-full flex items-center justify-center"

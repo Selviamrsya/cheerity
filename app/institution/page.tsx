@@ -48,13 +48,6 @@ const InstitutionDashboardPage = async () => {
     .filter((h) => h.status === "WAITING_FOR_DOCUMENTATION" || h.status === "COMPLETED")
     .reduce((sum, h) => sum + (h.quantity || 0), 0);
 
-  const currentDate = new Date().toLocaleDateString("id-ID", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-
   const latestFiveRequests = donationHistory.slice(0, 5);
 
   const getStatusBadge = (status: string) => {
