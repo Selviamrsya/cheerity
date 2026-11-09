@@ -97,7 +97,7 @@ const DonationOverview: React.FC<DonationOverviewProps> = ({
           </div>
 
           {/* Location + distance */}
-          <div className="ml-0.5 flex items-center gap-1 text-[13px] text-gray-600">
+          <div className="ml-0.5 flex flex-wrap items-center gap-1 text-[13px] text-gray-600">
             <MapPin className="h-4 w-4" style={{ color: "var(--color-primary)" }} />
             <span>{location || "Location not set"}</span>
             {displayDistance != null && (

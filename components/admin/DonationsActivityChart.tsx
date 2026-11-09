@@ -107,7 +107,7 @@ export default function DonationsActivityChart({ data }: DonationsActivityChartP
   };
 
   return (
-    <div className="mb-4 flex min-h-[400px] w-full flex-col rounded-sm border border-card-border bg-surface p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+    <div className="mb-4 flex min-h-[400px] w-full flex-col rounded-sm border border-card-border bg-surface p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
       {/* Header with Title & Filter Buttons */}
       <div className="flex flex-col gap-2 border-b border-card-border pb-2 sm:flex-row sm:items-center sm:justify-between">
         <div>

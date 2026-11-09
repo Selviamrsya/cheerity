@@ -161,7 +161,7 @@ const FindDonationClient: React.FC<FindDonationClientProps> = ({
           <p>No donations found. Try adjusting your filters.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-5 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
           {filtered.map((donation, index) => (
             <div key={donation.id} className={`animate-fade-in stagger-${(index % 4) + 1}`}>
               <DonationCard

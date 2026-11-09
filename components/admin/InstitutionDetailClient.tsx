@@ -327,7 +327,7 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
             <div className="flex-1 w-full">
               {!isEditingLocation ? (
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between gap-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex-1 space-y-1">
                       <div className="text-[13.5px] font-medium text-text-main">
                         {currentLocation.searchAddress || "-"}
@@ -541,7 +541,7 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
 
           <div className="w-full">
             {currentStatus === "PENDING" && (
-              <div className="grid grid-cols-2 gap-2 w-full">
+              <div className="grid grid-cols-1 gap-2 w-full sm:grid-cols-2">
                 <button
                   type="button"
                   onClick={handleApprove}

@@ -13,7 +13,7 @@ export function HomeHero() {
         className="object-cover"
       />
       <div className="absolute inset-0 bg-linear-to-r from-primary-900/80 via-primary-800/55 to-black/20" />
-      <div className="relative z-10 mx-auto w-full max-w-345 px-8 pt-28 pb-16 md:px-32 md:pt-32 md:pb-24">
+      <div className="relative z-10 mx-auto w-full max-w-345 px-4 pt-24 pb-12 sm:px-8 md:px-32 md:pt-32 md:pb-24">
         <h1 className="max-w-xl font-poppins text-4xl leading-tight font-semibold text-white sm:text-5xl lg:text-6xl">
           Give a Box,
           <br />

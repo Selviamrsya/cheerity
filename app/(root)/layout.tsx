@@ -14,16 +14,24 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
       <Header session={session} />
       <main className="w-full flex-1 pt-14">{children}</main>
 
-      <footer className="bg-primary px-8 py-9 text-white md:32 md:pt-9 md:pb-11">
+      <footer className="bg-primary px-4 py-9 text-white sm:px-8 md:pt-9 md:pb-11">
         <div className="mx-auto flex max-w-330 flex-col items-start gap-3 text-left">
-          <div className="[&_img]:brightness-0 [&_img]:invert">
-            <Image src="/assets/logo.png" alt="Cheerity" width={120} height={30} />
-            <p className="mt-3 font-poppins text-sm font-light text-green-200">
+          <div>
+            <Image
+              src="/assets/Whitelogo.png"
+              alt="Cheerity"
+              width={140}
+              height={36}
+            />
+
+            <p className="mt-3 font-poppins text-sm font-light text-white">
               Cheerity bring Cheer
             </p>
           </div>
+
           <div className="w-full border-t-2 border-surface" />
-          <p className="mt-2 text-[13px] text-green-100">
+
+          <p className="mt-2 text-[13px] text-white">
             &copy; 2026 Cheerity &mdash; All rights reserved
           </p>
         </div>

@@ -109,7 +109,7 @@ const DonationDetailPage = async ({
   }
 
   return (
-    <div className="mx-auto w-full max-w-345 px-8 pb-10 md:px-32 md:pb-14">
+    <div className="mx-auto w-full max-w-345 px-4 pb-10 sm:px-8 md:px-32 md:pb-14">
       <DonationOverview
         id={campaign.id}
         title={campaign.title}

@@ -91,27 +91,27 @@ const AdminInstitutionsPage: React.FC<AdminInstitutionsPageProps> = async ({
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-left">
+          <table className="responsive-table w-full border-collapse text-left">
             <thead>
               <tr>
-                <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-medium tracking-wide text-text-subtle uppercase sm:px-4 w-12 text-center">No</th>
+                <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-medium tracking-wide text-text-subtle uppercase sm:px-4 w-8 text-center md:w-12">No</th>
                 <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-medium tracking-wide text-text-subtle uppercase sm:px-4">Name</th>
-                <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-medium tracking-wide text-text-subtle uppercase sm:px-4">Request Date</th>
-                <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-medium tracking-wide text-text-subtle uppercase sm:px-4">Location</th>
-                <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-medium tracking-wide text-text-subtle uppercase sm:px-4">Status</th>
-                <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-medium tracking-wide text-text-subtle uppercase sm:px-4 text-center w-24">See More</th>
+                <th className="hidden border-b border-card-border px-3 py-3 font-inter text-[11px] font-medium tracking-wide text-text-subtle uppercase sm:px-4 md:table-cell">Request Date</th>
+                <th className="hidden border-b border-card-border px-3 py-3 font-inter text-[11px] font-medium tracking-wide text-text-subtle uppercase sm:px-4 md:table-cell">Location</th>
+                <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-medium tracking-wide text-text-subtle uppercase sm:px-4 w-20 md:w-auto">Status</th>
+                <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-medium tracking-wide text-text-subtle uppercase sm:px-4 text-center w-10 md:w-24">See More</th>
               </tr>
             </thead>
             <tbody>
               {institutionsList.map((inst, idx) => (
                 <tr key={inst.id} className="transition-colors hover:bg-bg-light">
-                  <td className="border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-center text-xs text-gray-500 font-medium">
+                  <td data-label="No" className="border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-center text-xs text-gray-500 font-medium">
                     {idx + 1}
                   </td>
-                  <td className="border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 font-bold">
+                  <td data-label="Name" className="border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 font-bold">
                     {inst.institutionName}
                   </td>
-                  <td className="border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-xs text-gray-600 font-medium">
+                  <td data-label="Request Date" className="hidden border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-xs text-gray-600 font-medium md:table-cell">
                     {inst.createdAt
                       ? new Date(inst.createdAt).toLocaleDateString("id-ID", {
                           day: "numeric",
@@ -120,13 +120,13 @@ const AdminInstitutionsPage: React.FC<AdminInstitutionsPageProps> = async ({
                         })
                       : "-"}
                   </td>
-                  <td className="border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-xs text-gray-600">
+                  <td data-label="Location" className="hidden border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-xs text-gray-600 md:table-cell">
                     {[inst.city, inst.state].filter(Boolean).join(", ") || "-"}
                   </td>
-                  <td className="border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4">
+                  <td data-label="Status" className="border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4">
                     {getBadge(inst.status)}
                   </td>
-                  <td className="border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-center">
+                  <td data-label="See More" className="border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-center">
                     <Link
                       href={`/admin/institutions/${inst.id}`}
                       className="inline-flex items-center justify-center bg-transparent p-1.5 text-text-muted shadow-none transition-colors hover:bg-transparent hover:text-primary-800"

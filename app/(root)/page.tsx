@@ -9,7 +9,6 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { HomeHero } from "@/components/landing/HomeHero";
 import { InfoCard, TutorialStep } from "@/components/landing/InfoCard";
-import { donationGridClass } from "@/lib/ui";
 import { appButtonVariants } from "@/components/ui/app-button";
 import { cn } from "@/lib/utils";
 
@@ -68,7 +67,7 @@ const Home = async () => {
     <>
       <HomeHero />
 
-      <section className="mx-auto w-full max-w-345 px-8 py-12 md:px-32 md:py-36">
+      <section className="mx-auto w-full max-w-345 px-4 py-10 sm:px-8 sm:py-12 md:px-32 md:py-36">
         <div className="mx-auto mb-8 max-w-2xl text-center">
           <h2 className="font-poppins text-2xl font-semibold text-text-main md:text-3xl">
             One platform, Two ways to make an impact
@@ -78,7 +77,7 @@ const Home = async () => {
           </p>
         </div>
 
-        <div className="grid gap-2 grid-cols-2">
+        <div className="grid grid-cols-2 gap-2 sm:gap-6">
           <InfoCard
             src="/assets/donate.png"
             alt="Donate"
@@ -95,11 +94,11 @@ const Home = async () => {
       </section>
 
       <section className="bg-primary text-white">
-        <div className="mx-auto w-full max-w-345 px-2 py-8 md:px-32 md:py-20">
+        <div className="mx-auto w-full max-w-345 px-4 py-10 sm:px-8 md:px-32 md:py-20">
           <h2 className="mb-8 text-center font-poppins text-2xl font-semibold md:text-3xl">
             How it works
           </h2>
-          <div className="grid grid-cols-5 gap-1 md:gap-4">
+          <div className="grid grid-cols-5 gap-1 sm:gap-2 xl:gap-4">
             {tutorialSteps.map((step, index) => (
               <TutorialStep
                 key={step.alt}
@@ -111,7 +110,7 @@ const Home = async () => {
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-345 px-8 py-12 md:px-32 md:py-24">
+      <section className="mx-auto w-full max-w-345 px-4 py-10 sm:px-8 sm:py-12 md:px-32 md:py-24">
         <h2 className="mb-8 text-center font-poppins text-2xl font-semibold text-text-main md:text-3xl">
           Discover Donations Inspired by What You Care About
         </h2>
@@ -121,7 +120,7 @@ const Home = async () => {
             No active donation campaigns yet. Check back soon!
           </p>
         ) : (
-          <div className={cn(donationGridClass, "grid-cols-2 xl:grid-cols-3")}>
+          <div className="grid grid-cols-3 gap-2 sm:gap-4">
             {donations.map((donation, index) => (
               <div
                 key={donation.id}
@@ -157,7 +156,7 @@ const Home = async () => {
       </section>
 
       <section className="bg-primary-50">
-        <div className="mx-auto w-full max-w-3xl px-8 py-12 text-center md:px-12 md:py-16">
+        <div className="mx-auto w-full max-w-3xl px-4 py-10 text-center sm:px-8 sm:py-12 md:px-12 md:py-16">
           <h2 className="font-poppins text-2xl font-semibold text-text-main md:text-3xl">
             About Us
           </h2>

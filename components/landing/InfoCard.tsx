@@ -13,13 +13,13 @@ export function InfoCard({
   text: string;
 }) {
   return (
-    <div className="flex flex-col items-center gap-2 rounded-md border border-card-border bg-white p-8 md:p-10 text-center shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-      <Image src={src} alt={alt} width={56} height={56} className="shrink-0" />
+    <div className="flex flex-col items-center gap-1.5 rounded-md border border-card-border bg-white p-2.5 text-center shadow-[0_1px_3px_rgba(0,0,0,0.04)] sm:gap-2 sm:p-8 md:p-10">
+      <Image src={src} alt={alt} width={56} height={56} className="h-9 w-9 shrink-0 object-contain sm:h-14 sm:w-14" />
       <div className="flex flex-col items-center">
-        <h3 className="font-poppins text-lg font-semibold text-text-main">
+        <h3 className="font-poppins text-[13px] font-semibold text-text-main sm:text-lg">
           {title}
         </h3>
-        <p className="mt-1 font-inter text-sm leading-relaxed text-text-muted">
+        <p className="mt-0.5 font-inter text-[10px] leading-tight text-text-muted sm:mt-1 sm:text-xs sm:leading-relaxed md:text-sm">
           {text}
         </p>
       </div>
@@ -40,21 +40,19 @@ export function TutorialStep({
   return (
     <div
       className={cn(
-        // Padding sangat tipis di HP (p-1), normal di layar besar (md:p-6)
-        "flex flex-col items-center rounded-md p-1 md:p-6 text-center",
+        "flex flex-col items-center rounded-md p-1.5 text-center sm:p-3 xl:p-6",
         delay
       )}
     >
-      <Image 
-        src={src} 
-        alt={alt} 
-        width={64} 
-        height={64} 
-        className="mb-1.5 h-8 w-8 md:h-14 md:w-14 object-contain" 
+      <Image
+        src={src}
+        alt={alt}
+        width={64}
+        height={64}
+        className="mb-1 h-6 w-6 object-contain sm:h-9 sm:w-9 xl:mb-1.5 xl:h-14 xl:w-14"
       />
-      
-      {/* Teks diperkecil drastis jadi text-[9px] atau text-[10px] di HP */}
-      <p className="font-inter text-[9px] sm:text-[10px] md:text-xs leading-tight md:leading-relaxed text-white">
+
+      <p className="font-inter text-[8px] leading-tight text-white sm:text-[10px] xl:text-xs xl:leading-relaxed">
         {text}
       </p>
     </div>

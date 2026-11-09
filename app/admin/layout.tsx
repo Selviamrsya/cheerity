@@ -20,7 +20,7 @@ const AdminLayout = async ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="flex min-h-screen flex-col">
       <AdminNavbar session={session} />
-      <main className="mx-auto w-full max-w-330 px-8 pb-16 pt-28 md:px-24 md:pb-20">
+      <main className="mx-auto w-full max-w-330 px-4 pb-16 pt-24 sm:px-8 sm:pt-28 md:px-24 md:pb-20">
         {children}
       </main>
     </div>

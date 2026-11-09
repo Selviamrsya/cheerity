@@ -118,3 +118,35 @@
     color: var(--color-primary);
   }
 }
+
+@media (max-width: 767px) {
+  .responsive-table {
+    table-layout: fixed;
+    min-width: 0;
+  }
+
+  .responsive-table th,
+  .responsive-table td {
+    padding: 6px 4px;
+    font-size: 10px;
+    line-height: 1.25;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+  }
+
+  .responsive-table th {
+    font-size: 9px;
+    letter-spacing: 0;
+  }
+
+  .responsive-table td span.inline-flex {
+    padding: 2px 6px;
+    font-size: 9px;
+    white-space: normal;
+  }
+
+  .responsive-table td svg {
+    width: 12px;
+    height: 12px;
+  }
+}

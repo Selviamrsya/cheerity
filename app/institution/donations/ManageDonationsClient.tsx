@@ -151,32 +151,32 @@ const ManageDonationsClient = ({ donations }: ManageDonationsClientProps) => {
       ) : (
         <div className="relative flex flex-col shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left">
+            <table className="responsive-table w-full border-collapse text-left">
               <thead>
                 <tr>
-                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4">No</th>
+                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4 w-8 md:w-auto">No</th>
                   <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4">Title</th>
-                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4">Category</th>
-                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4">Collected</th>
-                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4">Delivery Option</th>
-                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4">Status</th>
-                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4">Date Created</th>
-                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4">Cover</th>
-                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4">Action</th>
+                  <th className="hidden border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4 md:table-cell">Category</th>
+                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4 w-16 md:w-auto">Collected</th>
+                  <th className="hidden border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4 md:table-cell">Delivery Option</th>
+                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4 w-20 md:w-auto">Status</th>
+                  <th className="hidden border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4 md:table-cell">Date Created</th>
+                  <th className="hidden border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4 md:table-cell">Cover</th>
+                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4 text-center w-10 md:w-auto">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {safeDonations.map((d, index) => (
                   <tr key={d.id} className="transition-colors hover:bg-bg-light">
-                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 font-medium">{index + 1}</td>
-                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 font-medium">{d.title}</td>
-                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4">
+                    <td data-label="No" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 font-medium">{index + 1}</td>
+                    <td data-label="Title" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 font-medium">{d.title}</td>
+                    <td data-label="Category" className="relative hidden border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 md:table-cell">
                       {CATEGORY_LABELS[d.category] || d.category}
                     </td>
-                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 font-bold text-green-900">
+                    <td data-label="Collected" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 font-bold text-green-900">
                       {d.collected} / {d.target}
                     </td>
-                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4">
+                    <td data-label="Delivery Option" className="relative hidden border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 md:table-cell">
                       <div className="flex flex-wrap gap-1">
                         {d.deliveryMethods.slice(0, 3).map((m) => (
                           <span
@@ -193,7 +193,7 @@ const ManageDonationsClient = ({ donations }: ManageDonationsClientProps) => {
                         ))}
                       </div>
                     </td>
-                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4">
+                    <td data-label="Status" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4">
                       <span
                         className={`inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-0.5 font-inter text-xs font-semibold ${d.status === "ACTIVE"
                           ? "border border-success-border bg-success-bg text-success"
@@ -203,10 +203,10 @@ const ManageDonationsClient = ({ donations }: ManageDonationsClientProps) => {
                         {d.status}
                       </span>
                     </td>
-                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-xs">
+                    <td data-label="Date Created" className="relative hidden border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-xs md:table-cell">
                       {mounted && d.createdAt ? new Date(d.createdAt).toLocaleDateString('en-US') : "-"}
                     </td>
-                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4">
+                    <td data-label="Cover" className="relative hidden border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 md:table-cell">
                       {mounted && d.cover ? (
                         <button
                           onClick={() => setImagePopup({ isOpen: true, imageUrl: d.cover })}
@@ -218,7 +218,7 @@ const ManageDonationsClient = ({ donations }: ManageDonationsClientProps) => {
                         <span className="text-gray-400 text-xs">No image</span>
                       )}
                     </td>
-                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4">
+                    <td data-label="Action" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4">
                       {mounted && (
                         <div className="relative">
                           {d.status === "COMPLETED" ? (

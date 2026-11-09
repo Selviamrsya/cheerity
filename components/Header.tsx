@@ -88,7 +88,7 @@ const Header = ({ session }: HeaderProps) => {
       <NavbarShell overlay={overlay}>
         <Link href="/" className="flex shrink-0 items-center">
           <Image
-            src={overlay ? "/assets/logo-white.png" : "/assets/logo.png"}
+            src={overlay ? "/assets/whiteLogo.png" : "/assets/logo.png"}
             alt="Cheerity"
             width={140}
             height={36}

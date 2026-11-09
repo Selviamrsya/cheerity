@@ -4,9 +4,10 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Globe, Bell, User, CheckCheck } from "lucide-react";
+import { LogOut, Globe, Bell, User, CheckCheck, Menu, X } from "lucide-react";
 import { getNotifications, markNotificationRead } from "@/lib/actions/donation";
 import { authClient } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
 
 interface Notification {
   id: string;
@@ -33,6 +34,7 @@ const InstitutionNavbar: React.FC<InstitutionNavbarProps> = ({ session }) => {
   const router = useRouter();
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const profileRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
@@ -49,6 +51,10 @@ const InstitutionNavbar: React.FC<InstitutionNavbarProps> = ({ session }) => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   // Fetch notifications when user opens the dropdown
   const handleNotifToggle = async () => {
@@ -84,6 +90,7 @@ const InstitutionNavbar: React.FC<InstitutionNavbarProps> = ({ session }) => {
   const isHistoryActive = pathname.startsWith("/institution/history");
 
   return (
+    <>
     <header className="fixed top-0 right-0 left-0 z-50 border-b border-outline bg-white/95 shadow-[0_4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md">
       <nav className="mx-auto flex h-18 w-full max-w-345 items-center justify-between px-4 md:px-6">
         {/* Left: Logo with Institution indicator badge */}
@@ -93,7 +100,7 @@ const InstitutionNavbar: React.FC<InstitutionNavbarProps> = ({ session }) => {
 
         {/* Right: Text-only links with underline hover + Profile avatar */}
         <div className="flex items-center gap-4 sm:gap-6">
-          <ul className="flex items-center gap-1 sm:gap-3 list-none">
+          <ul className="hidden items-center gap-1 list-none md:flex lg:gap-3">
             <li>
               <Link
                 href="/institution"
@@ -244,9 +251,68 @@ const InstitutionNavbar: React.FC<InstitutionNavbarProps> = ({ session }) => {
               </div>
             )}
           </div>
+
+          <button
+            type="button"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full text-on-surface md:hidden"
+            aria-label="Toggle menu"
+            onClick={() => setMobileOpen((v) => !v)}
+          >
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
       </nav>
     </header>
+
+    {mobileOpen && (
+      <div className="fixed inset-x-0 top-18 z-40 border-b border-outline bg-white px-4 py-3 shadow-md md:hidden">
+        <ul className="flex flex-col gap-1">
+          <li>
+            <Link
+              href="/institution"
+              onClick={() => setMobileOpen(false)}
+              className={cn(
+                "block rounded-sm px-3 py-2.5 text-sm font-medium no-underline",
+                isHomeActive
+                  ? "bg-primary-50 font-semibold text-primary"
+                  : "text-on-surface hover:bg-bg-light"
+              )}
+            >
+              Dashboard
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/institution/donations"
+              onClick={() => setMobileOpen(false)}
+              className={cn(
+                "block rounded-sm px-3 py-2.5 text-sm font-medium no-underline",
+                isDonationsActive
+                  ? "bg-primary-50 font-semibold text-primary"
+                  : "text-on-surface hover:bg-bg-light"
+              )}
+            >
+              Manage Donations
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/institution/history"
+              onClick={() => setMobileOpen(false)}
+              className={cn(
+                "block rounded-sm px-3 py-2.5 text-sm font-medium no-underline",
+                isHistoryActive
+                  ? "bg-primary-50 font-semibold text-primary"
+                  : "text-on-surface hover:bg-bg-light"
+              )}
+            >
+              History
+            </Link>
+          </li>
+        </ul>
+      </div>
+    )}
+    </>
   );
 };
 

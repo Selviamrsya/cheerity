@@ -101,37 +101,37 @@ const InstitutionDashboardPage = async () => {
       </div>
 
       {/* 4 Stat Cards Grid */}
-      <div className="my-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="my-4 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         {/* 1. Total Campaigns Uploaded */}
-        <div className="flex flex-col justify-between gap-1 rounded-sm border border-card-border bg-surface px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+        <div className="flex flex-col justify-between gap-1 rounded-sm border border-card-border bg-surface px-3 py-3 sm:px-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
           <div className="flex items-center justify-between text-xs">
             <span className="font-inter text-[11px] font-semibold uppercase tracking-wide text-text-muted">Total Campaigns</span>
           </div>
-          <div className="font-poppins text-2xl font-extrabold leading-tight tracking-tight text-text-main">{totalUploaded}</div>
+          <div className="font-poppins text-xl font-extrabold leading-tight tracking-tight text-text-main sm:text-2xl">{totalUploaded}</div>
         </div>
 
         {/* 2. Today Requests */}
-        <div className="flex flex-col justify-between gap-1 rounded-sm border border-card-border bg-surface px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+        <div className="flex flex-col justify-between gap-1 rounded-sm border border-card-border bg-surface px-3 py-3 sm:px-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
           <div className="flex items-center justify-between text-xs">
             <span className="font-inter text-[11px] font-semibold uppercase tracking-wide text-text-muted">Today Requests</span>
           </div>
-          <div className="font-poppins text-2xl font-extrabold leading-tight tracking-tight text-text-main">{todayRequests}</div>
+          <div className="font-poppins text-xl font-extrabold leading-tight tracking-tight text-text-main sm:text-2xl">{todayRequests}</div>
         </div>
 
         {/* 3. Total Requests Received */}
-        <div className="flex flex-col justify-between gap-1 rounded-sm border border-card-border bg-surface px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+        <div className="flex flex-col justify-between gap-1 rounded-sm border border-card-border bg-surface px-3 py-3 sm:px-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
           <div className="flex items-center justify-between text-xs">
             <span className="font-inter text-[11px] font-semibold uppercase tracking-wide text-text-muted">Total Requests</span>
           </div>
-          <div className="font-poppins text-2xl font-extrabold leading-tight tracking-tight text-text-main">{totalDonationsCount}</div>
+          <div className="font-poppins text-xl font-extrabold leading-tight tracking-tight text-text-main sm:text-2xl">{totalDonationsCount}</div>
         </div>
 
         {/* 4. Total Items Collected */}
-        <div className="flex flex-col justify-between gap-1 rounded-sm border border-card-border bg-surface px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+        <div className="flex flex-col justify-between gap-1 rounded-sm border border-card-border bg-surface px-3 py-3 sm:px-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
           <div className="flex items-center justify-between text-xs">
             <span className="font-inter text-[11px] font-semibold uppercase tracking-wide text-text-muted">Items Collected</span>
           </div>
-          <div className="font-poppins text-2xl font-extrabold leading-tight tracking-tight text-text-main">{totalCollected}</div>
+          <div className="font-poppins text-xl font-extrabold leading-tight tracking-tight text-text-main sm:text-2xl">{totalCollected}</div>
         </div>
       </div>
 
@@ -219,35 +219,35 @@ const InstitutionDashboardPage = async () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left">
+            <table className="responsive-table w-full border-collapse text-left">
               <thead>
                 <tr>
-                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4 w-12 text-center">No</th>
+                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4 w-8 text-center md:w-12">No</th>
                   <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4">Campaign</th>
-                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4 text-center">Qty</th>
-                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4">Delivery Method</th>
-                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4">Request Date</th>
-                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4">Status</th>
-                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4 text-center w-20">Action</th>
+                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4 text-center w-10 md:w-auto">Qty</th>
+                  <th className="hidden border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4 md:table-cell">Delivery Method</th>
+                  <th className="hidden border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4 md:table-cell">Request Date</th>
+                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4 w-20 md:w-auto">Status</th>
+                  <th className="border-b border-card-border px-3 py-3 font-inter text-[11px] font-semibold tracking-wide text-text-subtle uppercase sm:px-4 text-center w-10 md:w-20">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {latestFiveRequests.map((record, idx) => (
                   <tr key={record.id} className="transition-colors hover:bg-bg-light">
-                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-center text-xs text-gray-500 font-semibold">
+                    <td data-label="No" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-center text-xs text-gray-500 font-semibold">
                       {idx + 1}
                     </td>
-                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 font-semibold text-gray-800">
+                    <td data-label="Campaign" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 font-semibold text-gray-800">
                       {record.donationTitle || "Donation Item"}
                     </td>
-                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-center font-bold text-green-900">
+                    <td data-label="Qty" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-center font-bold text-green-900">
                       {record.quantity}
                     </td>
-                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-xs text-gray-600">
+                    <td data-label="Delivery Method" className="relative hidden border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-xs text-gray-600 md:table-cell">
                       {DELIVERY_METHOD_LABELS[record.deliveryMethod as keyof typeof DELIVERY_METHOD_LABELS] ||
                         record.deliveryMethod}
                     </td>
-                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-xs text-gray-600 font-semibold">
+                    <td data-label="Request Date" className="relative hidden border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-xs text-gray-600 font-semibold md:table-cell">
                       {record.requestDate
                         ? new Date(record.requestDate).toLocaleDateString("id-ID", {
                           day: "numeric",
@@ -256,10 +256,10 @@ const InstitutionDashboardPage = async () => {
                         })
                         : "-"}
                     </td>
-                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4">
+                    <td data-label="Status" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4">
                       {getStatusBadge(record.status)}
                     </td>
-                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-center">
+                    <td data-label="Action" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-center">
                       <Link
                         href="/institution/history"
                         className="inline-flex items-center justify-center bg-transparent p-1.5 text-text-muted shadow-none transition-colors hover:bg-transparent hover:text-primary-800"

@@ -43,7 +43,7 @@ const DonationCard: React.FC<DonationCardProps> = ({
   return (
     <div className="overflow-hidden rounded-sm border border-outline bg-white">
       {/* Cover image - clickable to view details */}
-      <Link href={`/donations/${id}`} className="relative h-50 w-full cursor-pointer overflow-hidden block text-inherit no-underline">
+      <Link href={`/donations/${id}`} className="relative block h-28 w-full cursor-pointer overflow-hidden text-inherit no-underline sm:h-40 lg:h-50">
         {cover ? (
           <Image src={cover} alt={title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
         ) : (
@@ -58,51 +58,48 @@ const DonationCard: React.FC<DonationCardProps> = ({
         )}
       </Link>
 
-      <div className="p-4">
+      <div className="p-2 sm:p-3 lg:p-4">
         {/* Institution info */}
-        <div className="mb-2 flex items-center gap-2">
+        <div className="mb-1.5 flex min-w-0 items-center gap-1.5 sm:mb-2 sm:gap-2">
           <div
-            className="flex items-center justify-center rounded-full text-xs font-bold"
+            className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[8px] font-bold sm:h-5 sm:w-5 sm:text-[10px] lg:h-6 lg:w-6 lg:text-xs"
             style={{
-              width: 24,
-              height: 24,
               background: "var(--color-primary)",
               color: "var(--color-surface)",
-              flexShrink: 0,
             }}
           >
             {institutionName.charAt(0).toUpperCase()}
           </div>
-          <span className="text-sm font-medium text-on-surface-variant">
+          <span className="truncate text-[9px] font-medium text-on-surface-variant sm:text-[11px] lg:text-sm">
             {institutionName}
           </span>
         </div>
 
         {/* Title - clickable to view details */}
-        <Link href={`/donations/${id}`} className="mb-1 line-clamp-2 font-poppins text-base leading-snug font-semibold text-on-surface transition-colors hover:text-primary text-inherit no-underline">
+        <Link href={`/donations/${id}`} className="mb-1 line-clamp-2 font-poppins text-[11px] leading-tight font-semibold text-on-surface transition-colors hover:text-primary text-inherit no-underline sm:text-sm lg:text-base">
           {title}
         </Link>
 
         {/* Location + Distance */}
-        <div className="mb-2 flex items-center justify-between">
-          <div className="flex items-center gap-1 text-[12.5px] text-on-surface [&_svg]:h-3.5 [&_svg]:w-3.5 [&_svg]:shrink-0">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-1 sm:mb-3 sm:gap-2">
+          <div className="flex min-w-0 flex-1 items-center gap-1 text-[8px] text-on-surface [&_svg]:h-3 [&_svg]:w-3 [&_svg]:shrink-0 sm:text-[11px] lg:text-[12.5px] [&_svg]:sm:h-3.5 [&_svg]:sm:w-3.5">
             <MapPin />
-            <span>{location || "Location not set"}</span>
+            <span className="truncate">{location || "Location not set"}</span>
           </div>
-          <span className="rounded-full bg-surface-container px-2.5 py-0.5 text-xs font-medium text-on-surface-variant">
+          <span className="shrink-0 whitespace-nowrap rounded-full bg-surface-container px-1.5 py-0.5 text-[8px] font-medium text-on-surface-variant sm:px-2.5 sm:text-[10px] lg:text-xs">
             {displayDistance != null ? `${displayDistance} km away` : "Distance unavailable"}
           </span>
         </div>
 
         {/* Progress bar */}
-        <div className="mb-4">
-          <div className="ml-1 h-2 w-full overflow-hidden rounded-full bg-surface-container">
+        <div className="mb-2 sm:mb-3 lg:mb-4">
+          <div className="ml-1 h-1.5 w-full overflow-hidden rounded-full bg-surface-container sm:h-2">
             <div
               className="relative h-full rounded-full bg-primary transition-[width] duration-1000"
               style={{ width: `${progress}%` }}
             />
           </div>
-          <p className="mt-1.5 ml-1 text-[13px] text-on-surface-variant">
+          <p className="mt-1 ml-1 text-[9px] text-on-surface-variant sm:mt-1.5 sm:text-[11px] lg:text-[13px]">
             <strong>{collected}</strong> / {target} items collected
           </p>
         </div>
@@ -111,7 +108,7 @@ const DonationCard: React.FC<DonationCardProps> = ({
         {userId ? (
           <Link
             href={`/donations/${id}/request`}
-            className="block w-full rounded-sm bg-primary px-4 py-2.5 text-center text-sm font-semibold text-white no-underline transition-all hover:bg-primary-dark hover:-translate-y-px"
+            className="block w-full rounded-sm bg-primary px-1.5 py-1.5 text-center text-[9px] leading-tight font-semibold text-white no-underline transition-all hover:bg-primary-dark hover:-translate-y-px sm:px-4 sm:py-2.5 sm:text-xs lg:text-sm"
             style={{ width: "100%", textAlign: "center" }}
           >
             Donate Now
@@ -119,7 +116,7 @@ const DonationCard: React.FC<DonationCardProps> = ({
         ) : (
           <Link
             href="/sign-in"
-            className="block w-full rounded-sm bg-primary px-4 py-2.5 text-center text-sm font-semibold text-white no-underline transition-all hover:bg-primary-dark hover:-translate-y-px"
+            className="block w-full rounded-sm bg-primary px-1.5 py-1.5 text-center text-[9px] leading-tight font-semibold text-white no-underline transition-all hover:bg-primary-dark hover:-translate-y-px sm:px-4 sm:py-2.5 sm:text-xs lg:text-sm"
             style={{width: "100%", textAlign: "center" }}
           >
             Sign In to Donate
