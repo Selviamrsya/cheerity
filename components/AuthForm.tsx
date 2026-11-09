@@ -80,6 +80,11 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
     },
   });
 
+  const redirectAfterSignIn = (path: string) => {
+    router.push(path);
+    router.refresh();
+  };
+
   const handleSignInSubmit = async (data: SignInInput) => {
     setIsSubmitting(true);
     setFormError(null);
@@ -112,7 +117,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
       }
 
       if (role === "ADMIN") {
-        router.push("/admin");
+        redirectAfterSignIn("/admin");
       } else if (role === "INSTITUTION") {
         if (status !== "APPROVED") {
           setFormError("Institution account not approved yet.");
@@ -120,9 +125,9 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
           setIsSubmitting(false);
           return;
         }
-        router.push("/institution");
+        redirectAfterSignIn("/institution");
       } else {
-        router.push("/");
+        redirectAfterSignIn("/");
       }
     } catch (e: unknown) {
       console.error(e);
