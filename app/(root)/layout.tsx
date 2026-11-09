@@ -18,7 +18,7 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
         <div className="mx-auto flex max-w-330 flex-col items-start gap-3 text-left">
           <div>
             <Image
-              src="/assets/Whitelogo.png"
+              src="/assets/whiteLogo.png"
               alt="Cheerity"
               width={140}
               height={36}
