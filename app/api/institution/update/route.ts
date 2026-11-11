@@ -38,43 +38,40 @@ export async function POST(request: NextRequest) {
 
     const trimmedEmail = email.trim().toLowerCase();
 
-    // Check if email is used by another institution
-    const [existingInst] = await db
-      .select({ id: institutions.id })
-      .from(institutions)
+    // Check if email is used by another account (users.email is globally
+    // unique across all roles, including institutions)
+    const [existingUser] = await db
+      .select({ id: users.id })
+      .from(users)
       .where(
         and(
-          eq(institutions.email, trimmedEmail),
-          ne(institutions.id, session.user.id)
+          eq(users.email, trimmedEmail),
+          ne(users.id, session.user.id)
         )
       )
       .limit(1);
 
-    if (existingInst) {
-      return NextResponse.json(
-        { error: "Email is already in use by another institution" },
-        { status: 400 }
-      );
-    }
-
-    // Check if email is used by an existing user
-    const [existingUser] = await db
-      .select({ id: users.id })
-      .from(users)
-      .where(eq(users.email, trimmedEmail))
-      .limit(1);
-
     if (existingUser) {
       return NextResponse.json(
-        { error: "Email is already in use by a user account" },
+        { error: "Email is already in use by another account" },
         { status: 400 }
       );
     }
+
+    // Update base user record (email + display name live here)
+    await db
+      .update(users)
+      .set({
+        email: trimmedEmail,
+        name: institutionName.trim(),
+        fullName: institutionName.trim(),
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, session.user.id));
 
     // Update institution profile (address can be updated, but verificationEvidence cannot)
     const updateData: Record<string, string | null> = {
       institutionName: institutionName.trim(),
-      email: trimmedEmail,
       phoneNumber: phoneNumber ? phoneNumber.trim() : null,
       websiteOrSocial: websiteOrSocial ? websiteOrSocial.trim() : null,
       description: description ? description.trim() : null,

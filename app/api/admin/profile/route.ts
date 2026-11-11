@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { db } from "@/app/database/drizzle";
-import { users, institutions } from "@/app/database/schema";
+import { users } from "@/app/database/schema";
 import { eq, and, ne } from "drizzle-orm";
 import { rateLimit, RATE_LIMIT_ERROR } from "@/lib/ratelimit";
 
@@ -53,20 +53,6 @@ export async function POST(request: NextRequest) {
     if (existingUser) {
       return NextResponse.json(
         { error: "Email is already in use by another user" },
-        { status: 400 }
-      );
-    }
-
-    // Check if email is used by an institution
-    const [existingInst] = await db
-      .select({ id: institutions.id })
-      .from(institutions)
-      .where(eq(institutions.email, trimmedEmail))
-      .limit(1);
-
-    if (existingInst) {
-      return NextResponse.json(
-        { error: "Email is already in use by an institution account" },
         { status: 400 }
       );
     }

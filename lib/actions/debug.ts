@@ -22,27 +22,18 @@ export async function debugInstitutionStatus(institutionName: string) {
   const results = [];
 
   for (const inst of institutionResults) {
-    // Try to find user by ID first
-    const [userById] = await db
+    // Institutions share the users.id UUID — the user row holds email/status
+    const [user] = await db
       .select()
       .from(users)
       .where(eq(users.id, inst.id))
       .limit(1);
 
-    // Also try to find user by email
-    const [userByEmail] = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, inst.email))
-      .limit(1);
-
-    const user = userById || userByEmail;
-
     results.push({
       institution: {
         id: inst.id,
         name: inst.institutionName,
-        email: inst.email,
+        email: user?.email ?? null,
         status: inst.status,
       },
       user: user ? {
@@ -54,7 +45,7 @@ export async function debugInstitutionStatus(institutionName: string) {
       match: user ? {
         idsMatch: user.id === inst.id,
         statusesMatch: user.status === inst.status,
-        foundBy: userById ? "ID" : "EMAIL",
+        foundBy: "ID",
       } : null,
     });
   }

@@ -282,11 +282,29 @@ export const getInstitutions = async (
 };
 
 
-// Get a single institution by ID
+// Get a single institution by ID (email comes from the shared users row)
 export const getInstitutionById = async (id: string) => {
   const [institution] = await db
-    .select()
+    .select({
+      id: institutions.id,
+      userId: institutions.userId,
+      institutionName: institutions.institutionName,
+      email: users.email,
+      phoneNumber: institutions.phoneNumber,
+      city: institutions.city,
+      state: institutions.state,
+      zipCode: institutions.zipCode,
+      address: institutions.address,
+      latitude: institutions.latitude,
+      longitude: institutions.longitude,
+      verificationEvidence: institutions.verificationEvidence,
+      websiteOrSocial: institutions.websiteOrSocial,
+      description: institutions.description,
+      status: institutions.status,
+      createdAt: institutions.createdAt,
+    })
     .from(institutions)
+    .leftJoin(users, eq(users.id, institutions.id))
     .where(eq(institutions.id, id))
     .limit(1);
   return institution ?? null;
@@ -314,8 +332,11 @@ export const approveInstitution = async (institutionId: string) => {
       .where(eq(users.id, institutionId));
 
     // Send approval email to institution
-    const template = emailTemplates.institutionApproved(institution.institutionName);
-    after(() => sendEmail({ to: institution.email, ...template }));
+    const institutionEmail = institution.email;
+    if (institutionEmail) {
+      const template = emailTemplates.institutionApproved(institution.institutionName);
+      after(() => sendEmail({ to: institutionEmail, ...template }));
+    }
 
     revalidatePath("/admin/institutions");
     return { success: true };

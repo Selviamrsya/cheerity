@@ -2,8 +2,8 @@ import { config } from "dotenv";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import { hashPassword } from "better-auth/crypto";
-import { eq } from "drizzle-orm";
-import { users, institutions, donations } from "../app/database/schema";
+import { eq, inArray } from "drizzle-orm";
+import { users, institutions, donations, donateRecords, account, sessions } from "../app/database/schema";
 
 config({ path: ".env.local" });
 
@@ -15,58 +15,66 @@ async function main() {
 
   const email = "selviamrsya@gmail.com";
   const passwordText = "KasihIbu1234";
-  
+
   // LANGSUNG MASUKKAN STRING, TANPA { password: ... } DAN TANPA .hash
   const hashedPassword = await hashPassword(passwordText);
 
-  // 1. Remove from users table if exists
+  // 1. Remove from users table if exists (cascades to institutions, but
+  // donations must be removed first because they have no cascade)
   const existingUser = await db.select().from(users).where(eq(users.email, email)).limit(1);
   if (existingUser.length > 0) {
-    console.log(`Found existing user with email ${email}, removing from users table to prevent auth collision...`);
+    console.log(`Found existing user with email ${email}, removing to prevent auth collision...`);
+    const oldDonations = await db
+      .select({ id: donations.id })
+      .from(donations)
+      .where(eq(donations.institutionId, existingUser[0].id));
+    const oldDonationIds = oldDonations.map((d) => d.id);
+    if (oldDonationIds.length > 0) {
+      await db.delete(donateRecords).where(inArray(donateRecords.donationId, oldDonationIds));
+      await db.delete(donations).where(inArray(donations.id, oldDonationIds));
+    }
+    await db.delete(donateRecords).where(eq(donateRecords.userId, existingUser[0].id));
+    await db.delete(sessions).where(eq(sessions.userId, existingUser[0].id));
+    await db.delete(account).where(eq(account.userId, existingUser[0].id));
     await db.delete(users).where(eq(users.email, email));
   }
 
-  // 2. Check if already exists in institutions table
-  const existingInst = await db.select().from(institutions).where(eq(institutions.email, email)).limit(1);
-  let instId: string;
+  // 2. Insert users + account + institutions rows (shared UUID)
+  const instId = crypto.randomUUID();
+  console.log("Inserting approved institution Yayasan Kasih Ibu...");
 
-  if (existingInst.length > 0) {
-    console.log(`Updating existing institution ${existingInst[0].institutionName} to APPROVED with new password...`);
-    instId = existingInst[0].id;
-    await db
-      .update(institutions)
-      .set({
-        institutionName: "Yayasan Kasih Ibu",
-        password: hashedPassword, // <-- Pakai variabel string biasa
-        status: "APPROVED",
-        phoneNumber: "081234567890",
-        city: "Jakarta Pusat",
-        state: "DKI Jakarta",
-        address: "Jl. Kasih Ibu No. 12, Gambir, Jakarta Pusat",
-        description: "Lembaga sosial dan panti asuhan yang mendistribusikan perlengkapan sekolah, pakaian, dan kebutuhan sehari-hari untuk anak-anak.",
-      })
-      .where(eq(institutions.id, instId));
-  } else {
-    console.log(`Inserting new approved institution Yayasan Kasih Ibu...`);
-    const [inserted] = await db
-      .insert(institutions)
-      .values({
-        institutionName: "Yayasan Kasih Ibu",
-        email,
-        password: hashedPassword, // <-- Pakai variabel string biasa
-        phoneNumber: "081234567890",
-        city: "Jakarta Pusat",
-        state: "DKI Jakarta",
-        zipCode: "10110",
-        address: "Jl. Kasih Ibu No. 12, Gambir, Jakarta Pusat",
-        description: "Lembaga sosial dan panti asuhan yang mendistribusikan perlengkapan sekolah, pakaian, dan kebutuhan sehari-hari untuk anak-anak.",
-        status: "APPROVED",
-        latitude: -6.1754,
-        longitude: 106.8272,
-      })
-      .returning();
-    instId = inserted.id;
-  }
+  await db.insert(users).values({
+    id: instId,
+    email,
+    password: hashedPassword,
+    name: "Yayasan Kasih Ibu",
+    fullName: "Yayasan Kasih Ibu",
+    role: "INSTITUTION",
+    status: "APPROVED",
+  });
+
+  await db.insert(account).values({
+    id: crypto.randomUUID(),
+    userId: instId,
+    accountId: instId,
+    providerId: "credential",
+    password: hashedPassword,
+  });
+
+  await db.insert(institutions).values({
+    id: instId,
+    userId: instId,
+    institutionName: "Yayasan Kasih Ibu",
+    phoneNumber: "081234567890",
+    city: "Jakarta Pusat",
+    state: "DKI Jakarta",
+    zipCode: "10110",
+    address: "Jl. Kasih Ibu No. 12, Gambir, Jakarta Pusat",
+    description: "Lembaga sosial dan panti asuhan yang mendistribusikan perlengkapan sekolah, pakaian, dan kebutuhan sehari-hari untuk anak-anak.",
+    status: "APPROVED",
+    latitude: -6.1754,
+    longitude: 106.8272,
+  });
 
   // 3. Make sure there are some donations associated with this institution so the dashboard has sample data
   const existingDonations = await db.select().from(donations).where(eq(donations.institutionId, instId)).limit(1);

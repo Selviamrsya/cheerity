@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { db } from "@/app/database/drizzle";
-import { institutions } from "@/app/database/schema";
-import { eq } from "drizzle-orm";
+import { users, account } from "@/app/database/schema";
+import { eq, and } from "drizzle-orm";
 import { hashPassword, verifyPassword } from "better-auth/crypto";
 import { rateLimit, RATE_LIMIT_ERROR } from "@/lib/ratelimit";
 
@@ -34,21 +34,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "New passwords do not match" }, { status: 400 });
     }
 
-    // Fetch current password hash
-    const [institution] = await db
-      .select({ password: institutions.password })
-      .from(institutions)
-      .where(eq(institutions.id, session.user.id))
+    // Fetch current password hash from the better-auth credential account
+    const [credentialAccount] = await db
+      .select({ password: account.password })
+      .from(account)
+      .where(
+        and(
+          eq(account.userId, session.user.id),
+          eq(account.providerId, "credential")
+        )
+      )
       .limit(1);
 
-    if (!institution) {
-      return NextResponse.json({ error: "Institution not found" }, { status: 404 });
+    if (!credentialAccount?.password) {
+      return NextResponse.json({ error: "Credential account not found" }, { status: 404 });
     }
 
     // Verify current password using better-auth
     const isCurrentPasswordValid = await verifyPassword({
         password: currentPassword,
-        hash: institution.password,
+        hash: credentialAccount.password,
     });
 
     if (!isCurrentPasswordValid) {
@@ -58,10 +63,22 @@ export async function POST(request: NextRequest) {
     // Hash new password using better-auth
     const hashedNewPassword = await hashPassword(newPassword);
 
+    // Update both the credential account (used by better-auth login)
+    // and the users.password mirror column
     await db
-      .update(institutions)
-      .set({ password: hashedNewPassword })
-      .where(eq(institutions.id, session.user.id));
+      .update(account)
+      .set({ password: hashedNewPassword, updatedAt: new Date() })
+      .where(
+        and(
+          eq(account.userId, session.user.id),
+          eq(account.providerId, "credential")
+        )
+      );
+
+    await db
+      .update(users)
+      .set({ password: hashedNewPassword, updatedAt: new Date() })
+      .where(eq(users.id, session.user.id));
 
     return NextResponse.json({ success: true });
   } catch (error) {

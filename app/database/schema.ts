@@ -96,8 +96,7 @@ export const institutions = pgTable("institutions", {
     .unique()
     .references(() => users.id, { onDelete: "cascade" }),
   institutionName: varchar("institution_name", { length: 255 }).notNull(),
-  email: text("email").notNull().unique(),
-  password: text("password").notNull(),
+  // email & password live in the base users/account tables (shared UUID)
   phoneNumber: varchar("phone_number", { length: 20 }),
   city: varchar("city", { length: 100 }),
   state: varchar("state", { length: 100 }),

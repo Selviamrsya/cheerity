@@ -97,20 +97,6 @@ export async function signInWithCredentials(email: string, password: string, req
       return { success: true, role: user[0].role };
     }
 
-    // Check institutions
-    const institution = await db
-      .select()
-      .from(institutions)
-      .where(eq(institutions.email, email))
-      .limit(1);
-
-    if (institution.length > 0) {
-      if (institution[0].status !== "APPROVED") {
-        return { success: false, error: "Institution account not approved" };
-      }
-      return { success: true, role: "INSTITUTION" };
-    }
-
     return { success: true, role: "USER" };
   } catch (error) {
     console.error("Signin error:", error);
@@ -215,8 +201,6 @@ export async function signUpInstitution(data: {
         id: instId,
         userId: instId,
         institutionName: data.institutionName,
-        email: data.email,
-        password: hashedPassword,
         phoneNumber: data.phoneNumber,
         city: data.city,
         state: data.state,

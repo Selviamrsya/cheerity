@@ -323,8 +323,6 @@ const seed = async () => {
           id: instId,
           userId: instId,
           institutionName: instData.institutionName,
-          email: instData.email,
-          password: hashedInstPassword,
           phoneNumber: instData.phoneNumber,
           city: instData.city,
           state: instData.state,

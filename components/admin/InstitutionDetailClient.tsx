@@ -26,7 +26,7 @@ interface InstitutionDetailClientProps {
   institution: {
     id: string;
     institutionName: string;
-    email: string;
+    email: string | null;
     phoneNumber: string | null;
     city: string | null;
     state: string | null;
@@ -313,7 +313,7 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
 
           <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
             <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Email</span>
-            <span className="text-[13.5px] font-medium text-text-main">{institution.email}</span>
+            <span className="text-[13.5px] font-medium text-text-main">{institution.email ?? "-"}</span>
           </div>
 
           <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">

@@ -50,6 +50,13 @@
       "when": 1791957720681,
       "tag": "0006_funny_stature",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794382336227,
+      "tag": "0007_needy_clea",
+      "breakpoints": true
     }
   ]
 }

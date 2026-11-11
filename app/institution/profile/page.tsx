@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react"; // Ditambahkan untuk icon tombol Back
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { db } from "@/app/database/drizzle";
-import { institutions } from "@/app/database/schema";
+import { institutions, users } from "@/app/database/schema";
 import { eq } from "drizzle-orm";
 import InstitutionProfileForm from "@/components/institution/InstitutionProfileForm";
 import { headers } from "next/headers";
@@ -21,7 +21,7 @@ const InstitutionProfilePage = async () => {
     .select({
       id: institutions.id,
       institutionName: institutions.institutionName,
-      email: institutions.email,
+      email: users.email,
       phoneNumber: institutions.phoneNumber,
       city: institutions.city,
       state: institutions.state,
@@ -33,6 +33,7 @@ const InstitutionProfilePage = async () => {
       status: institutions.status,
     })
     .from(institutions)
+    .leftJoin(users, eq(users.id, institutions.id))
     .where(eq(institutions.id, session.user.id))
     .limit(1);
 
@@ -76,7 +77,7 @@ const InstitutionProfilePage = async () => {
         </div>
 
         {/* Pemanggilan komponen form profil */}
-        <InstitutionProfileForm institution={institution} />
+        <InstitutionProfileForm institution={{ ...institution, email: institution.email ?? session.user.email ?? "" }} />
       </div>
     </div>
   );

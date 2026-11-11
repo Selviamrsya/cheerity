@@ -47,16 +47,6 @@ export const getUserRole = async (email: string) => {
     return { role: user[0].role, status: user[0].status };
   }
 
-  const institution = await db
-    .select()
-    .from(institutions)
-    .where(eq(institutions.email, email))
-    .limit(1);
-
-  if (institution.length > 0) {
-    return { role: "INSTITUTION", status: institution[0].status };
-  }
-
   return { role: "USER" };
 };
 
@@ -200,19 +190,6 @@ export const signUpInstitution = async (params: {
     return { success: false, error: EMAIL_TAKEN_ERROR };
   }
 
-  const existingInstitution = await db
-    .select()
-    .from(institutions)
-    .where(eq(institutions.email, email))
-    .limit(1);
-
-  if (existingInstitution.length > 0) {
-    return {
-      success: false,
-      error: "An institution with this email already exists.",
-    };
-  }
-
   // Use coordinates from address search if provided, otherwise geocode
   let coords = null;
   if (latitude != null && longitude != null) {
@@ -243,14 +220,23 @@ export const signUpInstitution = async (params: {
       return result;
     }
 
-    // Update institution with geocoded coordinates
-    await db
-      .update(institutions)
-      .set({
-        latitude: coords?.lat ?? null,
-        longitude: coords?.lng ?? null,
-      })
-      .where(eq(institutions.email, email));
+    // Update institution with geocoded coordinates (institutions share the
+    // users.id UUID, so look the user up by email to get the institution id)
+    const [createdUser] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
+
+    if (createdUser) {
+      await db
+        .update(institutions)
+        .set({
+          latitude: coords?.lat ?? null,
+          longitude: coords?.lng ?? null,
+        })
+        .where(eq(institutions.userId, createdUser.id));
+    }
 
     // Notify admin about new institution registration via email
     const adminEmail = process.env.ADMIN_EMAIL || "admin@cheerity.com";
