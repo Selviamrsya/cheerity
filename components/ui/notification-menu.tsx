@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Bell, CheckCheck } from "lucide-react";
 import { getNotifications, markNotificationRead } from "@/lib/actions/donation";
 import {
@@ -19,6 +20,7 @@ interface Notification {
   message: string;
   type: string;
   isRead: boolean;
+  relatedId: string | null;
   createdAt: Date | null;
 }
 
@@ -31,6 +33,7 @@ export function NotificationMenu({
   role: "USER" | "ADMIN" | "INSTITUTION";
   overlay?: boolean;
 }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const ref = useRef<HTMLDivElement>(null);
@@ -50,6 +53,18 @@ export function NotificationMenu({
     if (!open) {
       const data = await getNotifications(userId, role);
       setNotifications(data as Notification[]);
+    }
+  };
+
+  const handleClickNotification = async (n: Notification) => {
+    await handleMarkRead(n.id);
+    if (n.relatedId) {
+      setOpen(false);
+      if (role === "USER") {
+        router.push(`/history/${n.relatedId}`);
+      } else if (role === "INSTITUTION") {
+        router.push(`/institution/history/${n.relatedId}`);
+      }
     }
   };
 
@@ -113,7 +128,7 @@ export function NotificationMenu({
                 <NotifItem
                   key={n.id}
                   unread={!n.isRead}
-                  onClick={() => handleMarkRead(n.id)}
+                  onClick={() => handleClickNotification(n)}
                 >
                   <div className="text-[13px] font-semibold text-gray-900">
                     {n.title}

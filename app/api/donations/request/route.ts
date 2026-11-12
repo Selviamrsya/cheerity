@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { db } from "@/app/database/drizzle";
-import { donateRecords, donations } from "@/app/database/schema";
+import { donateRecords, donations, notifications } from "@/app/database/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { rateLimit, RATE_LIMIT_ERROR } from "@/lib/ratelimit";
@@ -41,8 +41,16 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Validate required fields
-    if (!donationId || !donorName || !phoneNumber || !address || !quantity || !donorPhoto || !deliveryMethod) {
+    if (!donationId || !donorName || !phoneNumber || !address || !donorPhoto || !deliveryMethod) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    // Validate quantity format (must be a positive whole number)
+    if (typeof quantity !== "number" || !Number.isInteger(quantity) || quantity <= 0) {
+      return NextResponse.json(
+        { error: "Quantity must be a positive whole number" },
+        { status: 400 }
+      );
     }
 
     // Check if donation exists and is active
@@ -54,6 +62,7 @@ export async function POST(request: NextRequest) {
         status: donations.status,
         deliveryMethods: donations.deliveryMethods,
         institutionId: donations.institutionId,
+        title: donations.title,
       })
       .from(donations)
       .where(eq(donations.id, donationId))
@@ -75,11 +84,6 @@ export async function POST(request: NextRequest) {
     // Validate delivery method
     if (!donation.deliveryMethods.includes(deliveryMethod)) {
       return NextResponse.json({ error: "Invalid delivery method" }, { status: 400 });
-    }
-
-    // Check if quantity is valid
-    if (quantity <= 0) {
-      return NextResponse.json({ error: "Invalid quantity" }, { status: 400 });
     }
 
     // Check if quantity exceeds remaining items
@@ -112,6 +116,16 @@ export async function POST(request: NextRequest) {
         status: "PENDING",
       })
       .returning();
+
+    // Notify the institution about the new request
+    await db.insert(notifications).values({
+      recipientId: donation.institutionId,
+      recipientType: "INSTITUTION",
+      title: "New Donation Request",
+      message: `A new donation request has been submitted for "${donation.title}".`,
+      type: "NEW_REQUEST",
+      relatedId: newRequest.id,
+    });
 
     revalidatePath("/donations/[id]");
     revalidatePath("/history");

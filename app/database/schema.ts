@@ -111,6 +111,7 @@ export const institutions = pgTable("institutions", {
   // Starts as PENDING until admin approves
   status: STATUS_ENUM("status").default("PENDING"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
 // Donations table - donation campaigns created by institutions
@@ -136,6 +137,7 @@ export const donations = pgTable("donations", {
   pickupMaxDistanceKm: integer("pickup_max_distance_km"),
   status: DONATION_CAMPAIGN_STATUS("status").default("ACTIVE"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
 // Donate records - individual donation requests submitted by users
@@ -189,6 +191,7 @@ export const notifications = pgTable("notifications", {
   // Related donate record ID
   relatedId: uuid("related_id"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
 // Sessions table for better-auth

@@ -157,10 +157,14 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
       newErrors.address = "Please update your address in profile first";
     }
 
-    if (!formData.quantity || parseInt(formData.quantity) <= 0) {
+    const qtyText = formData.quantity.trim();
+    const qtyNum = /^\d+$/.test(qtyText) ? parseInt(qtyText, 10) : NaN;
+    const remaining = donation.target - donation.collected;
+
+    if (!Number.isInteger(qtyNum) || qtyNum <= 0) {
       newErrors.quantity = "Please enter a valid quantity";
-    } else if (parseInt(formData.quantity) > (donation.target - donation.collected)) {
-      newErrors.quantity = `Maximum quantity is ${donation.target - donation.collected} items`;
+    } else if (qtyNum > remaining) {
+      newErrors.quantity = `Maximum quantity is ${remaining} items`;
     }
 
     if (!formData.photo.trim()) {
@@ -209,7 +213,7 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
           city: formData.city,
           state: formData.state,
           zipCode: formData.zipCode,
-          quantity: parseInt(formData.quantity),
+          quantity: parseInt(formData.quantity.trim(), 10),
           notes: formData.notes,
           donorPhoto: formData.photo, // URL string dari LocalImageUpload
           deliveryMethod: formData.deliveryMethod,
@@ -220,7 +224,7 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || "Failed to submit request");
+        throw new Error(error.error || error.message || "Failed to submit request");
       }
 
       router.push("/history");

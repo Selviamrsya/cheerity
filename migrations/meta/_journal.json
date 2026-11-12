@@ -57,6 +57,13 @@
       "when": 1794382336227,
       "tag": "0007_needy_clea",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1794449722724,
+      "tag": "0008_rare_the_hunter",
+      "breakpoints": true
     }
   ]
 }

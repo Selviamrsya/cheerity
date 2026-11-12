@@ -15,6 +15,7 @@ interface Notification {
   message: string;
   type: string;
   isRead: boolean;
+  relatedId: string | null;
   createdAt: Date | null;
 }
 

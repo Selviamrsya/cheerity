@@ -4,7 +4,7 @@ import config from "@/lib/config";
 import { rateLimit, RATE_LIMIT_ERROR } from "@/lib/ratelimit";
 
 // Allowed image MIME types
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const ALLOWED_TYPES = ["image/jpeg", "image/png"];
 const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 
 export async function POST(request: NextRequest) {

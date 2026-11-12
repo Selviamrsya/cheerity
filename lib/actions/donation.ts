@@ -260,6 +260,10 @@ export const submitDonationRequest = async (params: {
     return { success: false, error: RATE_LIMIT_ERROR };
   }
 
+  if (!Number.isInteger(params.quantity) || params.quantity <= 0) {
+    return { success: false, error: "Quantity must be a positive whole number." };
+  }
+
   try {
     const [donation] = await db
       .select({ status: donations.status, institutionId: donations.institutionId, title: donations.title })

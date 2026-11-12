@@ -15,6 +15,7 @@ interface Notification {
   message: string;
   type: string;
   isRead: boolean;
+  relatedId: string | null;
   createdAt: Date | null;
 }
 
@@ -70,6 +71,14 @@ const InstitutionNavbar: React.FC<InstitutionNavbarProps> = ({ session }) => {
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
     );
+  };
+
+  const handleClickNotification = async (n: Notification) => {
+    await handleMarkRead(n.id);
+    if (n.relatedId) {
+      setNotifOpen(false);
+      router.push(`/institution/history/${n.relatedId}`);
+    }
   };
 
   // Handler untuk Mark All as Read
@@ -172,7 +181,7 @@ const InstitutionNavbar: React.FC<InstitutionNavbarProps> = ({ session }) => {
                         className={`cursor-pointer border-b border-gray-100 px-4 py-3 transition-colors hover:bg-gray-50 ${
                           !n.isRead ? "bg-green-50/60 font-medium" : "bg-white"
                         }`}
-                        onClick={() => handleMarkRead(n.id)}
+                        onClick={() => handleClickNotification(n)}
                       >
                         <div className="text-[13px] font-semibold text-gray-900">{n.title}</div>
                         <div className="mt-0.5 text-xs text-gray-600">{n.message}</div>
