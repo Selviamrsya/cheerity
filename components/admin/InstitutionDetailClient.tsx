@@ -546,7 +546,7 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
                   type="button"
                   onClick={handleApprove}
                   disabled={isSubmitting}
-                  className="flex items-center justify-center gap-2 rounded-sm border-none bg-primary-800 px-4 py-2 font-inter text-[11px] font-semibold text-surface transition-colors hover:bg-primary-900 w-full"
+                  className="flex items-center justify-center gap-2 rounded-sm border-none bg-primary px-4 py-2 font-inter text-[11px] font-semibold text-surface transition-colors hover:bg-primary-900 w-full"
                 >
                   {isSubmitting && actionType === "approve" ? (
                     <>

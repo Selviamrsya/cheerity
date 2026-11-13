@@ -74,7 +74,7 @@ export function NavbarAvatarButton({
     <button
       type="button"
       className={cn(
-        "flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-primary-800 text-sm font-bold text-white",
+        "flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-primary text-sm font-bold text-white",
         className
       )}
       {...props}

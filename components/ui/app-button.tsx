@@ -12,7 +12,7 @@ const appButtonVariants = cva(
         outline:
           "w-full border border-outline bg-white px-6 py-2 text-[15px] text-on-surface hover:bg-bg-light",
         accept:
-          "inline-flex w-auto gap-2 rounded-md bg-primary-800 px-6 py-2.5 text-[12.5px] font-medium text-surface hover:bg-primary-900",
+          "inline-flex w-auto gap-2 rounded-md bg-primary px-6 py-2.5 text-[12.5px] font-medium text-surface hover:bg-primary-900",
         reject:
           "inline-flex w-auto rounded-md border border-danger-border bg-danger-bg px-6 py-2.5 text-[12.5px] font-medium text-danger hover:bg-danger-border",
         ghost:
