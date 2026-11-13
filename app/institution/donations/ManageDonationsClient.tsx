@@ -168,15 +168,15 @@ const ManageDonationsClient = ({ donations }: ManageDonationsClientProps) => {
               <tbody>
                 {safeDonations.map((d, index) => (
                   <tr key={d.id} className="transition-colors hover:bg-bg-light">
-                    <td data-label="No" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 font-medium">{index + 1}</td>
-                    <td data-label="Title" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 font-medium">{d.title}</td>
-                    <td data-label="Category" className="relative hidden border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 md:table-cell">
+                    <td data-label="No" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4 font-medium">{index + 1}</td>
+                    <td data-label="Title" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4 font-medium">{d.title}</td>
+                    <td data-label="Category" className="relative hidden border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4 md:table-cell">
                       {CATEGORY_LABELS[d.category] || d.category}
                     </td>
-                    <td data-label="Collected" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 font-bold text-green-900">
+                    <td data-label="Collected" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[11px] sm:px-4 font-bold text-green-900">
                       {d.collected} / {d.target}
                     </td>
-                    <td data-label="Delivery Option" className="relative hidden border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 md:table-cell">
+                    <td data-label="Delivery Option" className="relative hidden border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4 md:table-cell">
                       <div className="flex flex-wrap gap-1">
                         {d.deliveryMethods.slice(0, 3).map((m) => (
                           <span
@@ -193,7 +193,7 @@ const ManageDonationsClient = ({ donations }: ManageDonationsClientProps) => {
                         ))}
                       </div>
                     </td>
-                    <td data-label="Status" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4">
+                    <td data-label="Status" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4">
                       <span
                         className={`inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-0.5 font-inter text-xs font-semibold ${d.status === "ACTIVE"
                           ? "border border-success-border bg-success-bg text-success"
@@ -203,10 +203,10 @@ const ManageDonationsClient = ({ donations }: ManageDonationsClientProps) => {
                         {d.status}
                       </span>
                     </td>
-                    <td data-label="Date Created" className="relative hidden border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-xs md:table-cell">
+                    <td data-label="Date Created" className="relative hidden border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4 text-xs md:table-cell">
                       {mounted && d.createdAt ? new Date(d.createdAt).toLocaleDateString('en-US') : "-"}
                     </td>
-                    <td data-label="Cover" className="relative hidden border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 md:table-cell">
+                    <td data-label="Cover" className="relative hidden border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4 md:table-cell">
                       {mounted && d.cover ? (
                         <button
                           onClick={() => setImagePopup({ isOpen: true, imageUrl: d.cover })}
@@ -218,7 +218,7 @@ const ManageDonationsClient = ({ donations }: ManageDonationsClientProps) => {
                         <span className="text-gray-400 text-xs">No image</span>
                       )}
                     </td>
-                    <td data-label="Action" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4">
+                    <td data-label="Action" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4">
                       {mounted && (
                         <div className="relative">
                           {d.status === "COMPLETED" ? (
@@ -368,7 +368,7 @@ const ManageDonationsClient = ({ donations }: ManageDonationsClientProps) => {
             >
               <button
                 onClick={() => handleMarkAsDone(confirmModal.donationId!)}
-                className="font-medium text-white inline-flex w-auto items-center justify-center gap-2 rounded-sm bg-primary px-6 py-2 font-inter text-[15px] font-semibold text-white transition-all hover:bg-primary-dark disabled:opacity-50"
+                className="font-medium inline-flex w-auto items-center justify-center gap-2 rounded-sm bg-primary px-6 py-2 font-inter text-[15px] text-white transition-all hover:bg-primary-dark disabled:opacity-50"
                 style={{ width: "auto", padding: "10px 24px" }}
               >
                 Close Donation

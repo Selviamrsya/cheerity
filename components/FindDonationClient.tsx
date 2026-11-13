@@ -98,7 +98,7 @@ const FindDonationClient: React.FC<FindDonationClientProps> = ({
       {/* Search + Filters */}
       <div className="mt-2 mb-4 flex flex-wrap gap-2">
         {/* Search */}
-        <div className="flex min-w-[120px] md:min-w-[240px] flex-1 items-center gap-1.5 rounded-sm border border-outline bg-white px-3.5">
+        <div className="flex min-w-[120px] md:min-w-60 flex-1 items-center gap-1.5 rounded-sm border border-outline bg-white px-3.5">
           <Search className="h-4 w-4" style={{ color: "var(--color-on-surface-variant)" }} />
           <input
             type="text"

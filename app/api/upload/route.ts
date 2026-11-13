@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
 
     if (!ALLOWED_TYPES.includes(file.type)) {
       return NextResponse.json(
-        { error: "Only image files are allowed (JPEG, PNG, WebP, GIF)" },
+        { error: "Only image files are allowed (JPEG, PNG)" },
         { status: 400 }
       );
     }

@@ -132,25 +132,25 @@ const InstitutionHistoryClient: React.FC<InstitutionHistoryClientProps> = ({
               <tbody>
                 {filteredRecords.map((r, index) => (
                   <tr key={r.id} className="transition-colors hover:bg-bg-light">
-                    <td data-label="No" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 font-medium">{index + 1}</td>
-                    <td data-label="Donation Title" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 font-medium">{r.donationTitle}</td>
-                    <td data-label="Donor" className="relative hidden border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 md:table-cell">{ r.donorName}</td>
-                    <td data-label="Category" className="relative hidden border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 md:table-cell">
+                    <td data-label="No" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4 font-medium">{index + 1}</td>
+                    <td data-label="Donation Title" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4 font-medium">{r.donationTitle}</td>
+                    <td data-label="Donor" className="relative hidden border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4 md:table-cell">{ r.donorName}</td>
+                    <td data-label="Category" className="relative hidden border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4 md:table-cell">
                       {CATEGORY_LABELS[r.donationCategory] || r.donationCategory}
                     </td>
-                    <td data-label="Quantity" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 font-bold">
+                    <td data-label="Quantity" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4 font-bold">
                       {r.quantity} items
                     </td>
-                    <td data-label="Delivery Method" className="relative hidden border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 md:table-cell">
+                    <td data-label="Delivery Method" className="relative hidden border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4 md:table-cell">
                       {DELIVERY_METHOD_LABELS[r.deliveryMethod] || r.deliveryMethod}
                     </td>
-                    <td data-label="Status" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4">
+                    <td data-label="Status" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4">
                       {getStatusBadge(r.status)}
                     </td>
-                    <td data-label="Request Date" className="relative hidden border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-xs md:table-cell">
+                    <td data-label="Request Date" className="relative hidden border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4 text-xs md:table-cell">
                       {mounted && r.requestDate ? new Date(r.requestDate).toLocaleDateString('en-US') : "-"}
                     </td>
-                    <td data-label="Action" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4">
+                    <td data-label="Action" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4">
                       {mounted && (
                         <button
                           onClick={() => router.push(`/institution/history/${r.id}`)}

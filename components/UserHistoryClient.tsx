@@ -115,7 +115,7 @@ const UserHistoryClient: React.FC<UserHistoryClientProps> = ({ records }) => {
 
       {/* Search & Category Filter */}
       <div className="mt-2 mb-4 flex flex-wrap gap-2" style={{ marginBottom: "0px" }}>
-        <div className="flex min-w-[240px] flex-1 items-center gap-1.5 rounded-sm border border-outline bg-white px-3.5">
+        <div className="flex min-w-60 flex-1 items-center gap-1.5 rounded-sm border border-outline bg-white px-3.5">
           <Search className="h-4 w-4" style={{ color: "var(--color-on-surface-variant)" }} />
           <input
             type="text"
@@ -194,25 +194,25 @@ const UserHistoryClient: React.FC<UserHistoryClientProps> = ({ records }) => {
               <tbody>
                 {filteredRecords.map((r, index) => (
                   <tr key={r.id} className="transition-colors hover:bg-bg-light">
-                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 font-medium">{index + 1}</td>
-                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 font-bold">{r.donationTitle}</td>
-                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4">{r.institutionName}</td>
-                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4">
+                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4 font-medium">{index + 1}</td>
+                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4 font-bold">{r.donationTitle}</td>
+                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4">{r.institutionName}</td>
+                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4">
                       {CATEGORY_LABELS[r.donationCategory] || r.donationCategory}
                     </td>
-                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 font-bold">
+                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4 font-bold">
                       {r.quantity} items
                     </td>
-                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4">
+                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4">
                       {DELIVERY_METHOD_LABELS[r.deliveryMethod] || r.deliveryMethod}
                     </td>
-                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4">
+                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4">
                       {getStatusBadge(r.status)}
                     </td>
-                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-xs">
+                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4 text-xs">
                       {formatDate(r.requestDate)}
                     </td>
-                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4">
+                    <td className="relative border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4">
                       <div className="flex gap-2 items-center">
                         <button
                           onClick={() => router.push(`/history/${r.id}`)}
@@ -234,8 +234,8 @@ const UserHistoryClient: React.FC<UserHistoryClientProps> = ({ records }) => {
       {/* Cancel Donation Modal */}
       {cancelId && (
         <>
-          <div className="fixed inset-0 z-[999] bg-black/50 backdrop-blur-xs" onClick={() => setCancelId(null)} />
-          <div className="fixed top-1/2 left-1/2 z-[1000] max-h-[90vh] w-[90%] max-w-[440px] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl bg-white p-5 shadow-xl sm:p-7">
+          <div className="fixed inset-0 z-999 bg-black/50 backdrop-blur-xs" onClick={() => setCancelId(null)} />
+          <div className="fixed top-1/2 left-1/2 z-1000max-h-[90vh] w-[90%] max-w-110 -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl bg-white p-5 shadow-xl sm:p-7">
             <div className="mb-5 flex items-center justify-between border-b border-outline pb-3">
               <h2 className="text-lg font-bold sm:text-xl">Cancel Donation</h2>
               <button onClick={() => setCancelId(null)} className="cursor-pointer border-none bg-transparent text-lg text-on-surface-variant">✕</button>

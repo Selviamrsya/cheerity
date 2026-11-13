@@ -13,7 +13,7 @@ export const formHintClass = "mt-1 text-xs text-on-surface-variant";
 export const formGroupClass = "flex flex-col gap-1.5";
 
 export const formErrorBoxClass =
-  "rounded-md border border-red-200 bg-red-50 px-4 py-3 text-[13px] text-red-800";
+  "rounded-md border border-red-200 bg-red-50 px-4 py-3 text-[11px] text-red-800";
 
 export const pageContainerClass = {
   default:
@@ -30,7 +30,7 @@ export const filterSelectClass =
   "w-full cursor-pointer appearance-none rounded-sm border border-outline bg-white bg-[length:14px_14px] bg-[position:right_10px_center] bg-no-repeat py-2.5 pr-8 pl-3.5 text-sm text-on-surface outline-none transition-colors hover:border-slate-300 focus:border-primary sm:w-auto bg-[url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")]";
 
 export const filterSearchWrapClass =
-  "flex min-w-0 flex-1 items-center gap-1.5 rounded-sm border border-outline bg-white px-3.5 sm:min-w-[240px]";
+  "flex min-w-0 flex-1 items-center gap-1.5 rounded-sm border border-outline bg-white px-3.5 sm:min-w-60";
 
 export const pageTitleClass =
   "font-poppins text-[22px] font-medium tracking-tight text-text-main md:text-[26px]";
@@ -54,7 +54,7 @@ export const tableHeadClass =
 export const tableRowClass = "transition-colors hover:bg-bg-light";
 
 export const tableCellClass =
-  "border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4";
+  "border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4";
 
 export const tableCardClass =
   "relative flex flex-col px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)] sm:px-6 md:px-9";

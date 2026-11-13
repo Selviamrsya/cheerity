@@ -157,7 +157,7 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ session }) => {
                 </div>
                 <div className="max-h-70 overflow-y-auto">
                   {notifications.length === 0 ? (
-                    <p className="p-6 text-center text-[13px] text-gray-400">No notifications yet</p>
+                    <p className="p-6 text-center text-[11px] text-gray-400">No notifications yet</p>
                   ) : (
                     notifications.map((n) => (
                       <div
@@ -167,7 +167,7 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ session }) => {
                         }`}
                         onClick={() => handleMarkRead(n.id)}
                       >
-                        <div className="text-[13px] font-semibold text-gray-900">{n.title}</div>
+                        <div className="text-[11px] font-semibold text-gray-900">{n.title}</div>
                         <div className="mt-0.5 text-xs text-gray-600">{n.message}</div>
                         {/* Ikon checklist <Check /> sudah dihapus */}
                       </div>

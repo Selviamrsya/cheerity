@@ -120,7 +120,7 @@ export function NotificationMenu({
           </NotifHeader>
           <div className="max-h-[280px] overflow-y-auto">
             {notifications.length === 0 ? (
-              <p className="p-6 text-center text-[13px] text-gray-400">
+              <p className="p-6 text-center text-[11px] text-gray-400">
                 No notifications yet
               </p>
             ) : (
@@ -130,7 +130,7 @@ export function NotificationMenu({
                   unread={!n.isRead}
                   onClick={() => handleClickNotification(n)}
                 >
-                  <div className="text-[13px] font-semibold text-gray-900">
+                  <div className="text-[11px] font-semibold text-gray-900">
                     {n.title}
                   </div>
                   <div className="mt-0.5 text-xs text-gray-600">{n.message}</div>

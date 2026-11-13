@@ -15,7 +15,7 @@ const map = {
   "form-error": "mt-0.5 text-xs text-red-600",
   "form-group": "mb-5 flex flex-col gap-1.5",
   "form-error-box":
-    "rounded-md border border-red-200 bg-red-50 px-4 py-3 text-[13px] text-red-800",
+    "rounded-md border border-red-200 bg-red-50 px-4 py-3 text-[11px] text-red-800",
   "form-login-group": "flex flex-col gap-1.5",
   "btn btn-primary btn-auto":
     "inline-flex w-auto items-center justify-center gap-2 rounded-sm bg-primary px-6 py-2 font-inter text-[15px] font-semibold text-white transition-all hover:bg-primary-dark disabled:opacity-50",
@@ -72,7 +72,7 @@ const map = {
   "institution-stat-value":
     "font-poppins text-2xl font-extrabold leading-tight tracking-tight text-text-main",
   "chart-card":
-    "mb-4 flex min-h-[400px] w-full flex-col rounded-sm border border-card-border bg-surface p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]",
+    "mb-4 flex min-h-100 w-full flex-col rounded-sm border border-card-border bg-surface p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]",
   "chart-header":
     "flex flex-col gap-2 border-b border-card-border pb-2 sm:flex-row sm:items-center sm:justify-between",
   "chart-title-group": "flex items-center gap-2.5",
@@ -112,7 +112,7 @@ const map = {
   "admin-search-icon":
     "pointer-events-none absolute left-2.5 h-[15px] w-[15px] shrink-0 text-text-muted",
   "admin-search-input":
-    "w-full rounded-md border border-outline bg-bg-light py-2 pr-3 pl-8 font-inter text-[13px] text-text-main outline-none transition-all placeholder:text-text-muted focus:border-primary-800 focus:ring-2 focus:ring-primary-800/10",
+    "w-full rounded-md border border-outline bg-bg-light py-2 pr-3 pl-8 font-inter text-[11px] text-text-main outline-none transition-all placeholder:text-text-muted focus:border-primary-800 focus:ring-2 focus:ring-primary-800/10",
   "admin-table-header":
     "flex flex-col border-b border-card-border sm:flex-row sm:items-center sm:justify-between",
   "institution-table-header":
@@ -132,9 +132,9 @@ const map = {
   "admin-table-tr": "transition-colors hover:bg-bg-light",
   "institution-table-tr": "transition-colors hover:bg-bg-light",
   "admin-table-td":
-    "border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4",
+    "border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4",
   "institution-table-td":
-    "relative border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4",
+    "relative border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4",
   "admin-table-icon-btn":
     "inline-flex items-center justify-center bg-transparent p-1.5 text-text-muted shadow-none transition-colors hover:bg-transparent hover:text-primary-800",
   "institution-table-icon-btn":
@@ -172,11 +172,11 @@ const map = {
     "cursor-pointer rounded-md border border-danger-border bg-danger-bg px-6 py-2.5 font-inter text-[12.5px] font-medium text-danger transition-all hover:bg-danger-border",
   "institution-banner-title": "mb-1 font-poppins text-lg font-medium",
   "institution-banner-desc":
-    "font-inter text-[13px] leading-relaxed text-primary-100",
+    "font-inter text-[11px] leading-relaxed text-primary-100",
   "institution-banner-btn":
-    "inline-flex items-center gap-2 self-start rounded-md bg-surface px-[22px] py-2.5 font-inter text-[13px] font-medium whitespace-nowrap text-primary-900 no-underline shadow-sm transition-all hover:bg-primary-50 sm:self-auto",
+    "inline-flex items-center gap-2 self-start rounded-md bg-surface px-[22px] py-2.5 font-inter text-[11px] font-medium whitespace-nowrap text-primary-900 no-underline shadow-sm transition-all hover:bg-primary-50 sm:self-auto",
   "modal-backdrop":
-    "fixed inset-0 z-[999] bg-black/50 backdrop-blur-xs",
+    "fixed inset-0 z-999 bg-black/50 backdrop-blur-xs",
   "modal-container":
     "fixed top-1/2 left-1/2 z-1000 max-h-[90vh] w-[90%] max-w-[600px] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl bg-white p-5 shadow-xl sm:p-7",
   "modal-header":
@@ -212,9 +212,9 @@ const map = {
   "notif-list": "max-h-[280px] overflow-y-auto",
   "notif-item":
     "cursor-pointer border-b border-gray-100 px-4 py-3 transition-colors hover:bg-gray-50 data-[unread=true]:bg-green-50",
-  "notif-item-title": "text-[13px] font-semibold text-gray-900",
+  "notif-item-title": "text-[11px] font-semibold text-gray-900",
   "notif-item-message": "mt-0.5 text-xs text-gray-600",
-  "notif-empty": "p-6 text-center text-[13px] text-gray-400",
+  "notif-empty": "p-6 text-center text-[11px] text-gray-400",
   "profile-dropdown":
     "absolute top-12 right-0 z-50 w-65 overflow-hidden rounded-sm border border-outline bg-surface p-2 shadow-lg",
   "profile-dropdown-header":
@@ -236,7 +236,7 @@ const map = {
   "site-footer-logo": "[&_img]:brightness-0 [&_img]:invert",
   "site-footer-tagline": "mt-3 font-poppins text-sm font-light text-green-200",
   "horizontal-line": "w-full border-t-2 border-surface",
-  "site-footer-copy": "mt-2 text-[13px] text-green-100",
+  "site-footer-copy": "mt-2 text-[11px] text-green-100",
   "find-donation-header": "mt-2 mb-3 md:mt-4",
   "find-donation-title":
     "font-poppins text-[22px] font-bold text-on-surface md:text-[26px]",
@@ -244,7 +244,7 @@ const map = {
     "max-w-[560px] text-[15px] text-on-surface-variant",
   "find-donation-filters": "mt-2 mb-4 flex flex-wrap gap-2",
   "find-donation-search":
-    "flex min-w-[240px] flex-1 items-center gap-1.5 rounded-sm border border-outline bg-white px-3.5",
+    "flex min-w-60 flex-1 items-center gap-1.5 rounded-sm border border-outline bg-white px-3.5",
   "find-donation-search-input":
     "w-full border-none py-2.5 text-sm outline-none",
   "find-donation-select":
@@ -273,7 +273,7 @@ const map = {
   "donation-card_progress-fill":
     "relative h-full rounded-full bg-primary transition-[width] duration-1000",
   "donation-card_progress-text":
-    "mt-1.5 ml-1 text-[13px] text-on-surface-variant",
+    "mt-1.5 ml-1 text-[11px] text-on-surface-variant",
   "donate-now-button":
     "mt-3 block w-full rounded-sm bg-primary px-4 py-2.5 text-center text-sm font-semibold text-white no-underline transition-all hover:bg-primary-dark hover:-translate-y-px",
   "donation-overview-section":
@@ -294,7 +294,7 @@ const map = {
     "flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-bold text-surface",
   "donation-overview-institution-name": "text-sm font-semibold text-gray-700",
   "donation-overview-location":
-    "ml-0.5 flex items-center gap-1 text-[13px] text-gray-600",
+    "ml-0.5 flex items-center gap-1 text-[11px] text-gray-600",
   "donation-overview-delivery": "ml-1",
   "delivery-badge":
     "mt-2 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700",

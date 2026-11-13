@@ -107,7 +107,7 @@ export default function DonationsActivityChart({ data }: DonationsActivityChartP
   };
 
   return (
-    <div className="mb-4 flex min-h-[400px] w-full flex-col rounded-sm border border-card-border bg-surface p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+    <div className="mb-4 flex min-h-100 w-full flex-col rounded-sm border border-card-border bg-surface p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
       {/* Header with Title & Filter Buttons */}
       <div className="flex flex-col gap-2 border-b border-card-border pb-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -153,8 +153,8 @@ export default function DonationsActivityChart({ data }: DonationsActivityChartP
         >
           <defs>
             <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--color-primary-800)" stopOpacity="0.25" />
-              <stop offset="100%" stopColor="var(--color-primary-800)" stopOpacity="0.0" />
+              <stop offset="0%" stopColor="var(--color-primary)" stopOpacity="0.25" />
+              <stop offset="100%" stopColor="var(--color-primary)" stopOpacity="0.0" />
             </linearGradient>
           </defs>
 

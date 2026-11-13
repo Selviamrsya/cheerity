@@ -138,7 +138,7 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
             </div>
 
             {submitError && (
-              <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-[13px] text-red-800">{submitError}</p>
+              <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-[11px] text-red-800">{submitError}</p>
             )}
 
             <div className="mt-4 mb-2 text-sm font-bold tracking-wide text-primary-900 uppercase">Personal Information</div>

@@ -35,7 +35,7 @@ interface PieChartProps {
 const DEFAULT_COLORS = [
   "var(--color-primary)",      
   "var(--color-primary-600)",
-  "var(--color-primary-800)",   
+  "var(--color-primary)",   
   "var(--color-primary-900)",     
 ];
 
@@ -109,7 +109,7 @@ export default function PieChart({ data, title, subtitle, colors = DEFAULT_COLOR
     const hasData = filteredData && filteredData.length > 0 && total > 0;
 
     return (
-      <div className="mb-4 flex min-h-[400px] w-full flex-col rounded-sm border border-card-border bg-surface p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] h-full">
+      <div className="mb-4 flex min-h-100 w-full flex-col rounded-sm border border-card-border bg-surface p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] h-full">
         <div className="flex flex-col gap-2 border-b border-card-border pb-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="font-poppins text-lg font-medium text-text-main">{title}</h2>
@@ -147,7 +147,7 @@ export default function PieChart({ data, title, subtitle, colors = DEFAULT_COLOR
         {hasData ? (
           <div className="flex flex-col items-center flex-1 justify-center">
             <div className="relative shrink-0">
-              <svg width="240" height="240" viewBox="0 0 240 240" className="w-[240px] h-[240px]">
+              <svg width="240" height="240" viewBox="0 0 240 240" className="w-60 h-60">
                 {slices.length === 1 ? (
                   /* JIKA DATA CUMA 1: Render <circle> penuh */
                   <circle
@@ -222,7 +222,7 @@ export default function PieChart({ data, title, subtitle, colors = DEFAULT_COLOR
   }
 
   return (
-    <div className="mb-4 flex min-h-[400px] w-full flex-col rounded-sm border border-card-border bg-surface p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+    <div className="mb-4 flex min-h-100 w-full flex-col rounded-sm border border-card-border bg-surface p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
       <div className="flex flex-col gap-2 border-b border-card-border pb-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="font-poppins text-lg font-medium text-text-main">{title}</h2>

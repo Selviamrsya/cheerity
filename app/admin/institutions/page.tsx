@@ -65,7 +65,7 @@ const AdminInstitutionsPage: React.FC<AdminInstitutionsPageProps> = async ({
             Review registration requests, verification evidence, and eligibility of social institutions.
           </p>
         </div>
-        <Suspense fallback={<div className="relative flex min-w-[250px] max-w-[420px] items-center" />}>
+        <Suspense fallback={<div className="relative flex min-w-62.5 max-w-105 items-center" />}>
           <InstitutionSearchBar />
         </Suspense>
       </div>
@@ -105,13 +105,13 @@ const AdminInstitutionsPage: React.FC<AdminInstitutionsPageProps> = async ({
             <tbody>
               {institutionsList.map((inst, idx) => (
                 <tr key={inst.id} className="transition-colors hover:bg-bg-light">
-                  <td data-label="No" className="border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-center text-xs text-gray-500 font-medium">
+                  <td data-label="No" className="border-b border-card-border px-3 py-3.5 font-inter text-[11px] sm:px-4 text-center text-xs text-gray-500 font-medium">
                     {idx + 1}
                   </td>
-                  <td data-label="Name" className="border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 font-bold">
+                  <td data-label="Name" className="border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4 font-bold">
                     {inst.institutionName}
                   </td>
-                  <td data-label="Request Date" className="hidden border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-xs text-gray-600 font-medium md:table-cell">
+                  <td data-label="Request Date" className="hidden border-b border-card-border px-3 py-3.5 font-inter text-[11px] sm:px-4 text-xs text-gray-600 font-medium md:table-cell">
                     {inst.createdAt
                       ? new Date(inst.createdAt).toLocaleDateString("id-ID", {
                           day: "numeric",
@@ -120,13 +120,13 @@ const AdminInstitutionsPage: React.FC<AdminInstitutionsPageProps> = async ({
                         })
                       : "-"}
                   </td>
-                  <td data-label="Location" className="hidden border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-xs text-gray-600 md:table-cell">
+                  <td data-label="Location" className="hidden border-b border-card-border px-3 py-3.5 font-inter text-[11px]  sm:px-4 text-xs text-gray-600 md:table-cell">
                     {[inst.city, inst.state].filter(Boolean).join(", ") || "-"}
                   </td>
-                  <td data-label="Status" className="border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4">
+                  <td data-label="Status" className="border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4">
                     {getBadge(inst.status)}
                   </td>
-                  <td data-label="See More" className="border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-center">
+                  <td data-label="See More" className="border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4 text-center">
                     <Link
                       href={`/admin/institutions/${inst.id}`}
                       className="inline-flex items-center justify-center bg-transparent p-1.5 text-text-muted shadow-none transition-colors hover:bg-transparent hover:text-primary-800"

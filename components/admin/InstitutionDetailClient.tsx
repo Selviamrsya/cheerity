@@ -546,7 +546,7 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
                   type="button"
                   onClick={handleApprove}
                   disabled={isSubmitting}
-                  className="flex items-center justify-center gap-2 rounded-sm border-none bg-primary-800 px-4 py-2 font-inter text-[13px] font-semibold text-surface transition-colors hover:bg-primary-900 w-full"
+                  className="flex items-center justify-center gap-2 rounded-sm border-none bg-primary-800 px-4 py-2 font-inter text-[11px] font-semibold text-surface transition-colors hover:bg-primary-900 w-full"
                 >
                   {isSubmitting && actionType === "approve" ? (
                     <>
@@ -561,7 +561,7 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
                   type="button"
                   onClick={() => setRejectModalOpen(true)}
                   disabled={isSubmitting}
-                  className="cursor-pointer flex items-center justify-center rounded-md bg-red-600 px-4 py-2 font-inter text-[13px] font-semibold text-white transition-all hover:bg-red-700 active:bg-red-800 disabled:opacity-50 w-full"
+                  className="cursor-pointer flex items-center justify-center rounded-md bg-red-600 px-4 py-2 font-inter text-[11px] font-semibold text-white transition-all hover:bg-red-700 active:bg-red-800 disabled:opacity-50 w-full"
                 >
                   Reject
                 </button>

@@ -226,7 +226,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
           <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Full Name</span>
           <div className="flex items-center justify-between gap-4 w-full">
             {!isEditing ? (
-              <span className="text-[13.5px] font-medium text-text-main font-bold">{user.fullName}</span>
+              <span className="text-[13.5px] font-medium text-text-main">{user.fullName}</span>
             ) : (
               <input
                 type="text"
@@ -402,7 +402,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
             <button
               onClick={handleSave}
               disabled={isSaving}
-              className="font-medium text-white inline-flex w-auto items-center justify-center gap-2 rounded-sm bg-primary px-6 py-2 font-inter text-[15px] font-semibold text-white transition-all hover:bg-primary-dark disabled:opacity-50"
+              className="font-medium text-white inline-flex w-auto items-center justify-center gap-2 rounded-sm bg-primary px-6 py-2 font-inter text-[15px] transition-all hover:bg-primary-dark disabled:opacity-50"
               style={{ width: "auto", padding: "10px 24px" }}
             >
               {isSaving ? (

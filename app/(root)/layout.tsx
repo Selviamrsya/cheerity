@@ -31,7 +31,7 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
 
           <div className="w-full border-t-2 border-surface" />
 
-          <p className="mt-2 text-[13px] text-white">
+          <p className="mt-2 text-[11px] text-white">
             &copy; 2026 Cheerity &mdash; All rights reserved
           </p>
         </div>

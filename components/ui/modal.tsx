@@ -8,7 +8,7 @@ export function ModalBackdrop({
   return (
     <div
       className={cn(
-        "fixed inset-0 z-[999] bg-black/50 backdrop-blur-xs",
+        "fixed inset-0 z-999 bg-black/50 backdrop-blur-xs",
         className
       )}
       {...props}

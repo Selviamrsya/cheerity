@@ -13,7 +13,7 @@ interface LocalImageUploadProps {
 }
 
 // Keep in sync with validation in app/api/upload/route.ts
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const ALLOWED_TYPES = ["image/jpeg", "image/png"];
 const MAX_SIZE_MB = 5;
 const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
 
@@ -33,7 +33,7 @@ const LocalImageUpload: React.FC<LocalImageUploadProps> = ({
     if (!file) return;
 
     if (!ALLOWED_TYPES.includes(file.type)) {
-      setUploadError("Only JPEG, PNG, WebP, or GIF images are allowed.");
+      setUploadError("Only JPEG, PNG images are allowed.");
       if (inputRef.current) inputRef.current.value = "";
       return;
     }
@@ -119,12 +119,12 @@ const LocalImageUpload: React.FC<LocalImageUploadProps> = ({
           <div className="flex flex-col items-center gap-2 p-4">
             <ImagePlus className="h-8 w-8 text-gray-400" />
             <p className="text-sm font-medium text-on-surface">{placeholder}</p>
-            <p className="text-xs text-gray-400">JPEG, PNG, WebP, GIF up to 5MB</p>
+            <p className="text-xs text-gray-400">JPEG, PNG up to 5MB</p>
           </div>
         )}
       </div>
       <p className="mt-1 text-xs text-gray-400">
-        Maksimal {MAX_SIZE_MB}MB • Format: JPEG, PNG, WebP, GIF
+        Maksimal {MAX_SIZE_MB}MB • Format: JPEG, PNG
       </p>
       {(uploadError || error) && (
         <p className="mt-0.5 text-xs text-red-600">{uploadError || error}</p>

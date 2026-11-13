@@ -99,7 +99,7 @@ const DonationCard: React.FC<DonationCardProps> = ({
               style={{ width: `${progress}%` }}
             />
           </div>
-          <p className="mt-1 ml-1 text-[9px] text-on-surface-variant sm:mt-1.5 sm:text-[11px] lg:text-[13px]">
+          <p className="mt-1 ml-1 text-[9px] text-on-surface-variant sm:mt-1.5 sm:text-[11px] lg:text-[11px]">
             <strong>{collected}</strong> / {target} items collected
           </p>
         </div>

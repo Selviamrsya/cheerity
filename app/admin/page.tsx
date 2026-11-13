@@ -152,7 +152,7 @@ const AdminDashboardPage = async () => {
               subtitle="By category percentage"
             />
           ) : (
-            <div className="mb-4 flex min-h-[400px] w-full flex-col rounded-sm border border-card-border bg-surface p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+            <div className="mb-4 flex min-h-100 w-full flex-col rounded-sm border border-card-border bg-surface p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
               <div className="flex flex-col gap-2 border-b border-card-border pb-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h2 className="font-poppins text-lg font-medium text-text-main">Donation Categories</h2>
@@ -220,13 +220,13 @@ const AdminDashboardPage = async () => {
               <tbody>
                 {displayInstitutions.map((inst, idx) => (
                   <tr key={inst.id} className="transition-colors hover:bg-bg-light">
-                    <td data-label="No" className="border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-center text-xs text-gray-500 font-medium">
+                    <td data-label="No" className="border-b border-card-border px-3 py-3.5 font-inter text-[11px]  sm:px-4 text-center text-xs font-medium">
                       {idx + 1}
                     </td>
-                    <td data-label="Name" className="border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 font-bold">
+                    <td data-label="Name" className="border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4 font-bold">
                       {inst.institutionName}
                     </td>
-                    <td data-label="Request Date" className="hidden border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-xs text-gray-600 font-medium md:table-cell">
+                    <td data-label="Request Date" className="hidden border-b border-card-border px-3 py-3.5 font-inter text-[11px]  sm:px-4 text-xs text-gray-600 font-medium md:table-cell">
                       {inst.createdAt
                         ? new Date(inst.createdAt).toLocaleDateString("id-ID", {
                           day: "numeric",
@@ -235,13 +235,13 @@ const AdminDashboardPage = async () => {
                         })
                         : "-"}
                     </td>
-                    <td data-label="Location" className="hidden border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-xs text-gray-600 md:table-cell">
+                    <td data-label="Location" className="hidden border-b border-card-border px-3 py-3.5 font-inter text-[11px] sm:px-4 text-xs text-gray-600 md:table-cell">
                       {[inst.city, inst.state].filter(Boolean).join(", ") || "-"}
                     </td>
-                    <td data-label="Status" className="border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4">
+                    <td data-label="Status" className="border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4">
                       {getStatusBadge(inst.status)}
                     </td>
-                    <td data-label="See More" className="border-b border-card-border px-3 py-3.5 font-inter text-[13px] text-text-main sm:px-4 text-center">
+                    <td data-label="See More" className="border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4 text-center">
                       <Link
                         href={`/admin/institutions/${inst.id}`}
                         className="inline-flex items-center justify-center bg-transparent p-1.5 text-text-muted shadow-none transition-colors hover:bg-transparent hover:text-primary-800"

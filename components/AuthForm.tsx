@@ -285,7 +285,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
               type="button"
               onClick={() => setRole("user")}
               className={cn(
-                "flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-sm border-none px-3 py-2 text-[13px] font-medium transition-all",
+                "flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-sm border-none px-3 py-2 text-[11px] font-medium transition-all",
                 role === "user"
                   ? "bg-white font-semibold text-primary-800 shadow-sm"
                   : "bg-transparent text-gray-600 hover:text-gray-900"
@@ -298,7 +298,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
               type="button"
               onClick={() => setRole("institution")}
               className={cn(
-                "flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-sm border-none px-3 py-2 text-[13px] font-medium transition-all",
+                "flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-sm border-none px-3 py-2 text-[11px] font-medium transition-all",
                 role === "institution"
                   ? "bg-white font-semibold text-primary-800 shadow-sm"
                   : "bg-transparent text-gray-600 hover:text-gray-900"

@@ -79,7 +79,7 @@ const DonationOverview: React.FC<DonationOverviewProps> = ({
             </div>
           )}
           {/* Category badge overlaid top-left */}
-          <span className="absolute top-5 left-[18px] rounded-full bg-primary-800/90 px-3 py-1 text-xs font-semibold text-white backdrop-blur-xs">
+          <span className="absolute top-5 left-[18px] rounded-full bg-primary/90 px-3 py-1 text-xs font-semibold text-white backdrop-blur-xs">
             {CATEGORY_LABELS[category] ?? category}
           </span>
         </div>
@@ -97,7 +97,7 @@ const DonationOverview: React.FC<DonationOverviewProps> = ({
           </div>
 
           {/* Location + distance */}
-          <div className="ml-0.5 flex flex-wrap items-center gap-1 text-[13px] text-gray-600">
+          <div className="ml-0.5 flex flex-wrap items-center gap-1 text-[11px] text-gray-600">
             <MapPin className="h-4 w-4" style={{ color: "var(--color-primary)" }} />
             <span>{location || "Location not set"}</span>
             {displayDistance != null && (
@@ -124,7 +124,7 @@ const DonationOverview: React.FC<DonationOverviewProps> = ({
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <p className="mt-1.5 ml-1 text-[13px] text-on-surface-variant">
+            <p className="mt-1.5 ml-1 text-[11px] text-on-surface-variant">
               <strong>{collected}</strong> / {target} items collected
             </p>
           </div>

@@ -173,7 +173,7 @@ const InstitutionNavbar: React.FC<InstitutionNavbarProps> = ({ session }) => {
                 </div>
                 <div className="max-h-[280px] overflow-y-auto">
                   {notifications.length === 0 ? (
-                    <p className="p-6 text-center text-[13px] text-gray-400">No notifications yet</p>
+                    <p className="p-6 text-center text-[11px] text-gray-400">No notifications yet</p>
                   ) : (
                     notifications.map((n) => (
                       <div
@@ -183,7 +183,7 @@ const InstitutionNavbar: React.FC<InstitutionNavbarProps> = ({ session }) => {
                         }`}
                         onClick={() => handleClickNotification(n)}
                       >
-                        <div className="text-[13px] font-semibold text-gray-900">{n.title}</div>
+                        <div className="text-[11px] font-semibold text-gray-900">{n.title}</div>
                         <div className="mt-0.5 text-xs text-gray-600">{n.message}</div>
                         {/* Ikon checklist sudah dihapus */}
                       </div>

@@ -32,7 +32,7 @@ export default function InstitutionSearchBar() {
         placeholder="Search institution..."
         defaultValue={searchParams.get("q") ?? ""}
         onChange={(e) => handleSearch(e.target.value)}
-        className="w-full rounded-md border border-outline bg-bg-light py-2 pr-3 pl-8 font-inter text-[13px] text-text-main outline-none transition-all placeholder:text-text-muted focus:border-primary-800 focus:ring-2 focus:ring-primary-800/10"
+        className="w-full rounded-md border border-outline bg-bg-light py-2 pr-3 pl-8 font-inter text-[11px] text-text-main outline-none transition-all placeholder:text-text-muted focus:border-primary-800 focus:ring-2 focus:ring-primary-800/10"
       />
     </div>
   );
