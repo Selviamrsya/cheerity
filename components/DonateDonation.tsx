@@ -19,7 +19,6 @@ interface DonateDonationProps {
   defaultPhone: string;
   defaultCity: string;
   defaultState: string;
-  defaultZipCode: string;
   defaultAddress: string;
   availableDeliveryMethods: string[];
 }
@@ -31,7 +30,6 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
   defaultPhone,
   defaultCity,
   defaultState,
-  defaultZipCode,
   defaultAddress,
   availableDeliveryMethods,
 }) => {
@@ -48,7 +46,6 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
       phoneNumber: defaultPhone,
       city: defaultCity,
       state: defaultState,
-      zipCode: defaultZipCode,
       address: defaultAddress,
       quantity: 1,
       notes: "",
@@ -143,7 +140,7 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
 
             <div className="mt-4 mb-2 text-sm font-bold tracking-wide text-primary-900 uppercase">Personal Information</div>
             <div className="mb-5 flex flex-col gap-1.5">
-              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Phone Number</label>
+              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Phone Number <span className="text-red-500">*</span></label>
               <input
                 type="tel"
                 {...form.register("phoneNumber")}
@@ -158,19 +155,17 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
             <LocationFields
               stateValue={form.watch("state")}
               cityValue={form.watch("city")}
-              zipCodeValue={form.watch("zipCode")}
               onStateChange={(val) => form.setValue("state", val, { shouldValidate: true })}
               onCityChange={(val) => form.setValue("city", val, { shouldValidate: true })}
-              onZipCodeChange={(val) => form.setValue("zipCode", val, { shouldValidate: true })}
               errors={{
                 state: form.formState.errors.state?.message,
                 city: form.formState.errors.city?.message,
-                zipCode: form.formState.errors.zipCode?.message,
               }}
+              required={{ state: true, city: true }}
             />
 
             <div className="mb-5 flex flex-col gap-1.5">
-              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Full Address</label>
+              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Full Address <span className="text-red-500">*</span></label>
               <input type="text" {...form.register("address")} className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400" />
               {form.formState.errors.address && <p className="mt-0.5 text-xs text-red-600">{form.formState.errors.address.message}</p>}
             </div>
@@ -178,7 +173,7 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
             <div className="mt-4 mb-2 text-sm font-bold tracking-wide text-primary-900 uppercase">Donation Information</div>
 
             <div className="mb-5 flex flex-col gap-1.5">
-              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Quantity (max 10,000)</label>
+              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Quantity (max 10,000) <span className="text-red-500">*</span></label>
               <input
                 type="number"
                 min={1}
@@ -212,7 +207,7 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
             </div>
 
             <div className="mb-5 flex flex-col gap-1.5">
-              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Delivery Method</label>
+              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Delivery Method <span className="text-red-500">*</span></label>
               <select {...form.register("deliveryMethod")} 
               className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400">
                 {availableDeliveryMethods.map((m) => (

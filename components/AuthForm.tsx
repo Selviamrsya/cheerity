@@ -28,7 +28,6 @@ import VerificationUpload from "./VerificationUpload";
 import LocationFields from "./LocationFields";
 import AddressSearch from "./AddressSearch";
 import MapPicker from "./MapPicker";
-import { ReverseGeocodeResult } from "@/lib/reverseGeocoding";
 
 interface AuthFormProps {
   type: "SIGN_IN" | "SIGN_UP";
@@ -62,7 +61,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
     resolver: zodResolver(signUpUserSchema),
     defaultValues: {
       name: "", birthdate: "", phonenumber: "", email: "",
-      city: "", state: "", zipCode: "", address: "",
+      city: "", state: "", address: "",
       latitude: undefined,
       longitude: undefined,
       password: "", confirmPassword: "",
@@ -73,7 +72,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
     resolver: zodResolver(signUpInstitutionSchema),
     defaultValues: {
       institutionName: "", email: "", phoneNumber: "", city: "",
-      state: "", zipCode: "", address: "", verificationEvidence: "",
+      state: "", address: "", verificationEvidence: "",
       latitude: undefined,
       longitude: undefined,
       websiteOrSocial: "", description: "", password: "", confirmPassword: "",
@@ -140,9 +139,9 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
     setIsSubmitting(true);
     setFormError(null);
 
-    // Validate that a valid address is selected (less strict - allow if city/state are filled)
-    if (!userAddressValid && (!data.city || !data.state)) {
-      setFormError("Please search and select a valid address from the suggestions, or provide city and state.");
+    // Address search is required - user must select a valid address for location services
+    if (!userAddressValid) {
+      setFormError("Please search and select a valid address from the suggestions.");
       setIsSubmitting(false);
       return;
     }
@@ -165,9 +164,9 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
     setIsSubmitting(true);
     setFormError(null);
 
-    // Validate that a valid address is selected (less strict - allow if city/state are filled)
-    if (!institutionAddressValid && (!data.city || !data.state)) {
-      setFormError("Please search and select a valid address from the suggestions, or provide city and state.");
+    // Address search is required - user must select a valid address for location services
+    if (!institutionAddressValid) {
+      setFormError("Please search and select a valid address from the suggestions.");
       setIsSubmitting(false);
       return;
     }
@@ -191,14 +190,11 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
     street: string;
     city: string;
     state: string;
-    zipCode: string;
     latitude: number;
     longitude: number;
   }) => {
+    // Province/city are NOT auto-filled - the user picks them manually.
     userSignUpForm.setValue("address", data.fullAddress, { shouldValidate: true });
-    userSignUpForm.setValue("city", data.city, { shouldValidate: true });
-    userSignUpForm.setValue("state", data.state, { shouldValidate: true });
-    userSignUpForm.setValue("zipCode", data.zipCode, { shouldValidate: true });
     userSignUpForm.setValue("latitude", data.latitude, { shouldValidate: true });
     userSignUpForm.setValue("longitude", data.longitude, { shouldValidate: true });
     setUserAddressValid(true);
@@ -209,33 +205,14 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
     street: string;
     city: string;
     state: string;
-    zipCode: string;
     latitude: number;
     longitude: number;
   }) => {
+    // Province/city are NOT auto-filled - the user picks them manually.
     institutionSignUpForm.setValue("address", data.fullAddress, { shouldValidate: true });
-    institutionSignUpForm.setValue("city", data.city, { shouldValidate: true });
-    institutionSignUpForm.setValue("state", data.state, { shouldValidate: true });
-    institutionSignUpForm.setValue("zipCode", data.zipCode, { shouldValidate: true });
     institutionSignUpForm.setValue("latitude", data.latitude, { shouldValidate: true });
     institutionSignUpForm.setValue("longitude", data.longitude, { shouldValidate: true });
     setInstitutionAddressValid(true);
-  };
-
-  const handleUserMapAddressChange = (addressData: ReverseGeocodeResult) => {
-    if (addressData.success) {
-      userSignUpForm.setValue("state", addressData.state, { shouldValidate: true });
-      userSignUpForm.setValue("city", addressData.city, { shouldValidate: true });
-      userSignUpForm.setValue("zipCode", addressData.zipCode, { shouldValidate: true });
-    }
-  };
-
-  const handleInstitutionMapAddressChange = (addressData: ReverseGeocodeResult) => {
-    if (addressData.success) {
-      institutionSignUpForm.setValue("state", addressData.state, { shouldValidate: true });
-      institutionSignUpForm.setValue("city", addressData.city, { shouldValidate: true });
-      institutionSignUpForm.setValue("zipCode", addressData.zipCode, { shouldValidate: true });
-    }
   };
 
   // Success screen after registration
@@ -320,12 +297,12 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
         {isSignIn && (
           <form onSubmit={signInForm.handleSubmit(handleSignInSubmit)} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <FormLabel>Email</FormLabel>
+              <FormLabel>Email <span className="text-red-500">*</span></FormLabel>
               <input type="email" placeholder="Enter your email address" {...signInForm.register("email")} className={formControlClass} />
               {signInForm.formState.errors.email && <p className="mt-0.5 text-xs text-red-600">{signInForm.formState.errors.email.message}</p>}
             </div>
             <div className="flex flex-col gap-1.5">
-              <FormLabel>Password</FormLabel>
+              <FormLabel>Password <span className="text-red-500">*</span></FormLabel>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
@@ -348,7 +325,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
         {!isSignIn && role === "user" && (
           <form onSubmit={userSignUpForm.handleSubmit(handleUserSignUpSubmit)} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <FormLabel>Name</FormLabel>
+              <FormLabel>Name <span className="text-red-500">*</span></FormLabel>
               <input type="text" placeholder="Enter your full name" {...userSignUpForm.register("name")} className={formControlClass} />
               {userSignUpForm.formState.errors.name && <p className="mt-0.5 text-xs text-red-600">{userSignUpForm.formState.errors.name.message}</p>}
             </div>
@@ -361,13 +338,13 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
 
             <div className="flex flex-col gap-1.5">
               <FormLabel>Phone Number <span className="text-red-500">*</span></FormLabel>
-              <input type="tel" placeholder="e.g. 081234567890" {...userSignUpForm.register("phonenumber")} className={formControlClass} required />
+              <input type="tel" placeholder="e.g. 081212345678" {...userSignUpForm.register("phonenumber")} className={formControlClass} required />
               {userSignUpForm.formState.errors.phonenumber && <p className="mt-0.5 text-xs text-red-600">{userSignUpForm.formState.errors.phonenumber.message}</p>}
             </div>
 
 
             <div className="flex flex-col gap-1.5">
-              <FormLabel>Email</FormLabel>
+              <FormLabel>Email <span className="text-red-500">*</span></FormLabel>
               <input type="email" placeholder="Enter your email address" {...userSignUpForm.register("email")} className={formControlClass} />
               {userSignUpForm.formState.errors.email && <p className="mt-0.5 text-xs text-red-600">{userSignUpForm.formState.errors.email.message}</p>}
             </div>
@@ -379,29 +356,27 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
                 onClear={() => setUserAddressValid(false)}
               />
               <p className="mt-1 text-xs text-on-surface-variant">
-                Search and select your address from the suggestions. This is required for location services. You can edit the location fields after selection.
+                Search and select your address from the suggestions. This is required for location services. Province and city below are selected manually.
               </p>
             </div>
             <LocationFields
               stateValue={userSignUpForm.watch("state")}
               cityValue={userSignUpForm.watch("city")}
-              zipCodeValue={userSignUpForm.watch("zipCode")}
               onStateChange={(val) => userSignUpForm.setValue("state", val, { shouldValidate: true })}
               onCityChange={(val) => userSignUpForm.setValue("city", val, { shouldValidate: true })}
-              onZipCodeChange={(val) => userSignUpForm.setValue("zipCode", val, { shouldValidate: true })}
               errors={{
                 state: userSignUpForm.formState.errors.state?.message,
                 city: userSignUpForm.formState.errors.city?.message,
-                zipCode: userSignUpForm.formState.errors.zipCode?.message,
               }}
               readOnly={false}
+              required={{ state: true, city: true }}
             />
 
             {userSignUpForm.watch("latitude") && userSignUpForm.watch("longitude") && (
               <div className="flex flex-col gap-1.5">
                 <FormLabel>Fine-tune Location</FormLabel>
                 <p className="text-xs text-on-surface-variant">
-                  Drag the red marker to adjust the exact location for precise pickup/delivery. Address fields will auto-update based on the pin location.
+                  Drag the red marker to set the exact coordinates for precise pickup/delivery.
                 </p>
                 <MapPicker
                   latitude={userSignUpForm.watch("latitude") || 0}
@@ -410,7 +385,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
                     userSignUpForm.setValue("latitude", lat, { shouldValidate: true });
                     userSignUpForm.setValue("longitude", lng, { shouldValidate: true });
                   }}
-                  onAddressChange={handleUserMapAddressChange}
                   height="300px"
                 />
               </div>
@@ -430,7 +404,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <FormLabel>Password</FormLabel>
+              <FormLabel>Password <span className="text-red-500">*</span></FormLabel>
               <div className="relative">
                 <input type={showPassword ? "text" : "password"} placeholder="Enter your password (min 6 characters)" {...userSignUpForm.register("password")} className={formControlClass} style={{ paddingRight: "44px" }} />
                 <PasswordToggle visible={showPassword} onToggle={() => setShowPassword(!showPassword)} />
@@ -438,7 +412,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
               {userSignUpForm.formState.errors.password && <p className="mt-0.5 text-xs text-red-600">{userSignUpForm.formState.errors.password.message}</p>}
             </div>
             <div className="flex flex-col gap-1.5">
-              <FormLabel>Confirm Password</FormLabel>
+              <FormLabel>Confirm Password <span className="text-red-500">*</span></FormLabel>
               <div className="relative">
                 <input type={showConfirmPassword ? "text" : "password"} placeholder="Enter your password again" {...userSignUpForm.register("confirmPassword")} className={formControlClass} style={{ paddingRight: "44px" }} />
                 <PasswordToggle visible={showConfirmPassword} onToggle={() => setShowConfirmPassword(!showConfirmPassword)} />
@@ -456,20 +430,20 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
         {!isSignIn && role === "institution" && (
           <form onSubmit={institutionSignUpForm.handleSubmit(handleInstitutionSignUpSubmit)} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <FormLabel>Institution Name</FormLabel>
+              <FormLabel>Institution Name <span className="text-red-500">*</span></FormLabel>
               <input type="text" placeholder="Enter institution name" {...institutionSignUpForm.register("institutionName")} className={formControlClass} />
               {institutionSignUpForm.formState.errors.institutionName && <p className="mt-0.5 text-xs text-red-600">{institutionSignUpForm.formState.errors.institutionName.message}</p>}
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <FormLabel>Institution Email</FormLabel>
+              <FormLabel>Institution Email <span className="text-red-500">*</span></FormLabel>
               <input type="email" placeholder="official@institution.com" {...institutionSignUpForm.register("email")} className={formControlClass} />
               {institutionSignUpForm.formState.errors.email && <p className="mt-0.5 text-xs text-red-600">{institutionSignUpForm.formState.errors.email.message}</p>}
             </div>
 
             <div className="flex flex-col gap-1.5">
               <FormLabel>Phone Number <span className="text-red-500">*</span></FormLabel>
-              <input type="tel" placeholder="e.g. 021-12345678" {...institutionSignUpForm.register("phoneNumber")} className={formControlClass} required />
+              <input type="tel" placeholder="e.g. 081212345678" {...institutionSignUpForm.register("phoneNumber")} className={formControlClass} required />
               {institutionSignUpForm.formState.errors.phoneNumber && <p className="mt-0.5 text-xs text-red-600">{institutionSignUpForm.formState.errors.phoneNumber.message}</p>}
             </div>
 
@@ -480,29 +454,27 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
                 onClear={() => setInstitutionAddressValid(false)}
               />
               <p className="text-xs text-on-surface-variant">
-                Search and select your institution address from the suggestions. This is required for location services.
+                Search and select your institution address from the suggestions. This is required for location services. Province and city below are selected manually.
               </p>
             </div>
             <LocationFields
               stateValue={institutionSignUpForm.watch("state")}
               cityValue={institutionSignUpForm.watch("city")}
-              zipCodeValue={institutionSignUpForm.watch("zipCode")}
               onStateChange={(val) => institutionSignUpForm.setValue("state", val, { shouldValidate: true })}
               onCityChange={(val) => institutionSignUpForm.setValue("city", val, { shouldValidate: true })}
-              onZipCodeChange={(val) => institutionSignUpForm.setValue("zipCode", val, { shouldValidate: true })}
               errors={{
                 state: institutionSignUpForm.formState.errors.state?.message,
                 city: institutionSignUpForm.formState.errors.city?.message,
-                zipCode: institutionSignUpForm.formState.errors.zipCode?.message,
               }}
               readOnly={false}
+              required={{ state: true, city: true }}
             />
 
             {institutionSignUpForm.watch("latitude") && institutionSignUpForm.watch("longitude") && (
               <div className="flex flex-col gap-1.5">
                 <FormLabel>Fine-tune Location</FormLabel>
                 <p className="text-xs text-on-surface-variant">
-                  Drag the red marker to adjust the exact location for precise pickup/delivery. Address fields will auto-update based on the pin location.
+                  Drag the red marker to set the exact coordinates for precise pickup/delivery.
                 </p>
                 <MapPicker
                   latitude={institutionSignUpForm.watch("latitude") || 0}
@@ -511,7 +483,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
                     institutionSignUpForm.setValue("latitude", lat, { shouldValidate: true });
                     institutionSignUpForm.setValue("longitude", lng, { shouldValidate: true });
                   }}
-                  onAddressChange={handleInstitutionMapAddressChange}
                   height="300px"
                 />
               </div>
@@ -532,7 +503,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
 
             <div className="flex flex-col gap-1.5">
               <FormLabel className="flex items-center justify-between">
-                <span>Verification Evidence</span>
+                <span>Verification Evidence <span className="text-red-500">*</span></span>
                 <span className="flex items-center gap-1 text-xs font-normal text-primary-700">
                   <ShieldCheck className="h-3.5 w-3.5" /> Required for Admin Review
                 </span>
@@ -553,7 +524,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <FormLabel>Short Description</FormLabel>
+              <FormLabel>Short Description <span className="text-red-500">*</span></FormLabel>
               <textarea
                 rows={4}
                 placeholder="Describe your institution's mission and programs..."
@@ -564,7 +535,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <FormLabel>Password</FormLabel>
+              <FormLabel>Password <span className="text-red-500">*</span></FormLabel>
               <div className="relative">
                 <input type={showPassword ? "text" : "password"} placeholder="Enter your password (min 6 characters)" {...institutionSignUpForm.register("password")} className={formControlClass} style={{ paddingRight: "44px" }} />
                 <PasswordToggle visible={showPassword} onToggle={() => setShowPassword(!showPassword)} />
@@ -572,7 +543,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
               {institutionSignUpForm.formState.errors.password && <p className="mt-0.5 text-xs text-red-600">{institutionSignUpForm.formState.errors.password.message}</p>}
             </div>
             <div className="flex flex-col gap-1.5">
-              <FormLabel>Confirm Password</FormLabel>
+              <FormLabel>Confirm Password <span className="text-red-500">*</span></FormLabel>
               <div className="relative">
                 <input type={showConfirmPassword ? "text" : "password"} placeholder="Enter your password again" {...institutionSignUpForm.register("confirmPassword")} className={formControlClass} style={{ paddingRight: "44px" }} />
                 <PasswordToggle visible={showConfirmPassword} onToggle={() => setShowConfirmPassword(!showConfirmPassword)} />

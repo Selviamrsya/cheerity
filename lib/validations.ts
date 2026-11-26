@@ -11,12 +11,15 @@ export const signUpUserSchema = z
   .object({
     name: z.string().min(2, "Full name must be at least 2 characters"),
     birthdate: z.string().min(1, "Date of birth is required"),
-    phonenumber: z.string().min(8, "Phone number must be at least 8 digits"),
+    phonenumber: z.string().min(10, "Phone number must be at least 10 digits"),
     email: z.string().email("Invalid email address"),
     city: z.string().min(2, "City is required"),
     state: z.string().min(2, "State/Province is required"),
-    zipCode: z.string().min(3, "Zip Code is required"),
-    address: z.string().min(5, "Address is required"),
+    address: z
+      .string()
+      .min(5, "Address must be at least 5 characters")
+      .or(z.literal(""))
+      .optional(),
     latitude: z.number().optional(),
     longitude: z.number().optional(),
     password: z.string().min(6, "Password must be at least 6 characters"),
@@ -34,11 +37,14 @@ export const signUpInstitutionSchema = z
       .string()
       .min(2, "Institution name must be at least 2 characters"),
     email: z.string().email("Invalid email address"),
-    phoneNumber: z.string().min(8, "Phone number must be at least 8 digits"),
+    phoneNumber: z.string().min(10, "Phone number must be at least 10 digits"),
     city: z.string().min(2, "City is required"),
     state: z.string().min(2, "State/Province is required"),
-    zipCode: z.string().min(3, "Zip Code is required"),
-    address: z.string().min(5, "Address is required"),
+    address: z
+      .string()
+      .min(5, "Address must be at least 5 characters")
+      .or(z.literal(""))
+      .optional(),
     latitude: z.number().optional(),
     longitude: z.number().optional(),
     verificationEvidence: z
@@ -98,10 +104,9 @@ export const donationUploadSchema = z
 export const donationRequestSchema = z.object({
   // Personal info
   donorName: z.string().min(2, "Name is required").optional(),
-  phoneNumber: z.string().min(8, "Phone number is required"),
+  phoneNumber: z.string().min(10, "Phone number is required"),
   city: z.string().min(2, "City is required"),
   state: z.string().min(2, "State is required"),
-  zipCode: z.string().min(3, "Zip code is required"),
   address: z.string().min(5, "Address is required"),
   // Donation info
   quantity: z.coerce.number().int().positive().min(1).max(10000),

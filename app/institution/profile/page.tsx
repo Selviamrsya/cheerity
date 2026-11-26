@@ -25,7 +25,6 @@ const InstitutionProfilePage = async () => {
       phoneNumber: institutions.phoneNumber,
       city: institutions.city,
       state: institutions.state,
-      zipCode: institutions.zipCode,
       address: institutions.address,
       verificationEvidence: institutions.verificationEvidence,
       websiteOrSocial: institutions.websiteOrSocial,

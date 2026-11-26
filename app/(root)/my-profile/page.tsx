@@ -27,7 +27,6 @@ const ProfilePage = async () => {
       address: donatur.address,
       city: donatur.city,
       state: donatur.state,
-      zipCode: donatur.zipCode,
       latitude: donatur.latitude,
       longitude: donatur.longitude,
       role: users.role,

@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { institutionName, email, phoneNumber, websiteOrSocial, description, address, city, state, zipCode } = body;
+    const { institutionName, email, phoneNumber, websiteOrSocial, description, address, city, state } = body;
 
     // Validate required fields
     if (!institutionName || institutionName.trim() === "") {
@@ -86,9 +86,6 @@ export async function POST(request: NextRequest) {
     }
     if (state !== undefined) {
       updateData.state = state.trim() || null;
-    }
-    if (zipCode !== undefined) {
-      updateData.zipCode = zipCode.trim() || null;
     }
 
     await db

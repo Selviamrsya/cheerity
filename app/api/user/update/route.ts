@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { fullName, email, phoneNumber, birthdate, address, city, state, zipCode, latitude, longitude } = body;
+    const { fullName, email, phoneNumber, birthdate, address, city, state, latitude, longitude } = body;
 
     // Validate required fields
     if (!fullName || fullName.trim() === "") {
@@ -84,7 +84,6 @@ export async function POST(request: NextRequest) {
         address: address || null,
         city: city || null,
         state: state || null,
-        zipCode: zipCode || null,
         latitude: resolvedLat,
         longitude: resolvedLng,
         updatedAt: new Date(),

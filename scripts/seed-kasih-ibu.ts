@@ -68,7 +68,6 @@ async function main() {
     phoneNumber: "081234567890",
     city: "Jakarta Pusat",
     state: "DKI Jakarta",
-    zipCode: "10110",
     address: "Jl. Kasih Ibu No. 12, Gambir, Jakarta Pusat",
     description: "Lembaga sosial dan panti asuhan yang mendistribusikan perlengkapan sekolah, pakaian, dan kebutuhan sehari-hari untuk anak-anak.",
     status: "APPROVED",

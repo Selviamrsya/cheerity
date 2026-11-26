@@ -116,10 +116,11 @@ export default function EditAddressModal({ isOpen, onClose }: EditAddressModalPr
               cityValue={city}
               onStateChange={(val) => setState(val)}
               onCityChange={(val) => setCity(val)}
+              required={{ state: true, city: true }}
             />
 
             <div className="mb-5 flex flex-col gap-1.5">
-              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Alamat Lengkap</label>
+              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Alamat Lengkap <span className="text-red-500">*</span></label>
               <textarea
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}

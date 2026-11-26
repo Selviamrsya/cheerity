@@ -1,13 +1,12 @@
 /**
  * Reverse Geocoding Utility
- * Converts latitude/longitude to address components (province, city, zip code)
+ * Converts latitude/longitude to address components (province, city)
  * Uses OpenStreetMap Nominatim API
  */
 
 export interface ReverseGeocodeResult {
   state: string;
   city: string;
-  zipCode: string;
   fullAddress: string;
   success: boolean;
 }
@@ -16,7 +15,7 @@ export interface ReverseGeocodeResult {
  * Perform reverse geocoding using OpenStreetMap Nominatim API
  * @param latitude - Latitude coordinate
  * @param longitude - Longitude coordinate
- * @returns Address components (state, city, zip code, full address)
+ * @returns Address components (state, city, full address)
  */
 export async function reverseGeocode(
   latitude: number,
@@ -49,7 +48,6 @@ export async function reverseGeocode(
     // Extract address components for Indonesia
     let state = '';
     let city = '';
-    let zipCode = '';
 
     // State/Province - try multiple common keys
     state =
@@ -69,9 +67,6 @@ export async function reverseGeocode(
       address.municipality ||
       '';
 
-    // Zip code
-    zipCode = address.postcode || '';
-
     // For Indonesia, sometimes state is in "county" or "region"
     if (!state && address.county) {
       state = address.county;
@@ -86,7 +81,6 @@ export async function reverseGeocode(
     return {
       state,
       city,
-      zipCode,
       fullAddress: data.display_name || '',
       success: true,
     };
@@ -95,7 +89,6 @@ export async function reverseGeocode(
     return {
       state: '',
       city: '',
-      zipCode: '',
       fullAddress: '',
       success: false,
     };

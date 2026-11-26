@@ -22,7 +22,6 @@ interface UserSignUpCredentials {
   email: string;
   city: string;
   state: string;
-  zipCode: string;
   address: string;
   password: string;
 }
@@ -33,7 +32,6 @@ interface InstitutionSignUpCredentials {
   phoneNumber: string;
   city: string;
   state: string;
-  zipCode: string;
   address: string;
   verificationEvidence: string;
   hasPickupService: string;

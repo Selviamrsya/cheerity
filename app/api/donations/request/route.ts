@@ -31,7 +31,6 @@ export async function POST(request: NextRequest) {
       address,
       city,
       state,
-      zipCode,
       quantity,
       notes,
       donorPhoto,
@@ -40,8 +39,8 @@ export async function POST(request: NextRequest) {
       estimatedPickupTime,
     } = body;
 
-    // Validate required fields
-    if (!donationId || !donorName || !phoneNumber || !address || !donorPhoto || !deliveryMethod) {
+    // Validate required fields (donorName is optional)
+    if (!donationId || !phoneNumber || !address || !donorPhoto || !deliveryMethod) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
@@ -101,12 +100,11 @@ export async function POST(request: NextRequest) {
       .values({
         userId: session.user.id,
         donationId,
-        donorName,
+        donorName: donorName?.trim() || null,
         phoneNumber,
         address,
         city,
         state,
-        zipCode,
         quantity,
         notes,
         donorPhoto,

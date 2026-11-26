@@ -21,7 +21,6 @@ interface DonationOverviewProps {
   institutionName: string;
   institutionCity: string | null;
   institutionState: string | null;
-  institutionZipCode: string | null;
   institutionAddress: string | null;
   institutionDescription: string | null;
   institutionWebsite: string | null;
@@ -44,7 +43,6 @@ const DonationOverview: React.FC<DonationOverviewProps> = ({
   institutionName,
   institutionCity,
   institutionState,
-  institutionZipCode,
   institutionAddress,
   institutionDescription,
   institutionWebsite,
@@ -203,7 +201,7 @@ const DonationOverview: React.FC<DonationOverviewProps> = ({
               </div>
 
               {/* Institution Address Section */}
-              {(institutionAddress || institutionCity || institutionState || institutionZipCode) && (
+              {(institutionAddress || institutionCity || institutionState) && (
                 <div className="mt-4 pt-4 border-t border-gray-200">
                   <h4 className="font-semibold font-poppins text-gray-900 text-sm mb-3">Institution Address</h4>
                   <div className="bg-gray-50 rounded-sm p-4 space-y-2">
@@ -223,11 +221,6 @@ const DonationOverview: React.FC<DonationOverviewProps> = ({
                       <span className="text-gray-600 font-medium text-sm w-28 flex-shrink-0">State/Province</span>
                       <span className="text-gray-400">:</span>
                       <span className="font-semibold text-gray-900 text-sm">{institutionState || "-"}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-600 font-medium text-sm w-28 flex-shrink-0">ZIP Code</span>
-                      <span className="text-gray-400">:</span>
-                      <span className="font-semibold text-gray-900 text-sm">{institutionZipCode || "-"}</span>
                     </div>
                   </div>
                 </div>

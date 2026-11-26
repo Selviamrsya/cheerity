@@ -16,7 +16,6 @@ import {
 export const STATUS_ENUM = pgEnum("status", [
   "PENDING",
   "APPROVED",
-  "REJECTED",
 ]);
 
 export const ROLE_ENUM = pgEnum("role", ["USER", "INSTITUTION", "ADMIN"]);
@@ -73,7 +72,6 @@ export const donatur = pgTable("donatur", {
   phoneNumber: varchar("phone_number", { length: 20 }),
   city: varchar("city", { length: 100 }),
   state: varchar("state", { length: 100 }),
-  zipCode: varchar("zip_code", { length: 20 }),
   address: text("address"),
   // Coordinates geocoded from address via Nominatim
   latitude: doublePrecision("latitude"),
@@ -100,7 +98,6 @@ export const institutions = pgTable("institutions", {
   phoneNumber: varchar("phone_number", { length: 20 }),
   city: varchar("city", { length: 100 }),
   state: varchar("state", { length: 100 }),
-  zipCode: varchar("zip_code", { length: 20 }),
   address: text("address"),
   // Coordinates geocoded from address via Nominatim
   latitude: doublePrecision("latitude"),
@@ -154,7 +151,6 @@ export const donateRecords = pgTable("donate_records", {
   phoneNumber: varchar("phone_number", { length: 20 }),
   city: varchar("city", { length: 100 }),
   state: varchar("state", { length: 100 }),
-  zipCode: varchar("zip_code", { length: 20 }),
   address: text("address"),
   // Donation details
   quantity: integer("quantity").notNull(),

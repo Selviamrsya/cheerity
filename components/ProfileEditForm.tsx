@@ -5,7 +5,6 @@ import { Edit2, Loader2, Eye, EyeOff } from "lucide-react";
 import LocationFields from "@/components/LocationFields";
 import AddressSearch from "@/components/AddressSearch";
 import MapPicker from "@/components/MapPicker";
-import { ReverseGeocodeResult } from "@/lib/reverseGeocoding";
 
 interface User {
   id: string;
@@ -16,7 +15,6 @@ interface User {
   address: string | null;
   city: string | null;
   state: string | null;
-  zipCode: string | null;
 }
 
 interface ProfileEditFormProps {
@@ -33,7 +31,6 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
     address: user.address || "",
     city: user.city || "",
     state: user.state || "",
-    zipCode: user.zipCode || "",
     street: "",
     detailedAddress: "",
     latitude: null as number | null,
@@ -60,11 +57,11 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
     setIsSaving(true);
     setMessage(null);
 
-    // Validate that a valid address is selected
+    // Validate that a valid address is selected (required for location services)
     if (!addressValid) {
       setMessage({
         type: "error",
-        text: "Please search and select a valid address from the suggestions for location services.",
+        text: "Please search and select a valid address from the suggestions.",
       });
       setIsSaving(false);
       return;
@@ -112,32 +109,18 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
     street: string;
     city: string;
     state: string;
-    zipCode: string;
     latitude: number;
     longitude: number;
   }) => {
+    // Province/city are NOT auto-filled - the user picks them manually.
     setFormData(prev => ({
       ...prev,
       address: data.fullAddress,
       street: data.street,
-      city: data.city,
-      state: data.state,
-      zipCode: data.zipCode,
       latitude: data.latitude,
       longitude: data.longitude,
     }));
     setAddressValid(true);
-  };
-
-  const handleMapAddressChange = (addressData: ReverseGeocodeResult) => {
-    if (addressData.success) {
-      setFormData(prev => ({
-        ...prev,
-        state: addressData.state,
-        city: addressData.city,
-        zipCode: addressData.zipCode,
-      }));
-    }
   };
 
   const handleCancel = () => {
@@ -149,7 +132,6 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
       address: user.address || "",
       city: user.city || "",
       state: user.state || "",
-      zipCode: user.zipCode || "",
       street: "",
       detailedAddress: "",
       latitude: null,
@@ -204,7 +186,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
       <div>
         {/* Email */}
         <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
-          <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Email</span>
+          <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Email <span className="text-red-500">*</span></span>
           <div className="flex items-center justify-between gap-4 w-full">
             {!isEditing ? (
               <span className="text-[13.5px] font-medium text-text-main">{user.email}</span>
@@ -223,7 +205,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
 
         {/* Full Name */}
         <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
-          <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Full Name</span>
+          <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Full Name <span className="text-red-500">*</span></span>
           <div className="flex items-center justify-between gap-4 w-full">
             {!isEditing ? (
               <span className="text-[13.5px] font-medium text-text-main">{user.fullName}</span>
@@ -262,7 +244,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
                 type="tel"
                 value={formData.phoneNumber}
                 onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                placeholder="e.g. +628123456789"
+                placeholder="e.g. 0812123456789"
                 className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400"
                 style={{ padding: "8px" }}
               />
@@ -297,9 +279,9 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
                 <div className="w-full rounded-sm text-gray-700 text-sm font-sans" style={{ padding: "8px" }}>
                   {formData.address || "-"}
                 </div>
-                {(formData.city || formData.state || formData.zipCode) && (
+                {(formData.city || formData.state) && (
                   <div className="w-full rounded-sm text-gray-700 text-sm font-sans" style={{ padding: "8px" }}>
-                    {[formData.city, formData.state, formData.zipCode].filter(Boolean).join(", ") || "-"}
+                    {[formData.city, formData.state].filter(Boolean).join(", ") || "-"}
                   </div>
                 )}
               </div>
@@ -317,7 +299,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
                     />
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    Search and select your address from the suggestions. This is required for distance calculation and pickup services.
+                    Search and select your address from the suggestions. This is required for distance calculation and pickup services. Province and city below are selected manually.
                   </p>
                 </div>
 
@@ -327,7 +309,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
                       Fine-tune Location
                     </label>
                     <p className="text-xs text-gray-500 mb-2">
-                      Drag the red marker to adjust the exact location for precise pickup/delivery. Address fields will auto-update based on the pin location.
+                      Drag the red marker to set the exact coordinates for precise pickup/delivery.
                     </p>
                     <MapPicker
                       latitude={formData.latitude}
@@ -339,7 +321,6 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
                           longitude: lng,
                         }));
                       }}
-                      onAddressChange={handleMapAddressChange}
                       height="300px"
                     />
                   </div>
@@ -360,19 +341,16 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
                 </div>
 
                 <div className="bg-gray-100 p-3 rounded-sm">
-                  <p className="text-xs text-gray-600 mb-2">Location details (auto-filled from address search, you can edit):</p>
+                  <p className="text-xs text-gray-600 mb-2">Location details (select province and city manually):</p>
                   <LocationFields
                     stateValue={formData.state}
                     cityValue={formData.city}
-                    zipCodeValue={formData.zipCode}
                     onStateChange={(val) => setFormData(prev => ({ ...prev, state: val }))}
                     onCityChange={(val) => setFormData(prev => ({ ...prev, city: val }))}
-                    onZipCodeChange={(val) => setFormData(prev => ({ ...prev, zipCode: val }))}
                     onLocationChange={(location) => setFormData(prev => ({
                       ...prev,
                       state: location.state,
                       city: location.city,
-                      zipCode: location.zipCode || "",
                     }))}
                     readOnly={false}
                   />
@@ -442,7 +420,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
 
             {/* Current Password */}
             <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
-              <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Current Password</span>
+              <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Current Password <span className="text-red-500">*</span></span>
               <div className="relative flex-1">
                 <input
                   type={showCurrentPw ? "text" : "password"}
@@ -465,7 +443,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
 
             {/* New Password */}
             <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
-              <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">New Password</span>
+              <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">New Password <span className="text-red-500">*</span></span>
               <div className="relative flex-1">
                 <input
                   type={showNewPw ? "text" : "password"}
@@ -488,7 +466,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
 
             {/* Confirm New Password */}
             <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
-              <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Confirm Password</span>
+              <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Confirm Password <span className="text-red-500">*</span></span>
               <div className="relative flex-1">
                 <input
                   type={showConfirmPw ? "text" : "password"}

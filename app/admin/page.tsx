@@ -47,12 +47,6 @@ const AdminDashboardPage = async () => {
             Approved
           </span>
         );
-      case "REJECTED":
-        return (
-          <span className="inline-flex w-fit items-center rounded-full px-2.5 py-0.5 font-inter text-xs font-semibold bg-danger-bg text-danger">
-            Rejected
-          </span>
-        );
       default:
         return null;
     }

@@ -63,6 +63,9 @@ export default function RejectModal({
         
         <p className="text-xs mb-2 text-gray-500 leading-relaxed">{description}</p>
 
+        <label className="block text-xs font-semibold text-gray-700 mb-1">
+          Reason <span className="text-red-500">*</span>
+        </label>
         <textarea
           rows={4}
           value={reason}

@@ -154,7 +154,7 @@ export default function EditDonationModal({
               className="mb-5 flex flex-col gap-1.5"
               style={{ marginBottom: "4px" }}
             >
-              <label className="font-inter text-[13.5px] font-semibold text-gray-700" style={{ marginTop: "12px" }}>Quantity Required</label>
+              <label className="font-inter text-[13.5px] font-semibold text-gray-700" style={{ marginTop: "12px" }}>Quantity Required <span className="text-red-500">*</span></label>
               <input
                 type="number"
                 value={target}
@@ -167,7 +167,7 @@ export default function EditDonationModal({
             </div>
 
             <div className="mb-5 flex flex-col gap-1.5">
-              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Description</label>
+              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Description <span className="text-gray-400 font-normal">(Optional)</span></label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -177,7 +177,7 @@ export default function EditDonationModal({
             </div>
 
             <div className="mb-5 flex flex-col gap-1.5">
-              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Delivery Methods Available</label>
+              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Delivery Methods Available <span className="text-red-500">*</span></label>
               <p className="text-xs text-gray-500">Check at least 1</p>
               <div className="space-y-2">
                 <label className="flex items-center gap-3 cursor-pointer text-sm font-normal text-gray-700">
@@ -215,7 +215,7 @@ export default function EditDonationModal({
             {hasPickup && (
               <div className="mb-5 bg-gray-50 rounded-sm border border-gray-200 p-3 flex flex-col gap-1.5">
                 <label className="font-inter text-[13.5px] font-semibold text-gray-600">
-                  Max Pickup Distance (km)
+                  Max Pickup Distance (km) <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"

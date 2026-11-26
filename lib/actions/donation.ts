@@ -11,41 +11,55 @@ import {
 } from "@/app/database/schema";
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
+import { headers } from "next/headers";
+import { getSession } from "@/lib/auth";
 import { sendEmail, emailTemplates } from "@/lib/email";
 import { fetchOSRMDistances, OSDestination } from "@/lib/utils/osrm";
 import { rateLimit, RATE_LIMIT_ERROR } from "@/lib/ratelimit";
 
+// Returns the session's institution user id, or null if not an institution
+const requireInstitution = async () => {
+  const session = await getSession(await headers());
+  if (!session?.user?.id || session.user.role !== "INSTITUTION") return null;
+  return session.user.id;
+};
+
+// Returns the institution id that owns a donation campaign
+const getDonationOwnerId = async (donationId: string) => {
+  const [row] = await db
+    .select({ institutionId: donations.institutionId })
+    .from(donations)
+    .where(eq(donations.id, donationId))
+    .limit(1);
+  return row?.institutionId ?? null;
+};
+
 // Get single donation campaign detail (for donation request form page)
 export const getDonationCampaignById = async (id: string) => {
-  try {
-    const [campaign] = await db
-      .select({
-        id: donations.id,
-        title: donations.title,
-        description: donations.description,
-        category: donations.category,
-        cover: donations.cover,
-        target: donations.target,
-        collected: donations.collected,
-        deliveryMethods: donations.deliveryMethods,
-        hasPickupService: donations.hasPickupService,
-        pickupMaxDistanceKm: donations.pickupMaxDistanceKm,
-        status: donations.status,
-        institutionId: donations.institutionId,
-        institutionName: institutions.institutionName, // Dijamin string karena innerJoin
-        institutionCity: institutions.city,
-        institutionState: institutions.state,
-      })
-      .from(donations)
-      .innerJoin(institutions, eq(donations.institutionId, institutions.id)) // <--- Ubah ke innerJoin
-      .where(eq(donations.id, id))
-      .limit(1);
+  const [campaign] = await db
+    .select({
+      id: donations.id,
+      title: donations.title,
+      description: donations.description,
+      category: donations.category,
+      cover: donations.cover,
+      target: donations.target,
+      collected: donations.collected,
+      deliveryMethods: donations.deliveryMethods,
+      hasPickupService: donations.hasPickupService,
+      pickupMaxDistanceKm: donations.pickupMaxDistanceKm,
+      status: donations.status,
+      institutionId: donations.institutionId,
+      institutionName: institutions.institutionName, // Dijamin string karena innerJoin
+      institutionCity: institutions.city,
+      institutionState: institutions.state,
+    })
+    .from(donations)
+    .innerJoin(institutions, eq(donations.institutionId, institutions.id)) // <--- Ubah ke innerJoin
+    .where(eq(donations.id, id))
+    .limit(1);
 
-    return campaign ?? null;
-  } catch (error) {
-    console.error("Error fetching donation campaign by ID:", error);
-    return null;
-  }
+  return campaign ?? null;
 };
 
 // Create a donation campaign (institution only)
@@ -98,8 +112,9 @@ export const getDonationsWithDistance = async (params: {
   category?: string;
   maxDistanceKm?: number;
   limit?: number;
+  offset?: number;
 }) => {
-  const { userLat, userLng, category, maxDistanceKm, limit = 20 } = params;
+  const { userLat, userLng, category, maxDistanceKm, limit = 20, offset = 0 } = params;
 
   const hasLocation = userLat != null && userLng != null;
 
@@ -146,7 +161,8 @@ export const getDonationsWithDistance = async (params: {
       )
     )
     .orderBy(hasLocation ? distanceExpr : desc(donations.createdAt))
-    .limit(limit);
+    .limit(limit)
+    .offset(offset);
 
   let enrichedResults = results.map((d) => ({
   ...d,
@@ -220,7 +236,6 @@ export const getDonationById = async (id: string) => {
       phoneNumber: donateRecords.phoneNumber,
       city: donateRecords.city,
       state: donateRecords.state,
-      zipCode: donateRecords.zipCode,
       address: donateRecords.address,
       userId: donateRecords.userId,
     })
@@ -241,7 +256,6 @@ export const submitDonationRequest = async (params: {
   phoneNumber: string;
   city: string;
   state: string;
-  zipCode: string;
   address: string;
   quantity: number;
   notes?: string;
@@ -258,6 +272,15 @@ export const submitDonationRequest = async (params: {
   const userLimit = await rateLimit("donationSubmit", `user:${params.userId}`);
   if (!userLimit.allowed) {
     return { success: false, error: RATE_LIMIT_ERROR };
+  }
+
+  const session = await getSession(await headers());
+  if (
+    !session?.user?.id ||
+    session.user.role !== "USER" ||
+    session.user.id !== params.userId
+  ) {
+    return { success: false, error: "Unauthorized" };
   }
 
   if (!Number.isInteger(params.quantity) || params.quantity <= 0) {
@@ -284,7 +307,6 @@ export const submitDonationRequest = async (params: {
         phoneNumber: params.phoneNumber,
         city: params.city,
         state: params.state,
-        zipCode: params.zipCode,
         address: params.address,
         quantity: params.quantity,
         notes: params.notes ?? null,
@@ -315,6 +337,11 @@ export const submitDonationRequest = async (params: {
 
 // Institution approves a donation request (PENDING -> ON_PROGRESS directly)
 export const approveDonationRequest = async (recordId: string, _institutionId?: string) => {
+  const institutionUserId = await requireInstitution();
+  if (!institutionUserId) {
+    return { success: false, error: "Unauthorized" };
+  }
+
   const rl = await rateLimit("donationMutation");
   if (!rl.allowed) {
     return { success: false, error: RATE_LIMIT_ERROR };
@@ -336,6 +363,10 @@ export const approveDonationRequest = async (recordId: string, _institutionId?: 
       return { success: false, error: "Request not found or already processed." };
     }
 
+    if ((await getDonationOwnerId(record.donationId)) !== institutionUserId) {
+      return { success: false, error: "You can only process requests for your own donations." };
+    }
+
     // Get user email and donation info
     const [userAndDonation] = await db
       .select({
@@ -350,6 +381,26 @@ export const approveDonationRequest = async (recordId: string, _institutionId?: 
       .where(eq(donateRecords.id, recordId))
       .limit(1);
 
+    // Check remaining stock: target - collected (approved items only)
+    const [donationData] = await db
+      .select({ target: donations.target, collected: donations.collected })
+      .from(donations)
+      .where(eq(donations.id, record.donationId))
+      .limit(1);
+
+    const remaining = Math.max(
+      0,
+      (donationData?.target ?? 0) - (donationData?.collected ?? 0)
+    );
+
+    if (record.quantity > remaining) {
+      return {
+        success: false,
+        error: `Only ${remaining} unit(s) remaining for this campaign. This request cannot be accepted.`,
+        availableQuantity: remaining,
+      };
+    }
+
     // Set directly to ON_PROGRESS (no APPROVED step)
     await db
       .update(donateRecords)
@@ -360,12 +411,6 @@ export const approveDonationRequest = async (recordId: string, _institutionId?: 
       .where(eq(donateRecords.id, recordId));
 
     // Update donation collected count when accepted
-    const [donationData] = await db
-      .select({ target: donations.target, collected: donations.collected })
-      .from(donations)
-      .where(eq(donations.id, record.donationId))
-      .limit(1);
-
     const newCollected = (donationData?.collected ?? 0) + record.quantity;
     const isComplete = newCollected >= (donationData?.target ?? 0);
 
@@ -410,6 +455,11 @@ export const rejectDonationRequest = async (
   _institutionId?: string,
   reason?: string
 ) => {
+  const institutionUserId = await requireInstitution();
+  if (!institutionUserId) {
+    return { success: false, error: "Unauthorized" };
+  }
+
   const rl = await rateLimit("donationMutation");
   if (!rl.allowed) {
     return { success: false, error: RATE_LIMIT_ERROR };
@@ -417,7 +467,11 @@ export const rejectDonationRequest = async (
 
   try {
     const [record] = await db
-      .select({ userId: donateRecords.userId, status: donateRecords.status })
+      .select({
+        userId: donateRecords.userId,
+        status: donateRecords.status,
+        donationId: donateRecords.donationId,
+      })
       .from(donateRecords)
       .where(eq(donateRecords.id, recordId))
       .limit(1);
@@ -426,17 +480,33 @@ export const rejectDonationRequest = async (
       return { success: false, error: "Request not found or already processed." };
     }
 
-    // Get user email and donation info
+    if ((await getDonationOwnerId(record.donationId)) !== institutionUserId) {
+      return { success: false, error: "You can only process requests for your own donations." };
+    }
+
+    // Get user email, donation info, and remaining stock for re-request hint
     const [userAndDonation] = await db
       .select({
         userEmail: users.email,
         donationTitle: donations.title,
+        donationTarget: donations.target,
+        donationCollected: donations.collected,
       })
       .from(users)
       .innerJoin(donateRecords, eq(users.id, donateRecords.userId))
       .innerJoin(donations, eq(donateRecords.donationId, donations.id))
       .where(eq(donateRecords.id, recordId))
       .limit(1);
+
+    const remaining = Math.max(
+      0,
+      (userAndDonation?.donationTarget ?? 0) -
+        (userAndDonation?.donationCollected ?? 0)
+    );
+    const reapplyHint =
+      remaining > 0
+        ? ` You can submit a new request for up to ${remaining} unit(s).`
+        : "";
 
     await db
       .update(donateRecords)
@@ -454,8 +524,8 @@ export const rejectDonationRequest = async (
       recipientType: "USER",
       title: "Donation Request Rejected",
       message: reason
-        ? `Your donation request was rejected. Reason: ${reason}`
-        : "Your donation request was not approved.",
+        ? `Your donation request was rejected. Reason: ${reason}.${reapplyHint}`
+        : `Your donation request was not approved.${reapplyHint}`,
       type: "REQUEST_REJECTED",
       relatedId: recordId,
     });
@@ -464,7 +534,8 @@ export const rejectDonationRequest = async (
     if (userAndDonation?.userEmail) {
       const template = emailTemplates.donationRequestRejected(
         userAndDonation.donationTitle,
-        reason
+        reason,
+        remaining
       );
       after(() => sendEmail({ to: userAndDonation.userEmail, ...template }));
     }
@@ -481,12 +552,27 @@ export const rejectDonationRequest = async (
 // Institution marks delivery in progress (now unused directly, but kept for compatibility)
 // Accept moves directly to ON_PROGRESS via approveDonationRequest
 export const markOnProgress = async (recordId: string) => {
+  const institutionUserId = await requireInstitution();
+  if (!institutionUserId) {
+    return { success: false, error: "Unauthorized" };
+  }
+
   const rl = await rateLimit("donationMutation");
   if (!rl.allowed) {
     return { success: false, error: RATE_LIMIT_ERROR };
   }
 
   try {
+    const [record] = await db
+      .select({ donationId: donateRecords.donationId })
+      .from(donateRecords)
+      .where(eq(donateRecords.id, recordId))
+      .limit(1);
+
+    if (!record || (await getDonationOwnerId(record.donationId)) !== institutionUserId) {
+      return { success: false, error: "Record not found." };
+    }
+
     await db
       .update(donateRecords)
       .set({ status: "ON_PROGRESS", updatedAt: new Date() })
@@ -502,6 +588,11 @@ export const markOnProgress = async (recordId: string) => {
 
 // Institution marks goods arrived and uploads proof photo
 export const markArrived = async (recordId: string, proofPhoto: string) => {
+  const institutionUserId = await requireInstitution();
+  if (!institutionUserId) {
+    return { success: false, error: "Unauthorized" };
+  }
+
   const rl = await rateLimit("donationMutation");
   if (!rl.allowed) {
     return { success: false, error: RATE_LIMIT_ERROR };
@@ -515,6 +606,10 @@ export const markArrived = async (recordId: string, proofPhoto: string) => {
       .limit(1);
 
     if (!record) return { success: false, error: "Record not found." };
+
+    if ((await getDonationOwnerId(record.donationId)) !== institutionUserId) {
+      return { success: false, error: "You can only update records for your own donations." };
+    }
 
     await db
       .update(donateRecords)
@@ -545,6 +640,11 @@ export const markArrived = async (recordId: string, proofPhoto: string) => {
 // Institution marks donation as complete (ON_PROGRESS -> WAITING_FOR_DOCUMENTATION)
 // This is called when institution clicks "Mark Done" - moves to documentation stage
 export const markDonationComplete = async (recordId: string) => {
+  const institutionUserId = await requireInstitution();
+  if (!institutionUserId) {
+    return { success: false, error: "Unauthorized" };
+  }
+
   const rl = await rateLimit("donationMutation");
   if (!rl.allowed) {
     return { success: false, error: RATE_LIMIT_ERROR };
@@ -552,13 +652,17 @@ export const markDonationComplete = async (recordId: string) => {
 
   try {
     const [record] = await db
-      .select({ userId: donateRecords.userId, status: donateRecords.status })
+      .select({ userId: donateRecords.userId, status: donateRecords.status, donationId: donateRecords.donationId })
       .from(donateRecords)
       .where(eq(donateRecords.id, recordId))
       .limit(1);
 
     if (!record || record.status !== "ON_PROGRESS") {
       return { success: false, error: "Record not found or invalid status." };
+    }
+
+    if ((await getDonationOwnerId(record.donationId)) !== institutionUserId) {
+      return { success: false, error: "You can only update records for your own donations." };
     }
 
     await db
@@ -589,6 +693,11 @@ export const markDonationComplete = async (recordId: string) => {
 
 // Institution uploads documentation and completes donation (WAITING_FOR_DOCUMENTATION -> COMPLETED)
 export const uploadDocumentationAndComplete = async (recordId: string, documentationPhoto: string) => {
+  const institutionUserId = await requireInstitution();
+  if (!institutionUserId) {
+    return { success: false, error: "Unauthorized" };
+  }
+
   const rl = await rateLimit("donationMutation");
   if (!rl.allowed) {
     return { success: false, error: RATE_LIMIT_ERROR };
@@ -608,6 +717,10 @@ export const uploadDocumentationAndComplete = async (recordId: string, documenta
 
     if (!record || record.status !== "WAITING_FOR_DOCUMENTATION") {
       return { success: false, error: "Record not found or invalid status." };
+    }
+
+    if ((await getDonationOwnerId(record.donationId)) !== institutionUserId) {
+      return { success: false, error: "You can only update records for your own donations." };
     }
 
     // Get user email and donation info
@@ -668,6 +781,11 @@ export const rejectDonationFromProgress = async (
   institutionId?: string,
   reason?: string
 ) => {
+  const institutionUserId = await requireInstitution();
+  if (!institutionUserId) {
+    return { success: false, error: "Unauthorized" };
+  }
+
   const rl = await rateLimit("donationMutation");
   if (!rl.allowed) {
     return { success: false, error: RATE_LIMIT_ERROR };
@@ -687,6 +805,10 @@ export const rejectDonationFromProgress = async (
 
     if (!record || record.status !== "ON_PROGRESS") {
       return { success: false, error: "Record not found or invalid status." };
+    }
+
+    if ((await getDonationOwnerId(record.donationId)) !== institutionUserId) {
+      return { success: false, error: "You can only update records for your own donations." };
     }
 
     // Get user email and donation info
@@ -761,6 +883,11 @@ export const cancelDonation = async (
   recordId: string,
   reason?: string
 ) => {
+  const session = await getSession(await headers());
+  if (!session?.user?.id) {
+    return { success: false, error: "Unauthorized" };
+  }
+
   const rl = await rateLimit("donationMutation");
   if (!rl.allowed) {
     return { success: false, error: RATE_LIMIT_ERROR };
@@ -790,6 +917,13 @@ export const cancelDonation = async (
       .limit(1);
 
     if (!donation) return { success: false, error: "Donation not found." };
+
+    // Only the donor who made the request or the owning institution can cancel
+    const isDonor = record.userId === session.user.id;
+    const isOwner = donation.institutionId === session.user.id;
+    if (!isDonor && !isOwner) {
+      return { success: false, error: "You are not allowed to cancel this donation." };
+    }
 
     // Get user email and donation info
     const [userAndDonation] = await db
@@ -875,6 +1009,9 @@ export const cancelDonation = async (
 
 // Get donation history for a user (donor)
 export const getUserDonationHistory = async (userId: string) => {
+  const session = await getSession(await headers());
+  if (!session?.user?.id || session.user.id !== userId) return [];
+
   return db
     .select({
       id: donateRecords.id,
@@ -901,7 +1038,9 @@ export const getUserDonationHistory = async (userId: string) => {
 // Get donation requests for an institution
 export const getInstitutionDonationHistory = async (institutionId: string) => {
   try {
-    if (!institutionId) return [];
+    const sessionUserId = await requireInstitution();
+    if (!sessionUserId || sessionUserId !== institutionId) return [];
+
     return await db
       .select({
         id: donateRecords.id,
@@ -955,14 +1094,16 @@ export const getDonationRecordById = async (recordId: string) => {
         category: donations.category,
         cover: donations.cover,
         description: donations.description,
+        donationTarget: donations.target,
+        donationCollected: donations.collected,
         institutionName: institutions.institutionName,
         donorName: donateRecords.donorName,
         phoneNumber: donateRecords.phoneNumber,
         city: donateRecords.city,
         state: donateRecords.state,
-        zipCode: donateRecords.zipCode,
         address: donateRecords.address,
         userId: donateRecords.userId,
+        donationId: donateRecords.donationId,
       })
       .from(donateRecords)
       .innerJoin(donations, eq(donateRecords.donationId, donations.id))
@@ -970,7 +1111,19 @@ export const getDonationRecordById = async (recordId: string) => {
       .where(eq(donateRecords.id, recordId))
       .limit(1);
 
-    return record ?? null;
+    if (!record) return null;
+
+    // Access control: donor owner, owning institution, or admin only
+    const session = await getSession(await headers());
+    if (!session?.user?.id) return null;
+
+    const isAllowed =
+      session.user.role === "ADMIN" ||
+      (session.user.role === "USER" && record.userId === session.user.id) ||
+      (session.user.role === "INSTITUTION" &&
+        (await getDonationOwnerId(record.donationId)) === session.user.id);
+
+    return isAllowed ? record : null;
   } catch (error) {
     console.error("Error fetching donation record:", error);
     return null;
@@ -980,7 +1133,8 @@ export const getDonationRecordById = async (recordId: string) => {
 // Get donations uploaded by a specific institution
 export const getInstitutionDonations = async (institutionId: string) => {
   try {
-    if (!institutionId) return [];
+    const sessionUserId = await requireInstitution();
+    if (!sessionUserId || sessionUserId !== institutionId) return [];
     return await db
       .select({
         id: donations.id,
@@ -1009,7 +1163,8 @@ export const getInstitutionDonations = async (institutionId: string) => {
 // Get donor location distribution for institution pie chart
 export const getDonorLocationStats = async (institutionId: string) => {
   try {
-    if (!institutionId) return [];
+    const sessionUserId = await requireInstitution();
+    if (!sessionUserId || sessionUserId !== institutionId) return [];
 
     const locationStats = await db
       .select({
@@ -1041,7 +1196,8 @@ export const getDonorLocationStats = async (institutionId: string) => {
 // Get donor location distribution with period filter (weekly, monthly, yearly)
 export const getDonorLocationStatsWithPeriod = async (institutionId: string) => {
   try {
-    if (!institutionId) {
+    const sessionUserId = await requireInstitution();
+    if (!sessionUserId || sessionUserId !== institutionId) {
       return {
         weekly: [],
         monthly: [],
@@ -1121,7 +1277,8 @@ export const getDonorLocationStatsWithPeriod = async (institutionId: string) => 
 // Get donation activity for institution chart (weekly, monthly, yearly)
 export const getInstitutionDonationActivityStats = async (institutionId: string) => {
   try {
-    if (!institutionId) {
+    const sessionUserId = await requireInstitution();
+    if (!sessionUserId || sessionUserId !== institutionId) {
       return {
         weekly: [],
         monthly: [],

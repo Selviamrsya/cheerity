@@ -253,12 +253,18 @@ export const getDonationActivityStats = async () => {
   }
 };
 
+const requireAdmin = async () => {
+  const session = await getSession(await headers());
+  return !!session?.user?.id && session.user.role === "ADMIN";
+};
+
 // Get all institutions with optional status and search filter
 export const getInstitutions = async (
-  status?: "PENDING" | "APPROVED" | "REJECTED",
+  status?: "PENDING" | "APPROVED",
   search?: string
 ) => {
   try {
+    if (!(await requireAdmin())) return [];
     const statusCondition = status
       ? eq(institutions.status, status)
       : undefined;
@@ -284,6 +290,8 @@ export const getInstitutions = async (
 
 // Get a single institution by ID (email comes from the shared users row)
 export const getInstitutionById = async (id: string) => {
+  if (!(await requireAdmin())) return null;
+
   const [institution] = await db
     .select({
       id: institutions.id,
@@ -293,7 +301,6 @@ export const getInstitutionById = async (id: string) => {
       phoneNumber: institutions.phoneNumber,
       city: institutions.city,
       state: institutions.state,
-      zipCode: institutions.zipCode,
       address: institutions.address,
       latitude: institutions.latitude,
       longitude: institutions.longitude,
@@ -312,6 +319,11 @@ export const getInstitutionById = async (id: string) => {
 
 // Admin approves an institution
 export const approveInstitution = async (institutionId: string) => {
+  const session = await getSession(await headers());
+  if (!session?.user?.id || session.user.role !== "ADMIN") {
+    return { success: false, error: "Unauthorized" };
+  }
+
   const rl = await rateLimit("adminMutation");
   if (!rl.allowed) {
     return { success: false, error: RATE_LIMIT_ERROR };
@@ -349,8 +361,13 @@ export const approveInstitution = async (institutionId: string) => {
 // Admin rejects an institution - performs DELETE with cascade
 export const rejectInstitution = async (
   institutionId: string,
-  _reason?: string
+  reason?: string
 ) => {
+  const session = await getSession(await headers());
+  if (!session?.user?.id || session.user.role !== "ADMIN") {
+    return { success: false, error: "Unauthorized" };
+  }
+
   const rl = await rateLimit("adminMutation");
   if (!rl.allowed) {
     return { success: false, error: RATE_LIMIT_ERROR };
@@ -359,6 +376,15 @@ export const rejectInstitution = async (
   try {
     const institution = await getInstitutionById(institutionId);
     if (!institution) return { success: false, error: "Institution not found." };
+
+    // Send rejection email before deleting the account
+    if (institution.email) {
+      const template = emailTemplates.institutionRejected(
+        institution.institutionName,
+        reason
+      );
+      after(() => sendEmail({ to: institution.email!, ...template }));
+    }
 
     // 1. Get all donations for this institution
     const institutionDonations = await db
@@ -426,7 +452,6 @@ export const updateInstitutionAddress = async (
     address: string;
     city: string;
     state: string;
-    zipCode?: string;
   }
 ) => {
   const rl = await rateLimit("adminMutation");
@@ -443,7 +468,7 @@ export const updateInstitutionAddress = async (
     const institution = await getInstitutionById(institutionId);
     if (!institution) return { success: false, error: "Institution not found." };
 
-    const { address, city, state, zipCode } = data;
+    const { address, city, state } = data;
 
     if (!address?.trim() || !city?.trim() || !state?.trim()) {
       return { success: false, error: "Address, city, and state are required." };
@@ -468,7 +493,6 @@ export const updateInstitutionAddress = async (
         address: address.trim(),
         city: city.trim(),
         state: state.trim(),
-        zipCode: zipCode ? zipCode.trim() : null,
         latitude,
         longitude,
       })

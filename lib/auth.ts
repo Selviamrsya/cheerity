@@ -112,7 +112,6 @@ export async function signUpUser(data: {
   phoneNumber?: string;
   city?: string;
   state?: string;
-  zipCode?: string;
   address?: string;
 }) {
   try {
@@ -138,7 +137,6 @@ export async function signUpUser(data: {
         phoneNumber: data.phoneNumber,
         city: data.city,
         state: data.state,
-        zipCode: data.zipCode,
         address: data.address,
       });
 
@@ -165,7 +163,6 @@ export async function signUpInstitution(data: {
   phoneNumber?: string;
   city?: string;
   state?: string;
-  zipCode?: string;
   address?: string;
   verificationEvidence?: string;
   websiteOrSocial?: string;
@@ -204,7 +201,6 @@ export async function signUpInstitution(data: {
         phoneNumber: data.phoneNumber,
         city: data.city,
         state: data.state,
-        zipCode: data.zipCode,
         address: data.address,
         verificationEvidence: data.verificationEvidence,
         websiteOrSocial: data.websiteOrSocial,

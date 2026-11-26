@@ -149,3 +149,8 @@
     height: 12px;
   }
 }
+/* Hide native password reveal button in Microsoft Edge */
+input::-ms-reveal,
+input::-ms-clear {
+    display: none;
+}

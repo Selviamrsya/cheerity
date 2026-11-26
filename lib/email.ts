@@ -73,13 +73,14 @@ export const emailTemplates = {
     `,
   }),
 
-  donationRequestRejected: (donationTitle: string, reason?: string) => ({
+  donationRequestRejected: (donationTitle: string, reason?: string, maxQuantity?: number) => ({
     subject: "Donation Request Rejected",
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #dc2626;">Donation Request Rejected</h2>
         <p>Your donation request for "${donationTitle}" has been rejected.</p>
         ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ""}
+        ${maxQuantity && maxQuantity > 0 ? `<p>You can submit a new request for up to <strong>${maxQuantity} unit(s)</strong>.</p>` : ""}
         <p>Please try donating to other campaigns or contact the institution for more information.</p>
         <p style="color: #6b7280; font-size: 12px;">Cheerity - Bring Cheer</p>
       </div>
@@ -108,6 +109,20 @@ export const emailTemplates = {
         <p>Hi <strong>${name}</strong>,</p>
         <p>Great news! Your institution has been approved. You can now log in and start creating donation campaigns.</p>
         <a href="${process.env.NEXT_PUBLIC_PROD_API_ENDPOINT}/sign-in" style="display: inline-block; background: #166534; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; margin-top: 16px;">Login Now</a>
+        <p style="color: #6b7280; font-size: 12px; margin-top: 24px;">Cheerity - Bring Cheer</p>
+      </div>
+    `,
+  }),
+
+  institutionRejected: (name: string, reason?: string) => ({
+    subject: "Institution Application Update - Cheerity",
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #dc2626;">Application Not Approved</h2>
+        <p>Hi <strong>${name}</strong>,</p>
+        <p>Thank you for your interest in joining Cheerity. After review, your institution application was not approved at this time.</p>
+        ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ""}
+        <p>If you believe this is a mistake or would like to reapply with updated documents, please contact our administrator at <a href="mailto:admin@cheerity.com" style="color: #166534;">admin@cheerity.com</a>.</p>
         <p style="color: #6b7280; font-size: 12px; margin-top: 24px;">Cheerity - Bring Cheer</p>
       </div>
     `,

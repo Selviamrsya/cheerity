@@ -10,7 +10,6 @@ interface Institution {
   phoneNumber: string | null;
   city: string | null;
   state: string | null;
-  zipCode: string | null;
   address: string | null;
   verificationEvidence: string | null;
   websiteOrSocial: string | null;
@@ -156,7 +155,7 @@ const InstitutionProfileForm: React.FC<InstitutionProfileFormProps> = ({
       <div>
         {/* Institution Name */}
         <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
-          <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Institution Name</span>
+          <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Institution Name <span className="text-red-500">*</span></span>
           <div className="flex items-start sm:items-center justify-between gap-4 w-full">
             {!isEditing ? (
               <span className="text-[13.5px] font-medium text-text-main font-bold pt-1 sm:pt-0">
@@ -190,7 +189,7 @@ const InstitutionProfileForm: React.FC<InstitutionProfileFormProps> = ({
 
         {/* Email */}
         <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
-          <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Email</span>
+          <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Email <span className="text-red-500">*</span></span>
           <div className="flex items-center justify-between gap-4 w-full">
             {!isEditing ? (
               <span className="text-[13.5px] font-medium text-text-main">{institution.email}</span>
@@ -233,7 +232,7 @@ const InstitutionProfileForm: React.FC<InstitutionProfileFormProps> = ({
 
         {/* Website / Social */}
         <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
-          <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Official Website / Social Media</span>
+          <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Official Website / Social Media <span className="text-gray-400 font-normal normal-case">(Optional)</span></span>
           <div className="flex items-center justify-between gap-4 w-full">
             {!isEditing ? (
               <span className="text-[13.5px] font-medium text-text-main">
@@ -269,7 +268,7 @@ const InstitutionProfileForm: React.FC<InstitutionProfileFormProps> = ({
         {/* Description */}
         <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3" style={isEditing ? { alignItems: "flex-start" } : {}}>
           <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase" style={isEditing ? { paddingTop: "8px" } : {}}>
-            Description
+            Description <span className="text-gray-400 font-normal normal-case">(Optional)</span>
           </span>
           <div className="flex items-center justify-between gap-4 w-full" style={{ color: "var(--color-on-surface)" }}>
             {!isEditing ? (
@@ -298,9 +297,9 @@ const InstitutionProfileForm: React.FC<InstitutionProfileFormProps> = ({
             <div className="w-full rounded-sm text-sm font-sans" style={{ padding: "8px" }}>
               {institution.address || "-"}
             </div>
-            {(institution.city || institution.state || institution.zipCode) && (
+            {(institution.city || institution.state) && (
               <div className="w-full rounded-sm text-sm font-sans" style={{ padding: "8px" }}>
-                {[institution.city, institution.state, institution.zipCode]
+                {[institution.city, institution.state]
                   .filter(Boolean)
                   .join(", ") || "-"}
               </div>
@@ -390,7 +389,7 @@ const InstitutionProfileForm: React.FC<InstitutionProfileFormProps> = ({
 
             {/* Current Password */}
             <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
-              <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Current Password</span>
+              <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Current Password <span className="text-red-500">*</span></span>
               <div className="relative flex-1">
                 <input
                   type={showCurrentPw ? "text" : "password"}
@@ -413,7 +412,7 @@ const InstitutionProfileForm: React.FC<InstitutionProfileFormProps> = ({
 
             {/* New Password */}
             <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
-              <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">New Password</span>
+              <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">New Password <span className="text-red-500">*</span></span>
               <div className="relative flex-1">
                 <input
                   type={showNewPw ? "text" : "password"}
@@ -436,7 +435,7 @@ const InstitutionProfileForm: React.FC<InstitutionProfileFormProps> = ({
 
             {/* Confirm New Password */}
             <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
-              <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Confirm Password</span>
+              <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Confirm Password <span className="text-red-500">*</span></span>
               <div className="relative flex-1">
                 <input
                   type={showConfirmPw ? "text" : "password"}

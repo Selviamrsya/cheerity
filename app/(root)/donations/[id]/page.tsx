@@ -10,39 +10,33 @@ import { fetchSingleRoute } from "@/lib/utils/osrm";
 
 // Extend getDonationCampaignById to include institution description and website
 const getDonationCampaignWithInstitutionInfo = async (id: string) => {
-  try {
-    const [campaign] = await db
-      .select({
-        id: donations.id,
-        title: donations.title,
-        description: donations.description,
-        category: donations.category,
-        cover: donations.cover,
-        target: donations.target,
-        collected: donations.collected,
-        deliveryMethods: donations.deliveryMethods,
-        hasPickupService: donations.hasPickupService,
-        pickupMaxDistanceKm: donations.pickupMaxDistanceKm,
-        status: donations.status,
-        institutionId: donations.institutionId,
-        institutionName: institutions.institutionName,
-        institutionCity: institutions.city,
-        institutionState: institutions.state,
-        institutionZipCode: institutions.zipCode,
-        institutionAddress: institutions.address,
-        institutionDescription: institutions.description,
-        institutionWebsite: institutions.websiteOrSocial,
-      })
-      .from(donations)
-      .innerJoin(institutions, eq(donations.institutionId, institutions.id))
-      .where(eq(donations.id, id))
-      .limit(1);
+  const [campaign] = await db
+    .select({
+      id: donations.id,
+      title: donations.title,
+      description: donations.description,
+      category: donations.category,
+      cover: donations.cover,
+      target: donations.target,
+      collected: donations.collected,
+      deliveryMethods: donations.deliveryMethods,
+      hasPickupService: donations.hasPickupService,
+      pickupMaxDistanceKm: donations.pickupMaxDistanceKm,
+      status: donations.status,
+      institutionId: donations.institutionId,
+      institutionName: institutions.institutionName,
+      institutionCity: institutions.city,
+      institutionState: institutions.state,
+      institutionAddress: institutions.address,
+      institutionDescription: institutions.description,
+      institutionWebsite: institutions.websiteOrSocial,
+    })
+    .from(donations)
+    .innerJoin(institutions, eq(donations.institutionId, institutions.id))
+    .where(eq(donations.id, id))
+    .limit(1);
 
-    return campaign ?? null;
-  } catch (error) {
-    console.error("Error fetching donation campaign with institution info:", error);
-    return null;
-  }
+  return campaign ?? null;
 };
 
 const DonationDetailPage = async ({
@@ -125,7 +119,6 @@ const DonationDetailPage = async ({
         institutionName={campaign.institutionName}
         institutionCity={campaign.institutionCity}
         institutionState={campaign.institutionState}
-        institutionZipCode={campaign.institutionZipCode}
         institutionAddress={campaign.institutionAddress}
         institutionDescription={campaign.institutionDescription}
         institutionWebsite={campaign.institutionWebsite}

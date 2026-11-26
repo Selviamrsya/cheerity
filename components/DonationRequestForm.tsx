@@ -32,7 +32,6 @@ interface DonationRequestFormProps {
     phone: string;
     city: string;
     state: string;
-    zipCode: string;
     address: string;
     latitude: number | null;
     longitude: number | null;
@@ -55,7 +54,6 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
     address: user.address,
     city: user.city,
     state: user.state,
-    zipCode: user.zipCode,
     quantity: "",
     notes: "",
     deliveryMethod: "",
@@ -157,6 +155,14 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
       newErrors.address = "Please update your address in profile first";
     }
 
+    if (!formData.city.trim()) {
+      newErrors.city = "Please update your city in profile first";
+    }
+
+    if (!formData.state.trim()) {
+      newErrors.state = "Please update your state in profile first";
+    }
+
     const qtyText = formData.quantity.trim();
     const qtyNum = /^\d+$/.test(qtyText) ? parseInt(qtyText, 10) : NaN;
     const remaining = donation.target - donation.collected;
@@ -212,7 +218,6 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
           address: formData.address,
           city: formData.city,
           state: formData.state,
-          zipCode: formData.zipCode,
           quantity: parseInt(formData.quantity.trim(), 10),
           notes: formData.notes,
           donorPhoto: formData.photo, // URL string dari LocalImageUpload
@@ -228,6 +233,8 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
       }
 
       router.push("/history");
+      router.refresh();
+      
     } catch (error) {
       console.error("Error submitting request:", error);
       setErrors((prev) => ({
@@ -345,7 +352,7 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
 
               <div className="mt-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1" style={{ marginBottom: "4px" }}>
-                  Full Name
+                  Full Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -364,7 +371,7 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
 
               <div className="mt-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1" style={{ marginBottom: "4px" }}>
-                  Phone Number
+                  Phone Number <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="tel"
@@ -383,7 +390,7 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
 
               <div className="mt-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1" style={{ marginBottom: "4px" }}>
-                  Address
+                  Address <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   name="address"
@@ -400,9 +407,9 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
                 {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address}</p>}
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1" style={{ marginBottom: "4px" }}>City</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1" style={{ marginBottom: "4px" }}>City <span className="text-red-500">*</span></label>
                   <input
                     type="text"
                     name="city"
@@ -415,10 +422,11 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
                       marginBottom: "2px"
                     }}
                   />
+                  {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1" style={{ marginBottom: "4px" }}>State</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1" style={{ marginBottom: "4px" }}>State <span className="text-red-500">*</span></label>
                   <input
                     type="text"
                     name="state"
@@ -431,21 +439,7 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
                       marginBottom: "2px"
                     }}
                   />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1" style={{ marginBottom: "4px" }}>Zip Code</label>
-                  <input
-                    type="text"
-                    name="zipCode"
-                    value={formData.zipCode}
-                    onChange={handleInputChange}
-                    readOnly
-                    className="w-full px-3 py-2 border border-gray-300 rounded-sm bg-gray-50 text-gray-600 focus:outline-none"
-                    style={{
-                      padding: "6px 0 6px 6px",
-                    }}
-                  />
+                  {errors.state && <p className="text-red-500 text-sm mt-1">{errors.state}</p>}
                 </div>
               </div>
 
@@ -465,7 +459,7 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700" style={{ marginBottom: "4px" }}>
-                  Quantity
+                  Quantity <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
@@ -487,7 +481,7 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
 
               <div className="mt-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1" style={{ marginBottom: "4px" }}>
-                  Additional Notes
+                  Additional Notes <span className="text-gray-400 font-normal">(Optional)</span>
                 </label>
                 <textarea
                   name="notes"
@@ -506,7 +500,7 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
               {/* Mengganti custom upload manual dengan reusable component LocalImageUpload */}
               <div className="mt-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1" style={{ marginBottom: "4px" }}>
-                  Donation Photo *
+                  Donation Photo <span className="text-red-500">*</span>
                 </label>
                 <LocalImageUpload
                   value={formData.photo}
@@ -522,7 +516,7 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
                 {errors.photo && <p className="text-red-500 text-sm mt-1" style={{ marginBottom: "8px" }}>{errors.photo}</p>}
               </div>
 
-              <h3 className="text-lg font-semibold text-gray-900 mt-4">Delivery Method</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mt-4">Delivery Method <span className="text-red-500">*</span></h3>
               <p className="text-sm text-gray-600 mb-4" style={{ marginBottom: "4px" }}>Select one delivery method for your donation:</p>
 
               {pickupDistanceWarning && (
@@ -571,7 +565,7 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
                   <div style={{ display: "flex", gap: "16px", width: "100%" }}>
                     <div style={{ flex: 1 }}>
                       <label style={{ display: "block", fontSize: "14px", fontWeight: "500", color: "#374151", marginBottom: "8px" }}>
-                        Pickup Date
+                        Pickup Date <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="date"
@@ -594,7 +588,7 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
 
                     <div style={{ flex: 1 }}>
                       <label style={{ display: "block", fontSize: "14px", fontWeight: "500", color: "#374151", marginBottom: "8px" }}>
-                        Pickup Time
+                        Pickup Time <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="time"

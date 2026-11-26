@@ -57,13 +57,12 @@ export const signUpUser = async (params: {
   email: string;
   city: string;
   state: string;
-  zipCode: string;
-  address: string;
+  address?: string;
   latitude?: number;
   longitude?: number;
   password: string;
 }) => {
-  const { name, birthdate, phonenumber, email, city, state, zipCode, address, latitude, longitude, password } = params;
+  const { name, birthdate, phonenumber, email, city, state, address, latitude, longitude, password } = params;
 
   const rl = await rateLimit("signUp");
   if (!rl.allowed) {
@@ -87,7 +86,7 @@ export const signUpUser = async (params: {
     console.log("User signup using coordinates from address search:", { address, city, state, coords });
   } else {
     // Geocode address to coordinates for distance calculation
-    coords = await geocodeAddress(address, city, state);
+    coords = await geocodeAddress(address || "", city, state);
     console.log("User signup geocoding:", { address, city, state, coords });
   }
 
@@ -100,8 +99,7 @@ export const signUpUser = async (params: {
       phoneNumber: phonenumber,
       city,
       state,
-      zipCode,
-      address,
+      address: address?.trim() ? address : undefined,
     });
 
     if (!result.success) {
@@ -148,8 +146,7 @@ export const signUpInstitution = async (params: {
   phoneNumber: string;
   city: string;
   state: string;
-  zipCode: string;
-  address: string;
+  address?: string;
   latitude?: number;
   longitude?: number;
   verificationEvidence: string;
@@ -163,7 +160,6 @@ export const signUpInstitution = async (params: {
     phoneNumber,
     city,
     state,
-    zipCode,
     address,
     latitude,
     longitude,
@@ -197,7 +193,7 @@ export const signUpInstitution = async (params: {
     console.log("Institution signup using coordinates from address search:", { address, city, state, coords });
   } else {
     // Geocode institution address
-    coords = await geocodeAddress(address, city, state);
+    coords = await geocodeAddress(address || "", city, state);
     console.log("Institution signup geocoding:", { address, city, state, coords });
   }
 
@@ -209,8 +205,7 @@ export const signUpInstitution = async (params: {
       phoneNumber,
       city,
       state,
-      zipCode,
-      address,
+      address: address?.trim() ? address : undefined,
       verificationEvidence,
       websiteOrSocial,
       description,

@@ -14,7 +14,7 @@ const AdminInstitutionsPage: React.FC<AdminInstitutionsPageProps> = async ({
   const { status, q } = await searchParams;
 
   const validStatus =
-    status === "PENDING" || status === "APPROVED" || status === "REJECTED"
+    status === "PENDING" || status === "APPROVED"
       ? status
       : undefined;
 
@@ -24,7 +24,6 @@ const AdminInstitutionsPage: React.FC<AdminInstitutionsPageProps> = async ({
     { key: "ALL", label: "All", href: q ? `/admin/institutions?q=${q}` : "/admin/institutions" },
     { key: "PENDING", label: "Pending", href: q ? `/admin/institutions?status=PENDING&q=${q}` : "/admin/institutions?status=PENDING" },
     { key: "APPROVED", label: "Approved", href: q ? `/admin/institutions?status=APPROVED&q=${q}` : "/admin/institutions?status=APPROVED" },
-    { key: "REJECTED", label: "Rejected", href: q ? `/admin/institutions?status=REJECTED&q=${q}` : "/admin/institutions?status=REJECTED" },
   ];
 
   const currentTab = status || "ALL";
@@ -42,12 +41,6 @@ const AdminInstitutionsPage: React.FC<AdminInstitutionsPageProps> = async ({
         return (
           <span className="inline-flex w-fit items-center rounded-full px-2.5 py-0.5 font-inter text-xs font-semibold bg-success-bg text-success">
             Approved
-          </span>
-        );
-      case "REJECTED":
-        return (
-          <span className="inline-flex w-fit items-center rounded-full px-2.5 py-0.5 font-inter text-xs font-semibold bg-danger-bg text-danger">
-            Rejected
           </span>
         );
       default:

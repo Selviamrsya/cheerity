@@ -33,12 +33,13 @@ interface DonationRecord {
   category: string;
   cover: string | null;
   description: string | null;
+  donationTarget: number;
+  donationCollected: number;
   institutionName: string;
   donorName: string | null;
   phoneNumber: string | null;
   city: string | null;
   state: string | null;
-  zipCode: string | null;
   address: string | null;
   userId: string;
 }
@@ -61,6 +62,7 @@ const DonationDetailClient: React.FC<DonationDetailClientProps> = ({ record, use
   const [rejectingFromProgressId, setRejectingFromProgressId] = useState<string | null>(null);
   const [rejectionFromProgressReason, setRejectionFromProgressReason] = useState("");
   const [confirmingDoneId, setConfirmingDoneId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const formatDate = (d: Date | null) => {
     if (!d) return "-";
@@ -90,12 +92,21 @@ const DonationDetailClient: React.FC<DonationDetailClientProps> = ({ record, use
     }
   };
 
+  const remainingQuantity = Math.max(
+    0,
+    (record.donationTarget ?? 0) - (record.donationCollected ?? 0)
+  );
+  const exceedsStock = record.status === "PENDING" && record.quantity > remainingQuantity;
+
   const handleApprove = async (id: string) => {
     setLoadingId(id);
+    setActionError(null);
     const res = await approveDonationRequest(id);
     setLoadingId(null);
     if (res.success) {
       router.refresh();
+    } else {
+      setActionError(res.error || "Failed to accept request.");
     }
   };
 
@@ -114,12 +125,15 @@ const DonationDetailClient: React.FC<DonationDetailClientProps> = ({ record, use
       return;
     }
     setLoadingId(id);
-    const res = await rejectDonationRequest(id, rejectionReason);
+    setActionError(null);
+    const res = await rejectDonationRequest(id, undefined, rejectionReason);
     setLoadingId(null);
     setRejectingId(null);
     setRejectionReason("");
     if (res.success) {
       router.refresh();
+    } else {
+      setActionError(res.error || "Failed to reject request.");
     }
   };
 
@@ -295,7 +309,6 @@ const DonationDetailClient: React.FC<DonationDetailClientProps> = ({ record, use
                 { label: "Phone Number", value: record.phoneNumber },
                 { label: "City", value: record.city },
                 { label: "State", value: record.state },
-                { label: "ZIP Code", value: record.zipCode },
                 { label: "Address", value: record.address },
               ].map((item, idx) => (
                 <div key={idx} className="grid grid-cols-[180px_20px_1fr] items-center text-sm">
@@ -378,18 +391,53 @@ const DonationDetailClient: React.FC<DonationDetailClientProps> = ({ record, use
         </div>
       </div>
 
+      {/* Rejection / cancellation reason */}
+      {record.status === "REJECTED" && (record.rejectionReason || record.cancelReason) && (
+        <div className="mt-4 rounded-sm border border-red-200 bg-red-50 p-4">
+          <p className="text-xs font-bold uppercase tracking-wide text-red-700">
+            {record.cancelReason ? "Cancellation Reason" : "Rejection Reason"}
+          </p>
+          <p className="mt-1 text-sm font-medium text-red-800">
+            {record.cancelReason || record.rejectionReason}
+          </p>
+        </div>
+      )}
+
+      {/* Insufficient stock warning (institution view) */}
+      {userType === "institution" && exceedsStock && (
+        <div className="mt-4 rounded-sm border border-amber-300 bg-amber-50 p-4">
+          <p className="text-sm font-semibold text-amber-800">
+            Insufficient stock
+          </p>
+          <p className="mt-1 text-xs leading-relaxed text-amber-700">
+            Only <strong>{remainingQuantity} unit(s)</strong> remaining for this
+            campaign, but this request is for <strong>{record.quantity} unit(s)</strong>.
+            This request cannot be accepted. You can reject it and the donor will
+            be notified that they may re-apply for up to {remainingQuantity} unit(s).
+          </p>
+        </div>
+      )}
+
+      {actionError && (
+        <div className="mt-4 rounded-sm border border-red-200 bg-red-50 p-3 text-xs font-medium text-red-700">
+          {actionError}
+        </div>
+      )}
+
       {/* Action Buttons - Institution Only */}
       {userType === "institution" && (
         <div className="flex w-full gap-2 mt-8">
           {record.status === "PENDING" && (
             <>
-              <button
-                onClick={() => handleApprove(record.id)}
-                disabled={loadingId === record.id}
-                className="flex-1 px-9 py-2 bg-primary hover:bg-green-900 text-white font-semibold text-sm rounded-sm transition-colors disabled:opacity-50 cursor-pointer"
-              >
-                {loadingId === record.id ? "Accepting..." : "Accept Request"}
-              </button>
+              {!exceedsStock && (
+                <button
+                  onClick={() => handleApprove(record.id)}
+                  disabled={loadingId === record.id}
+                  className="flex-1 px-9 py-2 bg-primary hover:bg-green-900 text-white font-semibold text-sm rounded-sm transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  {loadingId === record.id ? "Accepting..." : "Accept Request"}
+                </button>
+              )}
 
               <button
                 onClick={() => setRejectingId(record.id)}

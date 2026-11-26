@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Search, ChevronDown } from "lucide-react";
 import DonationCard from "@/components/DonationCard";
+import { AppButton } from "@/components/ui/app-button";
 import { getDonationsWithDistance } from "@/lib/actions/donation";
 import { DONATION_CATEGORIES, DISTANCE_FILTERS } from "@/constants";
 
@@ -38,6 +39,8 @@ const FindDonationClient: React.FC<FindDonationClientProps> = ({
   const [category, setCategory] = useState("");
   const [maxDistance, setMaxDistance] = useState<number | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(initialDonations.length === 20);
 
   const filtered = donations.filter((d) => {
     const matchSearch =
@@ -69,9 +72,27 @@ const FindDonationClient: React.FC<FindDonationClientProps> = ({
       category: cat || undefined,
       maxDistanceKm: dist,
       limit: 20,
+      offset: 0,
     });
     setDonations(results as Donation[]);
+    setHasMore(results.length === 20);
     setIsLoading(false);
+  };
+
+  const loadMore = async () => {
+    setIsLoadingMore(true);
+    const results = await getDonationsWithDistance({
+      userLat,
+      userLng,
+      category: category || undefined,
+      maxDistanceKm: maxDistance,
+      limit: 20,
+      offset: donations.length,
+    });
+    const newDonations = results as Donation[];
+    setDonations((prev) => [...prev, ...newDonations]);
+    setHasMore(newDonations.length === 20);
+    setIsLoadingMore(false);
   };
 
   const handleCategoryChange = (val: string) => {
@@ -180,6 +201,20 @@ const FindDonationClient: React.FC<FindDonationClientProps> = ({
               />
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Load more */}
+      {hasMore && !isLoading && (
+        <div className="mt-6 text-center">
+          <AppButton
+            variant="outline"
+            width="auto"
+            onClick={loadMore}
+            disabled={isLoadingMore}
+          >
+            {isLoadingMore ? "Loading..." : "Load More"}
+          </AppButton>
         </div>
       )}
     </div>

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { db } from "@/app/database/drizzle";
-import { users } from "@/app/database/schema";
-import { eq } from "drizzle-orm";
+import { users, account } from "@/app/database/schema";
+import { eq, and } from "drizzle-orm";
 import { hashPassword, verifyPassword } from "better-auth/crypto"; // <-- Import dari crypto better-auth
 import { rateLimit, RATE_LIMIT_ERROR } from "@/lib/ratelimit";
 
@@ -57,6 +57,18 @@ export async function POST(request: NextRequest) {
 
     // Hash new password using better-auth crypto helper (langsung string)
     const hashedNewPassword = await hashPassword(newPassword);
+
+    // Update both the credential account (used by better-auth login)
+    // and the users.password mirror column
+    await db
+      .update(account)
+      .set({ password: hashedNewPassword, updatedAt: new Date() })
+      .where(
+        and(
+          eq(account.userId, session.user.id),
+          eq(account.providerId, "credential")
+        )
+      );
 
     await db
       .update(users)

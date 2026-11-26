@@ -24,7 +24,7 @@ const DonatePage = async () => {
     userLng = userData?.longitude ?? null;
   }
 
-  const donations = await getDonationsWithDistance({ userLat, userLng, limit: 50 });
+  const donations = await getDonationsWithDistance({ userLat, userLng, limit: 20 });
 
   return (
     <div className="mx-auto w-full px-4 pb-10 pt-8 sm:px-8 md:px-32 md:pb-12 md:pt-12">

@@ -20,7 +20,6 @@ import LocationFields from "@/components/LocationFields";
 import AddressSearch from "@/components/AddressSearch";
 import MapPicker from "@/components/MapPicker";
 import RejectModal from "@/components/RejectModal"; // <-- Import RejectModal
-import { ReverseGeocodeResult } from "@/lib/reverseGeocoding";
 
 interface InstitutionDetailClientProps {
   institution: {
@@ -30,14 +29,13 @@ interface InstitutionDetailClientProps {
     phoneNumber: string | null;
     city: string | null;
     state: string | null;
-    zipCode: string | null;
     address: string | null;
     latitude?: number | null;
     longitude?: number | null;
     verificationEvidence: string | null;
     websiteOrSocial: string | null;
     description: string | null;
-    status: "PENDING" | "APPROVED" | "REJECTED" | null;
+    status: "PENDING" | "APPROVED" | null;
     createdAt: Date | null;
   };
 }
@@ -96,7 +94,6 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
     detailAddress: parsedAddress.detailAddress,
     city: institution.city || "",
     state: institution.state || "",
-    zipCode: institution.zipCode || "",
     latitude: institution.latitude || null,
     longitude: institution.longitude || null,
   });
@@ -116,7 +113,6 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
     detailAddress: parsedAddress.detailAddress,
     city: institution.city,
     state: institution.state,
-    zipCode: institution.zipCode,
   });
 
   const [currentStatus, setCurrentStatus] = useState(institution.status);
@@ -192,7 +188,6 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
         detailAddress: locationData.detailAddress,
         city: locationData.city,
         state: locationData.state,
-        zipCode: locationData.zipCode,
       });
       setIsEditingLocation(false);
       setSuccessMsg("Lokasi institusi berhasil diperbarui!");
@@ -209,7 +204,6 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
       detailAddress: currentLocation.detailAddress || "",
       city: currentLocation.city || "",
       state: currentLocation.state || "",
-      zipCode: currentLocation.zipCode || "",
       latitude: institution.latitude || null,
       longitude: institution.longitude || null,
     });
@@ -225,16 +219,13 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
     street: string;
     city: string;
     state: string;
-    zipCode: string;
     latitude: number;
     longitude: number;
   }) => {
+    // Province/city are NOT auto-filled - the admin picks them manually.
     setLocationData(prev => ({
       ...prev,
       searchAddress: data.fullAddress,
-      city: data.city,
-      state: data.state,
-      zipCode: data.zipCode,
       latitude: data.latitude,
       longitude: data.longitude,
     }));
@@ -245,18 +236,6 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
   // Handle detail address edit - keep search query unchanged
   const handleDetailAddressChange = (value: string) => {
     setLocationData(prev => ({ ...prev, detailAddress: value }));
-  };
-
-  // Handle map address change from reverse geocoding
-  const handleMapAddressChange = (addressData: ReverseGeocodeResult) => {
-    if (addressData.success) {
-      setLocationData(prev => ({
-        ...prev,
-        state: addressData.state,
-        city: addressData.city,
-        zipCode: addressData.zipCode,
-      }));
-    }
   };
 
   const registrationDate = institution.createdAt
@@ -338,7 +317,7 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
                         </div>
                       )}
                       <div className="text-[13.5px] font-medium text-text-main text-gray-600">
-                        {[currentLocation.city, currentLocation.state, currentLocation.zipCode]
+                        {[currentLocation.city, currentLocation.state]
                           .filter(Boolean)
                           .join(", ") || "-"}
                       </div>
@@ -364,7 +343,7 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Search Address
+                      Search Address <span className="text-red-500">*</span>
                     </label>
                     <div className="flex gap-2">
                       <div className="flex-1">
@@ -391,18 +370,17 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
                       )}
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
-                      Search to auto-fill city, state, and zip code. You can edit these fields after selection. Detail address below is for additional information.
+                      Search to fill in the street address and coordinates. Province and city below are selected manually. Detail address below is for additional information.
                     </p>
                   </div>
 
                   <LocationFields
                     stateValue={locationData.state}
                     cityValue={locationData.city}
-                    zipCodeValue={locationData.zipCode}
                     onStateChange={(val) => setLocationData(prev => ({ ...prev, state: val }))}
                     onCityChange={(val) => setLocationData(prev => ({ ...prev, city: val }))}
-                    onZipCodeChange={(val) => setLocationData(prev => ({ ...prev, zipCode: val }))}
                     readOnly={false}
+                    required={{ state: true, city: true }}
                   />
 
                   {locationData.latitude && locationData.longitude && (
@@ -411,7 +389,7 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
                         Fine-tune Location
                       </label>
                       <p className="text-xs text-gray-500 mb-2">
-                        Drag the red marker to adjust the exact location for precise pickup/delivery. Address fields will auto-update based on the pin location.
+                        Drag the red marker to set the exact coordinates for precise pickup/delivery.
                       </p>
                       <MapPicker
                         latitude={locationData.latitude}
@@ -423,7 +401,6 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
                             longitude: lng,
                           }));
                         }}
-                        onAddressChange={handleMapAddressChange}
                         height="300px"
                       />
                     </div>
@@ -431,7 +408,7 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1" style={{ marginBottom: "4px", marginTop: "8px" }}>
-                      Detail address
+                      Detail address <span className="text-gray-400 font-normal">(Optional)</span>
                     </label>
                     <textarea
                       rows={4}

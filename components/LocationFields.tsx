@@ -1,179 +1,133 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import SearchableSelect from "./SearchableSelect";
-import {
-  INDONESIA_PROVINCES,
-  INDONESIA_CITIES_BY_PROVINCE,
-} from "@/constants/indonesiaLocations";
+import { fetchProvinces, fetchRegencies, Province, Regency } from "@/lib/wilayah";
 
-type CityData = { city: string; zipCode: string };
 type OptionData = { label: string; value: string };
 
 interface LocationFieldsProps {
   stateValue: string;
   cityValue: string;
-  zipCodeValue?: string;
   onStateChange: (state: string) => void;
   onCityChange: (city: string) => void;
-  onZipCodeChange?: (zip: string) => void;
-  onLocationChange?: (location: { state: string; city: string; zipCode?: string }) => void;
+  onLocationChange?: (location: { state: string; city: string }) => void;
   errors?: {
     state?: string;
     city?: string;
-    zipCode?: string;
   };
   readOnly?: boolean;
+  required?: {
+    state?: boolean;
+    city?: boolean;
+  };
 }
 
 const LocationFields: React.FC<LocationFieldsProps> = ({
   stateValue,
   cityValue,
-  zipCodeValue,
   onStateChange,
   onCityChange,
-  onZipCodeChange,
   onLocationChange,
   errors,
   readOnly = false,
+  required,
 }) => {
-  // Province options
-  const provinceOptions: OptionData[] = INDONESIA_PROVINCES.map((prov: string) => ({
-    label: prov,
-    value: prov,
-  }));
+  const [provinces, setProvinces] = useState<Province[]>([]);
+  const [provincesLoading, setProvincesLoading] = useState(true);
+  const [regencies, setRegencies] = useState<Regency[]>([]);
+  const [regenciesLoading, setRegenciesLoading] = useState(false);
 
-  // City options based on selected province, or all cities if no province selected
-  let cityOptionsList: CityData[] = [];
-  if (stateValue && INDONESIA_CITIES_BY_PROVINCE[stateValue]) {
-    cityOptionsList = INDONESIA_CITIES_BY_PROVINCE[stateValue];
-  } else {
-    // Show all cities if no province chosen (for initial state)
-    Object.entries(INDONESIA_CITIES_BY_PROVINCE).forEach(([, cities]: [string, CityData[]]) => {
-      cities.forEach((c: CityData) => {
-        if (!cityOptionsList.some((existing: CityData) => existing.city === c.city)) {
-          cityOptionsList.push({ city: c.city, zipCode: c.zipCode });
-        }
+  // Load provinces once
+  useEffect(() => {
+    let cancelled = false;
+    fetchProvinces()
+      .then((data) => {
+        if (!cancelled) setProvinces(data);
+      })
+      .catch((err) => {
+        console.error("Failed to load provinces:", err);
+      })
+      .finally(() => {
+        if (!cancelled) setProvincesLoading(false);
       });
-    });
-  }
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-  const cityOptions: OptionData[] = cityOptionsList.map((c: CityData) => ({
-    label: c.city,
-    value: c.city,
+  // Load regencies (kota/kabupaten) whenever the selected province changes
+  useEffect(() => {
+    const province = provinces.find((p) => p.name === stateValue);
+    if (!province) {
+      setRegencies([]);
+      return;
+    }
+
+    let cancelled = false;
+    setRegenciesLoading(true);
+    fetchRegencies(province.id)
+      .then((data) => {
+        if (!cancelled) setRegencies(data);
+      })
+      .catch((err) => {
+        console.error("Failed to load regencies:", err);
+        if (!cancelled) setRegencies([]);
+      })
+      .finally(() => {
+        if (!cancelled) setRegenciesLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [stateValue, provinces]);
+
+  const provinceOptions: OptionData[] = provinces.map((p) => ({
+    label: p.name,
+    value: p.name,
   }));
 
-  // Add current city value to options if it's not in the list (for display purposes)
-  // Also add it to the beginning so it's easily accessible
-  if (cityValue && !cityOptions.some((opt: OptionData) => opt.value === cityValue)) {
+  const cityOptions: OptionData[] = regencies.map((r) => ({
+    label: r.name,
+    value: r.name,
+  }));
+
+  // Add current values to options if they're not in the list (e.g. legacy data)
+  // so they still display correctly in the dropdown.
+  if (stateValue && !provinceOptions.some((opt) => opt.value === stateValue)) {
+    provinceOptions.unshift({ label: stateValue, value: stateValue });
+  }
+  if (cityValue && !cityOptions.some((opt) => opt.value === cityValue)) {
     cityOptions.unshift({ label: cityValue, value: cityValue });
   }
 
   const handleProvinceSelect = (prov: string) => {
-    let newCity = "";
-    let newZip = "";
-
-    const available = INDONESIA_CITIES_BY_PROVINCE[prov];
-    if (available && available.length > 0) {
-      const currentCityValid = available.some((c: CityData) => c.city === cityValue);
-      if (currentCityValid) {
-        const cityData = available.find((c: CityData) => c.city === cityValue);
-        newCity = cityValue;
-        newZip = cityData?.zipCode || "";
-      }
-      // Removed auto-select of first city - let user choose
-    }
-
+    // Clear the city when the province changes since it may no longer be valid.
     if (onLocationChange) {
-      onLocationChange({ state: prov, city: newCity, zipCode: newZip });
+      onLocationChange({ state: prov, city: "" });
     }
-
     onStateChange(prov);
-    onCityChange(newCity);
-    if (onZipCodeChange) onZipCodeChange(newZip);
+    onCityChange("");
   };
 
   const handleCitySelect = (city: string) => {
-    let found: CityData | undefined;
-    if (stateValue && INDONESIA_CITIES_BY_PROVINCE[stateValue]) {
-      found = INDONESIA_CITIES_BY_PROVINCE[stateValue].find((c: CityData) => c.city === city);
-    }
-    if (!found) {
-      Object.values(INDONESIA_CITIES_BY_PROVINCE).forEach((cities: CityData[]) => {
-        const cityFound = cities.find((c: CityData) => c.city === city);
-        if (cityFound && !found) {
-          found = cityFound;
-        }
-      });
-    }
-
-    // Auto-set zip code if found, otherwise keep current value
-    const newZipCode = found?.zipCode || zipCodeValue || "";
-
     if (onLocationChange) {
-      onLocationChange({ state: stateValue, city, zipCode: newZipCode });
+      onLocationChange({ state: stateValue, city });
     }
-
     onCityChange(city);
-    if (onZipCodeChange) onZipCodeChange(newZipCode);
-  };
-
-  const getZipCodeOptions = (): OptionData[] => {
-    const zipCodes = new Set<string>();
-    
-    // Get zip codes for the selected province and city
-    if (stateValue && cityValue && INDONESIA_CITIES_BY_PROVINCE[stateValue]) {
-      const cities = INDONESIA_CITIES_BY_PROVINCE[stateValue];
-      cities.forEach((c: CityData) => {
-        if (c.city === cityValue && c.zipCode) {
-          zipCodes.add(c.zipCode);
-        }
-      });
-    }
-    
-    // If no specific zip codes found, show all zip codes from the selected province
-    if (zipCodes.size === 0 && stateValue && INDONESIA_CITIES_BY_PROVINCE[stateValue]) {
-      const cities = INDONESIA_CITIES_BY_PROVINCE[stateValue];
-      cities.forEach((c: CityData) => {
-        if (c.zipCode) {
-          zipCodes.add(c.zipCode);
-        }
-      });
-    }
-    
-    // If still no zip codes, show all available zip codes
-    if (zipCodes.size === 0) {
-      Object.values(INDONESIA_CITIES_BY_PROVINCE).forEach((cities: CityData[]) => {
-        cities.forEach((c: CityData) => {
-          if (c.zipCode) {
-            zipCodes.add(c.zipCode);
-          }
-        });
-      });
-    }
-    
-    const options: OptionData[] = Array.from(zipCodes).map(zip => ({
-      label: zip,
-      value: zip,
-    }));
-
-    // Add current zip code value if it's not in the list (for display purposes)
-    // Also add it to the beginning so it's easily accessible
-    if (zipCodeValue && !options.some((opt: OptionData) => opt.value === zipCodeValue)) {
-      options.unshift({ label: zipCodeValue, value: zipCodeValue });
-    }
-
-    return options;
   };
 
   const readOnlyInputClass =
     "w-full px-3 py-2 border border-gray-200 rounded-sm bg-gray-50 text-gray-600 text-sm cursor-not-allowed select-none";
 
+  const loadingClass =
+    "w-full px-3 py-2 border border-gray-200 rounded-sm bg-gray-50 text-gray-400 text-sm";
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
       {/* State / Province */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">State / Province</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">State / Province{required?.state && <span className="text-red-500"> *</span>}</label>
         {readOnly && stateValue ? (
           <input
             type="text"
@@ -181,6 +135,15 @@ const LocationFields: React.FC<LocationFieldsProps> = ({
             readOnly
             tabIndex={-1}
             className={readOnlyInputClass}
+            style={{ marginTop: "4px", marginBottom: "8px", minHeight: "38px" }}
+          />
+        ) : provincesLoading ? (
+          <input
+            type="text"
+            value="Loading provinces..."
+            readOnly
+            tabIndex={-1}
+            className={loadingClass}
             style={{ marginTop: "4px", marginBottom: "8px", minHeight: "38px" }}
           />
         ) : (
@@ -196,9 +159,9 @@ const LocationFields: React.FC<LocationFieldsProps> = ({
         {errors?.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
       </div>
 
-      {/* City */}
+      {/* City / Regency */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">City / Regency{required?.city && <span className="text-red-500"> *</span>}</label>
         {readOnly && cityValue ? (
           <input
             type="text"
@@ -208,45 +171,36 @@ const LocationFields: React.FC<LocationFieldsProps> = ({
             className={readOnlyInputClass}
             style={{ marginTop: "4px", marginBottom: "8px", minHeight: "38px" }}
           />
+        ) : !stateValue ? (
+          <input
+            type="text"
+            value="Select a province first"
+            readOnly
+            tabIndex={-1}
+            className={loadingClass}
+            style={{ marginTop: "4px", marginBottom: "8px", minHeight: "38px" }}
+          />
+        ) : regenciesLoading || (stateValue && provincesLoading) ? (
+          <input
+            type="text"
+            value="Loading cities..."
+            readOnly
+            tabIndex={-1}
+            className={loadingClass}
+            style={{ marginTop: "4px", marginBottom: "8px", minHeight: "38px" }}
+          />
         ) : (
           <SearchableSelect
             key={`city-${cityValue}-${stateValue}`}
             value={cityValue}
             onChange={handleCitySelect}
             options={cityOptions}
-            placeholder="Select City"
+            placeholder="Select City / Regency"
             searchPlaceholder="Search city..."
           />
         )}
         {errors?.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
       </div>
-
-      {/* Zip Code */}
-      {onZipCodeChange && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Zip Code</label>
-          {readOnly && zipCodeValue ? (
-            <input
-              type="text"
-              value={zipCodeValue || ""}
-              readOnly
-              tabIndex={-1}
-              className={readOnlyInputClass}
-              style={{ marginTop: "4px", marginBottom: "8px", minHeight: "38px" }}
-            />
-          ) : (
-            <SearchableSelect
-              key={`zip-${zipCodeValue}-${cityValue}`}
-              value={zipCodeValue || ""}
-              onChange={(zip) => onZipCodeChange(zip)}
-              options={getZipCodeOptions()}
-              placeholder="Select Zip Code"
-              searchPlaceholder="Search zip code..."
-            />
-          )}
-          {errors?.zipCode && <p className="text-red-500 text-xs mt-1">{errors.zipCode}</p>}
-        </div>
-      )}
     </div>
   );
 };

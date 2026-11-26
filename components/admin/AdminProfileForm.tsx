@@ -138,7 +138,7 @@ const AdminProfileForm: React.FC<AdminProfileFormProps> = ({ user }) => {
       <div>
         {/* Full Name */}
         <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
-          <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Full Name</span>
+          <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Full Name <span className="text-red-500">*</span></span>
           <div className="flex items-center justify-between gap-4 w-full">
             {!isEditing ? (
               <span className="text-[13.5px] font-semibold text-text-main">
@@ -172,7 +172,7 @@ const AdminProfileForm: React.FC<AdminProfileFormProps> = ({ user }) => {
 
         {/* Email */}
         <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
-          <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Email</span>
+          <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Email <span className="text-red-500">*</span></span>
           <div className="flex items-center justify-between gap-4 w-full">
             {!isEditing ? (
               <span className="text-[13.5px] font-medium text-text-main">
@@ -258,7 +258,7 @@ const AdminProfileForm: React.FC<AdminProfileFormProps> = ({ user }) => {
 
           {/* Current Password */}
             <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
-              <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Current Password</span>
+              <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Current Password <span className="text-red-500">*</span></span>
               <div className="relative flex-1">
                 <input
                   type={showCurrentPw ? "text" : "password"}
@@ -281,7 +281,7 @@ const AdminProfileForm: React.FC<AdminProfileFormProps> = ({ user }) => {
 
             {/* New Password */}
             <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
-              <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">New Password</span>
+              <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">New Password <span className="text-red-500">*</span></span>
               <div className="relative flex-1">
                 <input
                   type={showNewPw ? "text" : "password"}
@@ -304,7 +304,7 @@ const AdminProfileForm: React.FC<AdminProfileFormProps> = ({ user }) => {
 
             {/* Confirm New Password */}
             <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
-              <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Confirm Password</span>
+              <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Confirm Password <span className="text-red-500">*</span></span>
               <div className="relative flex-1">
                 <input
                   type={showConfirmPw ? "text" : "password"}
