@@ -29,6 +29,15 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: false,
   },
+  trustedOrigins: [
+    // Local dev: allow any localhost/127.0.0.1 port (dev server port can vary)
+    "http://localhost:*",
+    "http://127.0.0.1:*",
+    "https://localhost:*",
+    "https://127.0.0.1:*",
+    "https://cheerity.vercel.app",
+    "https://cheerity-*.vercel.app",
+  ],
   rateLimit: {
     enabled: true,
     window: 60,
