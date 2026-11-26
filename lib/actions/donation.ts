@@ -16,6 +16,7 @@ import { getSession } from "@/lib/auth";
 import { sendEmail, emailTemplates } from "@/lib/email";
 import { fetchOSRMDistances, OSDestination } from "@/lib/utils/osrm";
 import { rateLimit, RATE_LIMIT_ERROR } from "@/lib/ratelimit";
+import { donationUploadSchema } from "@/lib/validations";
 
 // Returns the session's institution user id, or null if not an institution
 const requireInstitution = async () => {
@@ -77,6 +78,25 @@ export const createDonation = async (params: {
   const rl = await rateLimit("createDonation");
   if (!rl.allowed) {
     return { success: false, error: RATE_LIMIT_ERROR };
+  }
+
+  // Only the owning institution may create a donation for itself
+  const session = await getSession(await headers());
+  if (
+    !session?.user?.id ||
+    session.user.role !== "INSTITUTION" ||
+    session.user.id !== params.institutionId
+  ) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  // Re-validate server-side — client-side zod can be bypassed
+  const parsed = donationUploadSchema.safeParse(params);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: parsed.error.issues[0]?.message ?? "Invalid input.",
+    };
   }
 
   try {
@@ -238,6 +258,7 @@ export const getDonationById = async (id: string) => {
       state: donateRecords.state,
       address: donateRecords.address,
       userId: donateRecords.userId,
+      donationId: donateRecords.donationId,
     })
     .from(donateRecords)
     .innerJoin(donations, eq(donateRecords.donationId, donations.id))
@@ -245,7 +266,19 @@ export const getDonationById = async (id: string) => {
     .where(eq(donateRecords.id, id))
     .limit(1);
 
-  return record ?? null;
+  if (!record) return null;
+
+  // Access control: donor owner, owning institution, or admin only
+  const session = await getSession(await headers());
+  if (!session?.user?.id) return null;
+
+  const isAllowed =
+    session.user.role === "ADMIN" ||
+    (session.user.role === "USER" && record.userId === session.user.id) ||
+    (session.user.role === "INSTITUTION" &&
+      (await getDonationOwnerId(record.donationId)) === session.user.id);
+
+  return isAllowed ? record : null;
 };
 
 // Submit a donation request (user/donor)
@@ -1398,6 +1431,9 @@ export const getNotifications = async (
   recipientId: string,
   recipientType: "USER" | "INSTITUTION" | "ADMIN"
 ) => {
+  const session = await getSession(await headers());
+  if (!session?.user?.id || session.user.id !== recipientId) return [];
+
   return db
     .select()
     .from(notifications)
@@ -1413,6 +1449,17 @@ export const getNotifications = async (
 
 // Mark notification as read
 export const markNotificationRead = async (notificationId: string) => {
+  const session = await getSession(await headers());
+  if (!session?.user?.id) return;
+
+  const [notification] = await db
+    .select({ recipientId: notifications.recipientId })
+    .from(notifications)
+    .where(eq(notifications.id, notificationId))
+    .limit(1);
+
+  if (!notification || notification.recipientId !== session.user.id) return;
+
   await db
     .update(notifications)
     .set({ isRead: true })

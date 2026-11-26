@@ -13,6 +13,10 @@ const HistoryPage = async () => {
     redirect("/sign-in");
   }
 
+  if (session.user.role === "INSTITUTION") {
+    redirect("/institution/history");
+  }
+
   const records = await getUserDonationHistory(session.user.id);
 
   return (

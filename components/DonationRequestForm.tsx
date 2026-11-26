@@ -254,7 +254,7 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
       {/* Back Button */}
       <Link
         href={`/donations/${donation.id}`}
-        className="flex items-center gap-2 text-sm font-medium text-gray-600 mt-12 md:mt-16 hover:text-green-500 transition-colors"
+        className="flex items-center gap-2 text-sm font-medium text-gray-600 mt-12 md:mt-16 hover:text-green-900 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to Donation Details
@@ -346,7 +346,7 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
 
         {/* Form */}
         <div className="lg:col-span-2">
-          <form onSubmit={handleSubmit} className="px-2 md:px-6">
+          <form noValidate onSubmit={handleSubmit} className="px-2 md:px-6">
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Personal Information</h3>
 

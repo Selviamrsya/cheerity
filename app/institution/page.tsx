@@ -198,7 +198,7 @@ const InstitutionDashboardPage = async () => {
 
           <Link
             href="/institution/history"
-            className="text-xs font-bold --text-green-300 hover:text-green-500 flex items-center gap-1 self-start sm:self-auto"
+            className="text-xs font-bold text-green-700 hover:text-green-900 flex items-center gap-1 self-start sm:self-auto"
           >
             <span>See All</span>
             <ArrowRight className="w-3.5 h-3.5" />

@@ -121,7 +121,7 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
             </button>
           </div>
         ) : (
-          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-3.5">
+          <form noValidate onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-3.5">
             <div className="mb-3 rounded-lg border border-green-200 bg-green-50 p-3.5">
               <div className="flex items-start gap-2">
                 <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" style={{ color: "var(--color-primary)" }} />

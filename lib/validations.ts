@@ -6,23 +6,35 @@ export const signInSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
+// Phone number: 10-20 chars, digits with optional + ( ) - and spaces
+// (matches varchar(20) DB column)
+const phoneNumberSchema = z
+  .string()
+  .trim()
+  .min(10, "Phone number must be at least 10 digits")
+  .max(20, "Phone number is too long")
+  .regex(/^[0-9+()\- ]+$/, "Phone number contains invalid characters");
+
 // Sign up - donor user
-export const signUpUserSchema = z
-  .object({
-    name: z.string().min(2, "Full name must be at least 2 characters"),
-    birthdate: z.string().min(1, "Date of birth is required"),
-    phonenumber: z.string().min(10, "Phone number must be at least 10 digits"),
-    email: z.string().email("Invalid email address"),
-    city: z.string().min(2, "City is required"),
-    state: z.string().min(2, "State/Province is required"),
-    address: z
-      .string()
-      .min(5, "Address must be at least 5 characters")
-      .or(z.literal(""))
-      .optional(),
-    latitude: z.number().optional(),
-    longitude: z.number().optional(),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+const signUpUserBaseSchema = z.object({
+  name: z.string().min(2, "Full name must be at least 2 characters"),
+  birthdate: z.string().min(1, "Date of birth is required"),
+  phonenumber: phoneNumberSchema,
+  email: z.string().email("Invalid email address"),
+  city: z.string().min(2, "City is required"),
+  state: z.string().min(2, "State/Province is required"),
+  address: z
+    .string()
+    .min(5, "Address must be at least 5 characters")
+    .or(z.literal(""))
+    .optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+export const signUpUserSchema = signUpUserBaseSchema
+  .extend({
     confirmPassword: z.string().min(6, "Confirm password is required"),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -30,37 +42,46 @@ export const signUpUserSchema = z
     path: ["confirmPassword"],
   });
 
+// Server-side schema (no confirmPassword — stripped before calling the action)
+export const signUpUserServerSchema = signUpUserBaseSchema;
+
 // Sign up - institution (hasPickupService removed - set per-donation instead)
-export const signUpInstitutionSchema = z
-  .object({
-    institutionName: z
-      .string()
-      .min(2, "Institution name must be at least 2 characters"),
-    email: z.string().email("Invalid email address"),
-    phoneNumber: z.string().min(10, "Phone number must be at least 10 digits"),
-    city: z.string().min(2, "City is required"),
-    state: z.string().min(2, "State/Province is required"),
-    address: z
-      .string()
-      .min(5, "Address must be at least 5 characters")
-      .or(z.literal(""))
-      .optional(),
-    latitude: z.number().optional(),
-    longitude: z.number().optional(),
-    verificationEvidence: z
-      .string()
-      .min(1, "Verification evidence is required"),
-    websiteOrSocial: z.string().optional(),
-    description: z
-      .string()
-      .min(10, "Please provide a short description (at least 10 characters)"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+const signUpInstitutionBaseSchema = z.object({
+  institutionName: z
+    .string()
+    .min(2, "Institution name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  phoneNumber: phoneNumberSchema,
+  city: z.string().min(2, "City is required"),
+  state: z.string().min(2, "State/Province is required"),
+  address: z
+    .string()
+    .min(5, "Address must be at least 5 characters")
+    .or(z.literal(""))
+    .optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+  verificationEvidence: z
+    .string()
+    .min(1, "Verification evidence is required"),
+  websiteOrSocial: z.string().optional(),
+  description: z
+    .string()
+    .min(10, "Please provide a short description (at least 10 characters)"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+export const signUpInstitutionSchema = signUpInstitutionBaseSchema
+  .extend({
     confirmPassword: z.string().min(6, "Confirm password is required"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
   });
+
+// Server-side schema (no confirmPassword — stripped before calling the action)
+export const signUpInstitutionServerSchema = signUpInstitutionBaseSchema;
 
 // Upload donation - used by institution
 export const donationUploadSchema = z
@@ -104,7 +125,7 @@ export const donationUploadSchema = z
 export const donationRequestSchema = z.object({
   // Personal info
   donorName: z.string().min(2, "Name is required").optional(),
-  phoneNumber: z.string().min(10, "Phone number is required"),
+  phoneNumber: phoneNumberSchema,
   city: z.string().min(2, "City is required"),
   state: z.string().min(2, "State is required"),
   address: z.string().min(5, "Address is required"),

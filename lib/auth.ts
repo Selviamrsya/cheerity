@@ -47,7 +47,7 @@ export const auth = betterAuth({
   },
   advanced: {
     useAdditionalFieldsInCookie: true,
-    disableCSRFCheck: true,
+    disableCSRFCheck: false,
     generateId: () => {
       if (typeof crypto !== "undefined" && crypto.randomUUID) {
         return crypto.randomUUID();

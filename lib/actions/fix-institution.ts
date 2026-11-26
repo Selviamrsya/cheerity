@@ -4,8 +4,15 @@ import { db } from "@/app/database/drizzle";
 import { users, institutions } from "@/app/database/schema";
 import { eq } from "drizzle-orm";
 import { rateLimit, RATE_LIMIT_ERROR } from "@/lib/ratelimit";
+import { getSession } from "@/lib/auth";
+import { headers } from "next/headers";
 
 export async function fixInstitutionUserRecord(institutionId: string) {
+  const session = await getSession(await headers());
+  if (!session?.user?.id || session.user.role !== "ADMIN") {
+    return { success: false, error: "Unauthorized" };
+  }
+
   const rl = await rateLimit("debug");
   if (!rl.allowed) {
     return { success: false, error: RATE_LIMIT_ERROR };

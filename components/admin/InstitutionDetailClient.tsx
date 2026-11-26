@@ -20,6 +20,7 @@ import LocationFields from "@/components/LocationFields";
 import AddressSearch from "@/components/AddressSearch";
 import MapPicker from "@/components/MapPicker";
 import RejectModal from "@/components/RejectModal"; // <-- Import RejectModal
+import { ensureHttpUrl } from "@/lib/utils";
 
 interface InstitutionDetailClientProps {
   institution: {
@@ -456,7 +457,7 @@ const InstitutionDetailClient: React.FC<InstitutionDetailClientProps> = ({
             <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
               <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Website / Social</span>
               <a
-                href={institution.websiteOrSocial}
+                href={ensureHttpUrl(institution.websiteOrSocial)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[13.5px] hover:text-green-800 font-medium text-text-main underline inline-flex items-center gap-1.5"

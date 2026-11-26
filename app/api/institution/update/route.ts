@@ -4,6 +4,7 @@ import { db } from "@/app/database/drizzle";
 import { institutions, users } from "@/app/database/schema";
 import { eq, and, ne } from "drizzle-orm";
 import { rateLimit, RATE_LIMIT_ERROR } from "@/lib/ratelimit";
+import { ensureHttpUrl } from "@/lib/utils";
 
 export async function POST(request: NextRequest) {
   try {
@@ -73,7 +74,7 @@ export async function POST(request: NextRequest) {
     const updateData: Record<string, string | null> = {
       institutionName: institutionName.trim(),
       phoneNumber: phoneNumber ? phoneNumber.trim() : null,
-      websiteOrSocial: websiteOrSocial ? websiteOrSocial.trim() : null,
+      websiteOrSocial: websiteOrSocial ? ensureHttpUrl(websiteOrSocial.trim()) : null,
       description: description ? description.trim() : null,
     };
 

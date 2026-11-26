@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import ImageKit from "imagekit";
 import config from "@/lib/config";
 import { rateLimit, RATE_LIMIT_ERROR } from "@/lib/ratelimit";
+import { getSession } from "@/lib/auth";
 
 // Allowed image MIME types
 const ALLOWED_TYPES = ["image/jpeg", "image/png"];
@@ -16,7 +17,22 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
-    const folder = (formData.get("folder") as string) || "uploads";
+    const rawFolder = (formData.get("folder") as string) || "uploads";
+
+    // Sanitize folder to a safe ImageKit folder path
+    const safeFolder = rawFolder
+      .replace(/[^a-zA-Z0-9\-_\/]/g, "")
+      .replace(/\/{2,}/g, "/")
+      .replace(/^\/+|\/+$/g, "");
+
+    // Guests may only upload verification evidence during public signup;
+    // everything else requires an authenticated session.
+    if (safeFolder !== "verification") {
+      const session = await getSession(request.headers);
+      if (!session?.user?.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+    }
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
@@ -55,12 +71,6 @@ export async function POST(request: NextRequest) {
     // Generate unique filename to avoid collisions
     const ext = file.name.split(".").pop() || "jpg";
     const uniqueName = `${crypto.randomUUID()}.${ext}`;
-
-    // Sanitize folder to a safe ImageKit folder path
-    const safeFolder = folder
-      .replace(/[^a-zA-Z0-9\-_\/]/g, "")
-      .replace(/\/{2,}/g, "/")
-      .replace(/^\/+|\/+$/g, "");
 
     const imagekit = new ImageKit({ publicKey, privateKey, urlEndpoint });
     const result = await imagekit.upload({

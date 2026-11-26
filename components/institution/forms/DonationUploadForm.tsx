@@ -94,7 +94,7 @@ const DonationUploadForm: React.FC<DonationUploadFormProps> = ({ institutionId }
   };
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="relative flex flex-col shadow-[0_1px_3px_rgba(0,0,0,0.04)] space-y-4">
+    <form noValidate onSubmit={form.handleSubmit(onSubmit)} className="relative flex flex-col shadow-[0_1px_3px_rgba(0,0,0,0.04)] space-y-4">
       {errorMessage && (
         <div className="p-4 bg-red-50 text-red-700 rounded-xl text-sm border border-red-100 mb-4">
           {errorMessage}

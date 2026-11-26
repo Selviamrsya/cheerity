@@ -44,6 +44,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
   const [formError, setFormError] = useState<string | null>(null);
   const [userAddressValid, setUserAddressValid] = useState(false);
   const [institutionAddressValid, setInstitutionAddressValid] = useState(false);
+  const [userAddressError, setUserAddressError] = useState("");
+  const [institutionAddressError, setInstitutionAddressError] = useState("");
 
   const cardClass = cn(
     "relative z-1 w-full rounded-sm border border-gray-200 bg-white shadow-[0_4px_6px_-1px_rgba(0,0,0,0.03),0_10px_25px_-5px_rgba(0,0,0,0.04)]",
@@ -141,10 +143,11 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
 
     // Address search is required - user must select a valid address for location services
     if (!userAddressValid) {
-      setFormError("Please search and select a valid address from the suggestions.");
+      setUserAddressError("Please search and select a valid address from the suggestions.");
       setIsSubmitting(false);
       return;
     }
+    setUserAddressError("");
 
     try {
       const { confirmPassword: _cp, ...submitData } = data;
@@ -166,10 +169,11 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
 
     // Address search is required - user must select a valid address for location services
     if (!institutionAddressValid) {
-      setFormError("Please search and select a valid address from the suggestions.");
+      setInstitutionAddressError("Please search and select a valid address from the suggestions.");
       setIsSubmitting(false);
       return;
     }
+    setInstitutionAddressError("");
 
     try {
       const { confirmPassword: _cp, ...submitData } = data;
@@ -198,6 +202,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
     userSignUpForm.setValue("latitude", data.latitude, { shouldValidate: true });
     userSignUpForm.setValue("longitude", data.longitude, { shouldValidate: true });
     setUserAddressValid(true);
+    setUserAddressError("");
   };
 
   const handleInstitutionAddressSelect = (data: {
@@ -213,6 +218,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
     institutionSignUpForm.setValue("latitude", data.latitude, { shouldValidate: true });
     institutionSignUpForm.setValue("longitude", data.longitude, { shouldValidate: true });
     setInstitutionAddressValid(true);
+    setInstitutionAddressError("");
   };
 
   // Success screen after registration
@@ -295,7 +301,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
 
         {/* Sign In Form */}
         {isSignIn && (
-          <form onSubmit={signInForm.handleSubmit(handleSignInSubmit)} className="flex flex-col gap-4">
+          <form noValidate onSubmit={signInForm.handleSubmit(handleSignInSubmit)} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <FormLabel>Email <span className="text-red-500">*</span></FormLabel>
               <input type="email" placeholder="Enter your email address" {...signInForm.register("email")} className={formControlClass} />
@@ -323,7 +329,17 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
 
         {/* Sign Up - User / Donor */}
         {!isSignIn && role === "user" && (
-          <form onSubmit={userSignUpForm.handleSubmit(handleUserSignUpSubmit)} className="flex flex-col gap-4">
+          <form
+            noValidate
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!userAddressValid) {
+                setUserAddressError("Please search and select a valid address from the suggestions.");
+              }
+              void userSignUpForm.handleSubmit(handleUserSignUpSubmit)(e);
+            }}
+            className="flex flex-col gap-4"
+          >
             <div className="flex flex-col gap-1.5">
               <FormLabel>Name <span className="text-red-500">*</span></FormLabel>
               <input type="text" placeholder="Enter your full name" {...userSignUpForm.register("name")} className={formControlClass} />
@@ -353,8 +369,14 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
               <FormLabel>Search Address <span className="text-red-500">*</span></FormLabel>
               <AddressSearch
                 onAddressSelect={handleUserAddressSelect}
-                onClear={() => setUserAddressValid(false)}
+                onClear={() => {
+                  setUserAddressValid(false);
+                  setUserAddressError("");
+                }}
               />
+              {userAddressError && (
+                <p className="mt-0.5 text-xs text-red-600">{userAddressError}</p>
+              )}
               <p className="mt-1 text-xs text-on-surface-variant">
                 Search and select your address from the suggestions. This is required for location services. Province and city below are selected manually.
               </p>
@@ -428,7 +450,17 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
 
         {/* Sign Up - Institution */}
         {!isSignIn && role === "institution" && (
-          <form onSubmit={institutionSignUpForm.handleSubmit(handleInstitutionSignUpSubmit)} className="flex flex-col gap-4">
+          <form
+            noValidate
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!institutionAddressValid) {
+                setInstitutionAddressError("Please search and select a valid address from the suggestions.");
+              }
+              void institutionSignUpForm.handleSubmit(handleInstitutionSignUpSubmit)(e);
+            }}
+            className="flex flex-col gap-4"
+          >
             <div className="flex flex-col gap-1.5">
               <FormLabel>Institution Name <span className="text-red-500">*</span></FormLabel>
               <input type="text" placeholder="Enter institution name" {...institutionSignUpForm.register("institutionName")} className={formControlClass} />
@@ -451,8 +483,14 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
               <FormLabel>Search Address <span className="text-red-500">*</span></FormLabel>
               <AddressSearch
                 onAddressSelect={handleInstitutionAddressSelect}
-                onClear={() => setInstitutionAddressValid(false)}
+                onClear={() => {
+                  setInstitutionAddressValid(false);
+                  setInstitutionAddressError("");
+                }}
               />
+              {institutionAddressError && (
+                <p className="mt-0.5 text-xs text-red-600">{institutionAddressError}</p>
+              )}
               <p className="text-xs text-on-surface-variant">
                 Search and select your institution address from the suggestions. This is required for location services. Province and city below are selected manually.
               </p>

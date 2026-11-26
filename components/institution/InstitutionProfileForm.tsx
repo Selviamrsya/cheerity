@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Edit2, FileText, ExternalLink, Info, Loader2, Eye, EyeOff } from "lucide-react";
+import { ensureHttpUrl } from "@/lib/utils";
 
 interface Institution {
   id: string;
@@ -238,7 +239,7 @@ const InstitutionProfileForm: React.FC<InstitutionProfileFormProps> = ({
               <span className="text-[13.5px] font-medium text-text-main">
                 {institution.websiteOrSocial ? (
                   <a
-                    href={institution.websiteOrSocial}
+                    href={ensureHttpUrl(institution.websiteOrSocial)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-green-700 underline inline-flex items-center gap-1"

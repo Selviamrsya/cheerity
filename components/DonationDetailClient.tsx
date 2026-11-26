@@ -179,7 +179,7 @@ const DonationDetailClient: React.FC<DonationDetailClientProps> = ({ record, use
     <div className="w-full">
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-2 text-sm font-medium text-gray-600 -mt-4 hover:text-green-500 mb-4 transition-colors"
+        className="flex items-center gap-2 text-sm font-medium text-gray-600 -mt-4 hover:text-green-900 mb-4 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to History
@@ -264,7 +264,7 @@ const DonationDetailClient: React.FC<DonationDetailClientProps> = ({ record, use
               <button
                 onClick={() => handleUploadDocumentationSubmit(record.id)}
                 disabled={loadingId === record.id}
-                className="mb-2 w-full py-2 bg-primary hover:bg-green-500 text-white text-sm font-semibold rounded-sm transition-colors disabled:opacity-50 cursor-pointer"
+                className="mb-2 w-full py-2 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-sm transition-colors disabled:opacity-50 cursor-pointer"
               >
                 {loadingId === record.id ? "Submitting..." : "Submit Photo"}
               </button>
@@ -456,7 +456,7 @@ const DonationDetailClient: React.FC<DonationDetailClientProps> = ({ record, use
                 <button
                   onClick={() => handleApprove(record.id)}
                   disabled={loadingId === record.id}
-                  className="flex-1 px-9 py-2 bg-primary hover:bg-green-500 text-white font-semibold text-sm rounded-sm transition-colors disabled:opacity-50 cursor-pointer"
+                  className="flex-1 px-9 py-2 bg-primary hover:bg-primary-dark text-white font-semibold text-sm rounded-sm transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   {loadingId === record.id ? "Accepting..." : "Accept Request"}
                 </button>
@@ -477,7 +477,7 @@ const DonationDetailClient: React.FC<DonationDetailClientProps> = ({ record, use
               <button
                 onClick={() => setConfirmingDoneId(record.id)}
                 disabled={loadingId === record.id}
-                className="flex-1 px-5 py-2 bg-primary hover:bg-green-500 text-white font-semibold text-sm rounded-sm transition-colors disabled:opacity-50 cursor-pointer"
+                className="flex-1 px-5 py-2 bg-primary hover:bg-primary-dark text-white font-semibold text-sm rounded-sm transition-colors disabled:opacity-50 cursor-pointer"
               >
                 {loadingId === record.id ? "Updating..." : "Mark as done"}
               </button>
@@ -542,7 +542,7 @@ const DonationDetailClient: React.FC<DonationDetailClientProps> = ({ record, use
                   setConfirmingDoneId(null);
                 }}
                 disabled={loadingId === confirmingDoneId}
-                className="inline-flex cursor-pointer items-center gap-2 rounded-sm bg-primary px-5 py-2 text-xs font-semibold text-white transition-colors hover:bg-green-500 disabled:opacity-50"
+                className="inline-flex cursor-pointer items-center gap-2 rounded-sm bg-primary px-5 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary-dark disabled:opacity-50"
               >
                 {loadingId === confirmingDoneId ? "Updating..." : "Yes, Mark as Done"}
               </button>

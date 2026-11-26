@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, MapPin, Package, Truck } from "lucide-react";
 import { CATEGORY_LABELS, DELIVERY_METHOD_LABELS } from "@/constants";
+import { ensureHttpUrl } from "@/lib/utils";
 
 interface DonationOverviewProps {
   id: string;
@@ -60,7 +61,7 @@ const DonationOverview: React.FC<DonationOverviewProps> = ({
       {/* Back Button */}
       <Link
         href="/donate"
-        className="flex items-center gap-2 text-sm font-medium text-gray-600 mt-12 md:mt-16 hover:text-green-500 transition-colors"
+        className="flex items-center gap-2 text-sm font-medium text-gray-600 mt-12 md:mt-16 hover:text-green-900 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to Donations
@@ -233,10 +234,10 @@ const DonationOverview: React.FC<DonationOverviewProps> = ({
                     <span className="text-gray-600 font-medium text-sm">Institution social media</span>
                     <span className="text-gray-400">:</span>
                     <a
-                      href={institutionWebsite}
+                      href={ensureHttpUrl(institutionWebsite)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-green-700 hover:text-green-500 font-medium underline cursor-pointer"
+                      className="text-sm text-green-700 hover:text-green-900 font-medium underline cursor-pointer"
                     >
                       {institutionWebsite}
                     </a>

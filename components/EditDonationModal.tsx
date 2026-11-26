@@ -143,7 +143,7 @@ export default function EditDonationModal({
             <p className="text-base font-bold text-gray-900">Donation Updated Successfully!</p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form noValidate onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg">
                 {error}

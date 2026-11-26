@@ -46,8 +46,8 @@ export async function POST(request: NextRequest) {
 
     // Donor profile fields are required for USER role
     if (session.user.role === "USER") {
-      if (!phoneNumber || phoneNumber.trim().length < 10) {
-        return NextResponse.json({ error: "Phone number is required (at least 10 digits)" }, { status: 400 });
+      if (!phoneNumber || !/^[0-9+()\- ]{10,20}$/.test(phoneNumber.trim())) {
+        return NextResponse.json({ error: "Phone number is required (10-20 digits, only numbers and + ( ) - allowed)" }, { status: 400 });
       }
 
       if (!birthdate || birthdate.trim() === "") {

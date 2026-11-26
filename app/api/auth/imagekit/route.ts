@@ -1,9 +1,15 @@
 import ImageKit from "imagekit";
 import config from "@/lib/config";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { rateLimit, RATE_LIMIT_ERROR } from "@/lib/ratelimit";
+import { getSession } from "@/lib/auth";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const session = await getSession(request.headers);
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const rl = await rateLimit("imagekitAuth");
   if (!rl.allowed) {
     return NextResponse.json({ error: RATE_LIMIT_ERROR }, { status: 429 });

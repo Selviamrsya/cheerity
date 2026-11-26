@@ -67,10 +67,10 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
       return;
     }
 
-    if (!formData.phoneNumber || formData.phoneNumber.trim().length < 10) {
+    if (!/^[0-9+()\- ]{10,20}$/.test(formData.phoneNumber.trim())) {
       setMessage({
         type: "error",
-        text: "Phone number is required (at least 10 digits).",
+        text: "Phone number is required (10-20 digits, only numbers and + ( ) - allowed).",
       });
       setIsSaving(false);
       return;

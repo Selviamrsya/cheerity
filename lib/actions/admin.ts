@@ -14,6 +14,16 @@ import { rateLimit, RATE_LIMIT_ERROR } from "@/lib/ratelimit";
 // Get stats for admin dashboard
 export const getAdminDashboardStats = async () => {
   try {
+    if (!(await requireAdmin())) {
+      return {
+        totalUsers: 0,
+        totalInstitutions: 0,
+        pendingInstitutions: 0,
+        totalDonations: 0,
+        totalRequests: 0,
+      };
+    }
+
     const [totalUsers] = await db
       .select({ count: count() })
       .from(users)
@@ -55,6 +65,8 @@ export const getAdminDashboardStats = async () => {
 // Get donation categories distribution for pie chart
 export const getDonationCategoriesStats = async () => {
   try {
+    if (!(await requireAdmin())) return [];
+
     const categoryStats = await db
       .select({
         category: donations.category,
@@ -80,6 +92,10 @@ export const getDonationCategoriesStats = async () => {
 // Get donation categories distribution with period filter (weekly, monthly, yearly)
 export const getDonationCategoriesStatsWithPeriod = async () => {
   try {
+    if (!(await requireAdmin())) {
+      return { weekly: [], monthly: [], yearly: [] };
+    }
+
     const records = await db
       .select({
         category: donations.category,
@@ -148,6 +164,10 @@ export const getDonationCategoriesStatsWithPeriod = async () => {
 // Get donation activity for chart (weekly, monthly, yearly)
 export const getDonationActivityStats = async () => {
   try {
+    if (!(await requireAdmin())) {
+      return { weekly: [], monthly: [], yearly: [] };
+    }
+
     const records = await db
       .select({
         id: donateRecords.id,

@@ -44,6 +44,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    if (!/^[0-9+()\- ]{10,20}$/.test(phoneNumber.trim())) {
+      return NextResponse.json({ error: "Invalid phone number format" }, { status: 400 });
+    }
+
     // Validate quantity format (must be a positive whole number)
     if (typeof quantity !== "number" || !Number.isInteger(quantity) || quantity <= 0) {
       return NextResponse.json(

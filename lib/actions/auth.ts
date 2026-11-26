@@ -9,6 +9,8 @@ import { after } from "next/server";
 import { geocodeAddress } from "@/lib/geocoding";
 import { sendEmail, emailTemplates } from "@/lib/email";
 import { rateLimit, RATE_LIMIT_ERROR } from "@/lib/ratelimit";
+import { ensureHttpUrl } from "@/lib/utils";
+import { signUpUserServerSchema, signUpInstitutionServerSchema } from "@/lib/validations";
 
 // Postgres unique violation (e.g. users.email already registered)
 const isUniqueViolation = (error: unknown) =>
@@ -62,12 +64,21 @@ export const signUpUser = async (params: {
   longitude?: number;
   password: string;
 }) => {
-  const { name, birthdate, phonenumber, email, city, state, address, latitude, longitude, password } = params;
-
   const rl = await rateLimit("signUp");
   if (!rl.allowed) {
     return { success: false, error: RATE_LIMIT_ERROR };
   }
+
+  // Re-validate server-side — client-side zod can be bypassed
+  const parsed = signUpUserServerSchema.safeParse(params);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: parsed.error.issues[0]?.message ?? "Invalid input.",
+    };
+  }
+  const data = parsed.data;
+  const email = data.email.trim().toLowerCase();
 
   const existingUser = await db
     .select({ id: users.id })
@@ -81,25 +92,25 @@ export const signUpUser = async (params: {
 
   // Use coordinates from address search if provided, otherwise geocode
   let coords = null;
-  if (latitude != null && longitude != null) {
-    coords = { lat: latitude, lng: longitude };
-    console.log("User signup using coordinates from address search:", { address, city, state, coords });
+  if (data.latitude != null && data.longitude != null) {
+    coords = { lat: data.latitude, lng: data.longitude };
+    console.log("User signup using coordinates from address search:", { address: data.address, city: data.city, state: data.state, coords });
   } else {
     // Geocode address to coordinates for distance calculation
-    coords = await geocodeAddress(address || "", city, state);
-    console.log("User signup geocoding:", { address, city, state, coords });
+    coords = await geocodeAddress(data.address || "", data.city, data.state);
+    console.log("User signup geocoding:", { address: data.address, city: data.city, state: data.state, coords });
   }
 
   try {
     const result = await betterAuthSignUpUser({
-      name,
+      name: data.name,
       email,
-      password,
-      birthdate,
-      phoneNumber: phonenumber,
-      city,
-      state,
-      address: address?.trim() ? address : undefined,
+      password: data.password,
+      birthdate: data.birthdate,
+      phoneNumber: data.phonenumber,
+      city: data.city,
+      state: data.state,
+      address: data.address?.trim() ? data.address : undefined,
     });
 
     if (!result.success) {
@@ -124,12 +135,12 @@ export const signUpUser = async (params: {
     }
 
     // Send welcome email (non-blocking)
-    const template = emailTemplates.welcomeUser(name);
+    const template = emailTemplates.welcomeUser(data.name);
     after(() => sendEmail({ to: email, ...template }));
 
     // Auto sign in after registration with headers for session
     const reqHeaders = await headers();
-    await betterAuthSignIn(email, password, reqHeaders);
+    await betterAuthSignIn(email, data.password, reqHeaders);
     return { success: true };
   } catch (error) {
     console.error("Signup error:", error);
@@ -154,25 +165,21 @@ export const signUpInstitution = async (params: {
   description: string;
   password: string;
 }) => {
-  const {
-    institutionName,
-    email,
-    phoneNumber,
-    city,
-    state,
-    address,
-    latitude,
-    longitude,
-    verificationEvidence,
-    websiteOrSocial,
-    description,
-    password,
-  } = params;
-
   const rl = await rateLimit("signUp");
   if (!rl.allowed) {
     return { success: false, error: RATE_LIMIT_ERROR };
   }
+
+  // Re-validate server-side — client-side zod can be bypassed
+  const parsed = signUpInstitutionServerSchema.safeParse(params);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: parsed.error.issues[0]?.message ?? "Invalid input.",
+    };
+  }
+  const data = parsed.data;
+  const email = data.email.trim().toLowerCase();
 
   // users.email is globally unique across all roles — check it first so a
   // donor's email can't be reused for an institution registration.
@@ -188,27 +195,27 @@ export const signUpInstitution = async (params: {
 
   // Use coordinates from address search if provided, otherwise geocode
   let coords = null;
-  if (latitude != null && longitude != null) {
-    coords = { lat: latitude, lng: longitude };
-    console.log("Institution signup using coordinates from address search:", { address, city, state, coords });
+  if (data.latitude != null && data.longitude != null) {
+    coords = { lat: data.latitude, lng: data.longitude };
+    console.log("Institution signup using coordinates from address search:", { address: data.address, city: data.city, state: data.state, coords });
   } else {
     // Geocode institution address
-    coords = await geocodeAddress(address || "", city, state);
-    console.log("Institution signup geocoding:", { address, city, state, coords });
+    coords = await geocodeAddress(data.address || "", data.city, data.state);
+    console.log("Institution signup geocoding:", { address: data.address, city: data.city, state: data.state, coords });
   }
 
   try {
     const result = await betterAuthSignUpInstitution({
-      institutionName,
+      institutionName: data.institutionName,
       email,
-      password,
-      phoneNumber,
-      city,
-      state,
-      address: address?.trim() ? address : undefined,
-      verificationEvidence,
-      websiteOrSocial,
-      description,
+      password: data.password,
+      phoneNumber: data.phoneNumber,
+      city: data.city,
+      state: data.state,
+      address: data.address?.trim() ? data.address : undefined,
+      verificationEvidence: data.verificationEvidence,
+      websiteOrSocial: data.websiteOrSocial ? ensureHttpUrl(data.websiteOrSocial.trim()) : data.websiteOrSocial,
+      description: data.description,
     });
 
     if (!result.success) {
@@ -235,7 +242,7 @@ export const signUpInstitution = async (params: {
 
     // Notify admin about new institution registration via email
     const adminEmail = process.env.ADMIN_EMAIL || "admin@cheerity.com";
-    const adminTemplate = emailTemplates.newInstitutionRegistration(institutionName, email);
+    const adminTemplate = emailTemplates.newInstitutionRegistration(data.institutionName, email);
     after(() => sendEmail({ to: adminEmail, ...adminTemplate }));
 
     // Institution must wait for admin approval before logging in
