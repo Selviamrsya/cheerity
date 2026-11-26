@@ -63,7 +63,8 @@ const AddressSearch: React.FC<AddressSearchProps> = ({
       url.searchParams.set("q", `${searchQuery}, Indonesia`);
       url.searchParams.set("format", "json");
       url.searchParams.set("addressdetails", "1");
-      url.searchParams.set("limit", "5");
+      url.searchParams.set("countrycodes", "id");
+      url.searchParams.set("limit", "8");
 
       const response = await fetch(url.toString(), {
         headers: {
@@ -101,7 +102,7 @@ const AddressSearch: React.FC<AddressSearchProps> = ({
         setResults([]);
         setShowResults(false);
       }
-    }, 500);
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, [query, searchAddresses]);
@@ -171,6 +172,16 @@ const AddressSearch: React.FC<AddressSearchProps> = ({
             setSelectedAddress(null);
           }}
           onFocus={() => query.length > 3 && setShowResults(true)}
+          onKeyDown={(e) => {
+            // Prevent implicit form submission — this input isn't a registered
+            // form field, and Enter would trigger validation + focus jumps.
+            if (e.key === "Enter") {
+              e.preventDefault();
+              if (showResults && results.length > 0) {
+                handleSelect(results[0]);
+              }
+            }
+          }}
           placeholder="Search address (e.g., Jl. Sudirman, Jakarta)"
           disabled={disabled}
           className={`w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400 ${disabled ? "bg-gray-100 text-gray-500 cursor-not-allowed opacity-75" : ""
