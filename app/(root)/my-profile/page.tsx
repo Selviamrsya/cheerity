@@ -47,7 +47,7 @@ const ProfilePage = async () => {
         <div className="mb-4 mt-8">
           <Link 
             href="/" 
-            className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-green-800 transition-colors"
+            className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-green-700 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back</span>
@@ -60,7 +60,7 @@ const ProfilePage = async () => {
             style={{ paddingBottom: "12px" }}
           >
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-green-800 text-white flex items-center justify-center font-bold text-2xl">
+              <div className="w-16 h-16 rounded-full bg-green-700 text-white flex items-center justify-center font-bold text-2xl">
                 {user.fullName?.charAt(0).toUpperCase() || "U"}
               </div>
               <div>

@@ -67,10 +67,28 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
       return;
     }
 
-    if (!formData.city && !formData.state) {
+    if (!formData.phoneNumber || formData.phoneNumber.trim().length < 10) {
       setMessage({
         type: "error",
-        text: "Please provide at least city or state for location services.",
+        text: "Phone number is required (at least 10 digits).",
+      });
+      setIsSaving(false);
+      return;
+    }
+
+    if (!formData.birthdate) {
+      setMessage({
+        type: "error",
+        text: "Date of birth is required.",
+      });
+      setIsSaving(false);
+      return;
+    }
+
+    if (!formData.city || !formData.state) {
+      setMessage({
+        type: "error",
+        text: "Please select both province and city for location services.",
       });
       setIsSaving(false);
       return;
@@ -223,7 +241,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
               <button
                 type="button"
                 onClick={() => setIsEditing(true)}
-                className="shrink-0 inline-flex items-center gap-1.5 px-6 py-3 text-xs font-semibold text-gray-500 hover:text-green-800 cursor-pointer"
+                className="shrink-0 inline-flex items-center gap-1.5 px-6 py-3 text-xs font-medium text-gray-500 hover:text-green-700 cursor-pointer"
                 style={{ padding: "8px 12px" }}
               >
                 <Edit2 className="w-3.5 h-3.5" />
@@ -235,7 +253,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
 
         {/* Phone Number */}
         <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
-          <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Phone Number</span>
+          <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Phone Number{isEditing && <span className="text-red-500"> *</span>}</span>
           <div className="flex items-center justify-between gap-4 w-full">
             {!isEditing ? (
               <span className="text-[13.5px] font-medium text-text-main">{user.phoneNumber || "-"}</span>
@@ -254,7 +272,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
 
         {/* Date of Birth */}
         <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
-          <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Date of Birth</span>
+          <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase">Date of Birth{isEditing && <span className="text-red-500"> *</span>}</span>
           <div className="flex items-center justify-between gap-4 w-full">
             {!isEditing ? (
               <span className="text-[13.5px] font-medium text-text-main">{user.birthdate || "-"}</span>
@@ -272,7 +290,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
 
         {/* Address section */}
         <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3" style={{ alignItems: "flex-start" }}>
-          <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase" style={{ paddingTop: "8px" }}>Address</span>
+          <span className="text-[11.5px] font-bold tracking-wide text-text-subtle uppercase" style={{ paddingTop: "8px" }}>Address{isEditing && <span className="text-red-500"> *</span>}</span>
           <div className="flex items-center justify-between gap-4 w-full">
             {!isEditing ? (
               <div className="space-y-2">
@@ -291,7 +309,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-1" style={{ marginBottom: "4px" }}>
                     Search Address <span className="text-red-500">*</span>
                   </label>
-                  <div className="rounded-sm border border-gray-300 bg-white focus-within:border-green-800 focus-within:ring-1 focus-within:ring-green-800">
+                  <div className="rounded-sm border border-gray-300 bg-white focus-within:border-green-700 focus-within:ring-1 focus-within:ring-green-700">
                     <AddressSearch
                       onAddressSelect={handleAddressSelect}
                       onClear={() => setAddressValid(false)}
@@ -353,6 +371,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
                       city: location.city,
                     }))}
                     readOnly={false}
+                    required={{ state: true, city: true }}
                   />
                 </div>
               </div>
@@ -367,7 +386,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
           {message && (
             <div
               className={`rounded-sm ${message.type === "success"
-                ? "bg-green-50 text-green-800 border border-green-200"
+                ? "bg-green-50 text-green-700 border border-green-200"
                 : "bg-red-50 text-red-800 border border-red-200"
                 }`}
               style={{ padding: "12px 16px", marginBottom: "16px" }}
@@ -380,7 +399,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
             <button
               onClick={handleSave}
               disabled={isSaving}
-              className="font-medium text-white inline-flex w-auto items-center justify-center gap-2 rounded-sm bg-primary px-6 py-2 font-inter text-[15px] transition-all hover:bg-primary-dark disabled:opacity-50"
+              className="font-medium text-white inline-flex w-auto items-center justify-center gap-2 rounded-sm bg-primary px-6 py-2 font-medium font-inter text-[15px] transition-all hover:bg-primary-dark disabled:opacity-50"
               style={{ width: "auto", padding: "10px 24px" }}
             >
               {isSaving ? (
@@ -395,7 +414,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
             <button
               onClick={handleCancel}
               disabled={isSaving}
-              className="inline-flex w-auto items-center justify-center gap-2 rounded-sm border border-outline bg-white px-6 py-2 font-inter text-[15px] font-semibold text-on-surface transition-all hover:bg-bg-light disabled:opacity-50"
+              className="inline-flex w-auto items-center justify-center gap-2 rounded-sm border border-outline bg-white px-6 py-2 font-medium font-inter text-[15px] font-medium text-on-surface transition-all hover:bg-bg-light disabled:opacity-50"
               style={{ padding: "10px 24px" }}
             >
               Cancel
@@ -410,13 +429,13 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
           <button
             type="button"
             onClick={() => setShowPasswordSection(true)}
-            className="text-md font-semibold text-gray-500 hover:text-green-800 transition-colors cursor-pointer"
+            className="text-sm font-medium text-gray-500 hover:text-green-700 transition-colors cursor-pointer"
           >
             Change Password
           </button>
         ) : (
           <div className="space-y-4">
-            <h3 className="text-md font-semibold text-gray-700 mt-6">Change Password</h3>
+            <h4 className="text-sm font-medium text-gray-700 mt-6">Change Password</h4>
 
             {/* Current Password */}
             <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
@@ -490,7 +509,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
             {passwordMessage && (
               <div
                 className={`rounded-sm text-xs ${passwordMessage.type === "success"
-                  ? "bg-green-50 text-green-800 border border-green-200"
+                  ? "bg-green-50 text-green-700 border border-green-200"
                   : "bg-red-50 text-red-800 border border-red-200"
                   }`}
                 style={{ padding: "12px 16px", marginBottom: "16px" }}
@@ -503,7 +522,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
               <button
                 onClick={handleChangePassword}
                 disabled={isChangingPassword}
-                className="inline-flex items-center justify-center gap-2 rounded-sm bg-primary px-4 py-1.5 font-inter text-sm font-semibold text-white transition-all hover:bg-primary-dark disabled:opacity-50 cursor-pointer"
+                className="inline-flex items-center justify-center gap-2 rounded-sm bg-primary px-4 py-2 font-inter text-sm text-white transition-all hover:bg-primary-dark disabled:opacity-50 cursor-pointer"
                 >
                 {isChangingPassword ? (
                   <>
@@ -517,7 +536,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({ user }) => {
               <button
                 onClick={handleCancelPassword}
                 disabled={isChangingPassword}
-                className="inline-flex items-center justify-center gap-2 rounded-sm border border-outline bg-white px-4 py-1.5 font-inter text-sm font-semibold text-on-surface transition-all hover:bg-bg-light disabled:opacity-50 cursor-pointer"
+                className="inline-flex items-center justify-center gap-2 rounded-sm border border-outline bg-white px-4 py-2 font-inter text-sm text-on-surface transition-all hover:bg-bg-light disabled:opacity-50 cursor-pointer"
               >
                 Cancel
               </button>

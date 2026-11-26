@@ -57,7 +57,7 @@ const DonationDetailPage = async ({
   let userLat: number | null = null;
   let userLng: number | null = null;
 
-  if (session?.user?.id && (session.user.role === "USER" || session.user.role === "ADMIN")) {
+  if (session?.user?.id && session.user.role === "USER") {
     const [userData] = await db
       .select({ latitude: donatur.latitude, longitude: donatur.longitude })
       .from(donatur)
@@ -124,7 +124,7 @@ const DonationDetailPage = async ({
         institutionWebsite={campaign.institutionWebsite}
         distanceKm={distanceKm}
         drivingDistanceKm={drivingDistanceKm}
-        userId={session?.user?.id ?? null}
+        userId={session?.user?.role === "USER" ? session.user.id : null}
       />
     </div>
   );

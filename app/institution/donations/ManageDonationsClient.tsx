@@ -173,7 +173,7 @@ const ManageDonationsClient = ({ donations }: ManageDonationsClientProps) => {
                     <td data-label="Category" className="relative hidden border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4 md:table-cell">
                       {CATEGORY_LABELS[d.category] || d.category}
                     </td>
-                    <td data-label="Collected" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[11px] sm:px-4 font-bold text-green-900">
+                    <td data-label="Collected" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[11px] sm:px-4 font-bold text-green-500">
                       {d.collected} / {d.target}
                     </td>
                     <td data-label="Delivery Option" className="relative hidden border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4 md:table-cell">

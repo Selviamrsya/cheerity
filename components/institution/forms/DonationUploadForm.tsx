@@ -159,7 +159,7 @@ const DonationUploadForm: React.FC<DonationUploadFormProps> = ({ institutionId }
               type="checkbox"
               checked={selectedMethods.includes("self_delivery")}
               onChange={() => handleMethodToggle("self_delivery")}
-              className="w-4 h-4 rounded border-gray-300 cursor-pointer accent-green-900 text-green-800 focus:ring-green-800"
+              className="w-4 h-4 rounded border-gray-300 cursor-pointer accent-green-500 text-green-800 focus:ring-green-800"
             />
             <span>Self Delivery (Donor delivers to institution)</span>
           </label>
@@ -169,7 +169,7 @@ const DonationUploadForm: React.FC<DonationUploadFormProps> = ({ institutionId }
               type="checkbox"
               checked={selectedMethods.includes("third_party_courier")}
               onChange={() => handleMethodToggle("third_party_courier")}
-              className="w-4 h-4 rounded border-gray-300 accent-green-900 text-green-800 focus:ring-green-800"
+              className="w-4 h-4 rounded border-gray-300 accent-green-500 text-green-800 focus:ring-green-800"
             />
             <span>Third Party Courier Service</span>
           </label>
@@ -179,7 +179,7 @@ const DonationUploadForm: React.FC<DonationUploadFormProps> = ({ institutionId }
               type="checkbox"
               checked={selectedMethods.includes("pickup_by_institution")}
               onChange={() => handleMethodToggle("pickup_by_institution")}
-              className="w-4 h-4 rounded border-gray-300 accent-green-900 text-green-800 focus:ring-green-800"
+              className="w-4 h-4 rounded border-gray-300 accent-green-500 text-green-800 focus:ring-green-800"
             />
             <span>Pickup Service by Institution</span>
           </label>

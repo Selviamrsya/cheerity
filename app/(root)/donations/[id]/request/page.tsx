@@ -18,7 +18,7 @@ const DonationRequestPage = async ({
   const reqHeaders = await headers();
   const session = await getSession(reqHeaders);
 
-  if (!session?.user?.id || (session.user.role !== "USER" && session.user.role !== "ADMIN")) {
+  if (!session?.user?.id || session.user.role !== "USER") {
     redirect("/sign-in");
   }
 

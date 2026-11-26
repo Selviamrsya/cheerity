@@ -222,7 +222,7 @@ const InstitutionNavbar: React.FC<InstitutionNavbarProps> = ({ session }) => {
                   <Link
                     href="/institution/profile"
                     onClick={() => setProfileOpen(false)}
-                    className="flex w-full cursor-pointer items-center gap-2.5 rounded-sm border-none bg-transparent px-3 py-2 font-inter text-[12.5px] font-semibold text-text-main no-underline transition-all hover:bg-primary-50 hover:text-primary-800"
+                    className="flex w-full cursor-pointer items-center gap-2.5 rounded-sm border-none bg-transparent px-3 py-2 font-inter text-[12.5px] font-semibold text-text-main no-underline transition-all hover:bg-primary-50 hover:text-primary-500"
                   >
                     <User className="w-3.5 h-3.5 text-gray-500" />
                     <span>Institution Profile</span>
@@ -230,7 +230,7 @@ const InstitutionNavbar: React.FC<InstitutionNavbarProps> = ({ session }) => {
                   <Link
                     href="/"
                     onClick={() => setProfileOpen(false)}
-                    className="flex w-full cursor-pointer items-center gap-2.5 rounded-sm border-none bg-transparent px-3 py-2 font-inter text-[12.5px] font-semibold text-text-main no-underline transition-all hover:bg-primary-50 hover:text-primary-800"
+                    className="flex w-full cursor-pointer items-center gap-2.5 rounded-sm border-none bg-transparent px-3 py-2 font-inter text-[12.5px] font-semibold text-text-main no-underline transition-all hover:bg-primary-50 hover:text-primary-500"
                   >
                     <Globe className="w-3.5 h-3.5 text-gray-500"/>
                     <span>Go to the public web</span>

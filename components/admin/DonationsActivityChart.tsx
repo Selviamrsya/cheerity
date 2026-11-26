@@ -133,7 +133,7 @@ export default function DonationsActivityChart({ data }: DonationsActivityChartP
                 data-active={isActive}
                 className={`cursor-pointer rounded-md border-none px-4 py-1.5 font-inter text-xs font-medium capitalize transition-all ${
                   isActive
-                    ? "bg-surface text-primary-900 shadow-sm font-semibold"
+                    ? "bg-surface text-primary shadow-sm font-semibold"
                     : "bg-transparent text-text-muted hover:text-text-main"
                 }`}
               >
@@ -190,7 +190,7 @@ export default function DonationsActivityChart({ data }: DonationsActivityChartP
           {pathD && (
             <path
               d={pathD}
-              className="fill-none stroke-primary-800 stroke-[3.5] [stroke-linecap:round] [stroke-linejoin:round]"
+              className="fill-none stroke-primary stroke-[3.5] [stroke-linecap:round] [stroke-linejoin:round]"
             />
           )}
 
@@ -210,7 +210,7 @@ export default function DonationsActivityChart({ data }: DonationsActivityChartP
                 cx={p.x}
                 cy={p.y}
                 r={hoveredIndex === idx ? 6 : 4}
-                className={`fill-surface stroke-primary-800 stroke-[1.5] transition-all data-[active=true]:fill-primary-800 data-[active=true]:stroke-[2.5] ${hoveredIndex === idx ? "active" : ""}`}
+                className={`fill-surface stroke-primary-500 stroke-[1.5] transition-all data-[active=true]:fill-primary-500 data-[active=true]:stroke-[2.5] ${hoveredIndex === idx ? "active" : ""}`}
               />
 
               {/* X-axis Label */}
@@ -218,7 +218,7 @@ export default function DonationsActivityChart({ data }: DonationsActivityChartP
                 x={p.x}
                 y={height - 12}
                 textAnchor="middle"
-                className={`fill-text-subtle font-poppins text-xs font-medium transition-[fill] data-[active=true]:fill-primary-900 ${hoveredIndex === idx ? "active" : ""}`}
+                className={`fill-text-subtle font-poppins text-xs font-medium transition-[fill] data-[active=true]:fill-primary-700 ${hoveredIndex === idx ? "active" : ""}`}
               >
                 {p.label}
               </text>
@@ -227,22 +227,33 @@ export default function DonationsActivityChart({ data }: DonationsActivityChartP
         </svg>
 
         {/* Hover Tooltip Popup */}
-        {hoveredIndex !== null && points[hoveredIndex] && (
-          <div
-            className="pointer-events-none absolute z-10 mt-[-10px] -translate-x-1/2 -translate-y-full rounded-md bg-text-main px-3 py-2 font-inter text-[11.5px] text-surface shadow-lg"
-            style={{
-              left: `${(points[hoveredIndex].x / width) * 100}%`,
-              top: `${(points[hoveredIndex].y / height) * 100}%`,
-            }}
-          >
-            <div className="font-medium text-surface">
-              {points[hoveredIndex].count} donasi
+        {hoveredIndex !== null && points[hoveredIndex] && (() => {
+          const hp = points[hoveredIndex];
+          const xPct = (hp.x / width) * 100;
+          const yPct = (hp.y / height) * 100;
+          // Flip tooltip below the point when it's near the top so it isn't clipped
+          const flipBelow = hp.y < 80;
+          const clampedLeft = Math.min(Math.max(xPct, 12), 88);
+          return (
+            <div
+              className="pointer-events-none absolute z-10 rounded-md bg-text-main px-3 py-2 font-inter text-[11.5px] text-surface shadow-lg"
+              style={{
+                left: `${clampedLeft}%`,
+                top: `${yPct}%`,
+                transform: flipBelow
+                  ? "translate(-50%, 10px)"
+                  : "translate(-50%, calc(-100% - 10px))",
+              }}
+            >
+              <div className="font-medium text-surface">
+                {hp.count} donation
+              </div>
+              <div className="text-xs text-text-subtle">
+                {hp.fullDate || hp.label}
+              </div>
             </div>
-            <div className="text-xs text-text-subtle">
-              {points[hoveredIndex].fullDate || points[hoveredIndex].label}
-            </div>
-          </div>
-        )}
+          );
+        })()}
       </div>
     </div>
   );

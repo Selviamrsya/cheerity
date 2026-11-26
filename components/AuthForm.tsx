@@ -264,7 +264,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
               className={cn(
                 "flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-sm border-none px-3 py-2 text-[11px] font-medium transition-all",
                 role === "user"
-                  ? "bg-white font-semibold text-primary-800 shadow-sm"
+                  ? "bg-white font-semibold text-primary-500 shadow-sm"
                   : "bg-transparent text-gray-600 hover:text-gray-900"
               )}
             >
@@ -277,7 +277,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
               className={cn(
                 "flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-sm border-none px-3 py-2 text-[11px] font-medium transition-all",
                 role === "institution"
-                  ? "bg-white font-semibold text-primary-800 shadow-sm"
+                  ? "bg-white font-semibold text-primary-500 shadow-sm"
                   : "bg-transparent text-gray-600 hover:text-gray-900"
               )}
             >

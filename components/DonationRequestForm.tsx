@@ -254,7 +254,7 @@ const DonationRequestForm: React.FC<DonationRequestFormProps> = ({
       {/* Back Button */}
       <Link
         href={`/donations/${donation.id}`}
-        className="flex items-center gap-2 text-sm font-medium text-gray-600 mt-12 md:mt-16 hover:text-green-900 transition-colors"
+        className="flex items-center gap-2 text-sm font-medium text-gray-600 mt-12 md:mt-16 hover:text-green-500 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to Donation Details

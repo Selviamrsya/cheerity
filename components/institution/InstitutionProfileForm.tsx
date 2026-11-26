@@ -177,7 +177,7 @@ const InstitutionProfileForm: React.FC<InstitutionProfileFormProps> = ({
               <button
                 type="button"
                 onClick={() => setIsEditing(true)}
-                className="shrink-0 inline-flex items-center gap-1.5 px-6 py-3 text-xs font-semibold text-gray-500 hover:text-green-800 cursor-pointer"
+                className="shrink-0 inline-flex items-center gap-1.5 px-6 py-3 text-xs font-medium text-gray-500 hover:text-green-700 cursor-pointer"
                 style={{ padding: "8px 12px" }}
               >
                 <Edit2 className="w-3.5 h-3.5" />
@@ -222,7 +222,7 @@ const InstitutionProfileForm: React.FC<InstitutionProfileFormProps> = ({
                   setFormData({ ...formData, phoneNumber: e.target.value })
                 }
                 placeholder="e.g. +628123456789"
-                className="flex-1 w-full border border-gray-300 rounded-sm bg-white text-sm font-sans focus:outline-none focus:border-green-800 focus:ring-1 focus:ring-green-800 placeholder:text-gray-400 placeholder:font-normal"
+                className="flex-1 w-full border border-gray-300 rounded-sm bg-white text-sm font-sans focus:outline-none focus:border-green-700 focus:ring-1 focus:ring-green-700 placeholder:text-gray-400 placeholder:font-normal"
                 style={{ padding: "8px" }}
                 required
               />
@@ -241,7 +241,7 @@ const InstitutionProfileForm: React.FC<InstitutionProfileFormProps> = ({
                     href={institution.websiteOrSocial}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-green-800 underline inline-flex items-center gap-1"
+                    className="text-green-700 underline inline-flex items-center gap-1"
                   >
                     {institution.websiteOrSocial}
                     <ExternalLink className="w-3.5 h-3.5" />
@@ -283,7 +283,7 @@ const InstitutionProfileForm: React.FC<InstitutionProfileFormProps> = ({
                   setFormData({ ...formData, description: e.target.value })
                 }
                 placeholder="Brief description about your institution..."
-                className="flex-1 w-full border border-gray-300 rounded-sm bg-white text-sm font-sans focus:outline-none focus:border-green-800 focus:ring-1 focus:ring-green-800 placeholder:text-gray-400 placeholder:font-normal resize-y"
+                className="flex-1 w-full border border-gray-300 rounded-sm bg-white text-sm font-sans focus:outline-none focus:border-green-700 focus:ring-1 focus:ring-green-700 placeholder:text-gray-400 placeholder:font-normal resize-y"
                 style={{ padding: "8px" }}
               />
             )}
@@ -317,7 +317,7 @@ const InstitutionProfileForm: React.FC<InstitutionProfileFormProps> = ({
                   href={institution.verificationEvidence}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-green-800 hover:underline"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-green-700 hover:underline"
                 >
                   <FileText className="w-4 h-4" />
                   <span>View Verified Document</span>
@@ -337,7 +337,7 @@ const InstitutionProfileForm: React.FC<InstitutionProfileFormProps> = ({
           {message && (
             <div
               className={`p-3 rounded-sm ${message.type === "success"
-                ? "bg-green-50 text-green-800 border border-green-200"
+                ? "bg-green-50 text-green-700 border border-green-200"
                 : "bg-red-50 text-red-800 border border-red-200"
                 }`}
             >
@@ -349,7 +349,7 @@ const InstitutionProfileForm: React.FC<InstitutionProfileFormProps> = ({
             <button
               onClick={handleSave}
               disabled={isSaving}
-              className="font-medium text-white inline-flex w-auto items-center justify-center gap-2 rounded-sm bg-primary px-6 py-2 font-inter text-[15px] font-semibold text-white transition-all hover:bg-primary-dark disabled:opacity-50"
+              className="font-medium text-white inline-flex w-auto items-center justify-center gap-2 rounded-sm bg-primary px-6 py-2 font-inter text-[15px] font-medium text-white transition-all hover:bg-primary-dark disabled:opacity-50"
               style={{ width: "auto", padding: "10px 24px" }}
             >
             {isSaving ? (
@@ -364,7 +364,7 @@ const InstitutionProfileForm: React.FC<InstitutionProfileFormProps> = ({
             <button
               onClick={handleCancel}
               disabled={isSaving}
-              className="inline-flex w-auto items-center justify-center gap-2 rounded-sm border border-outline bg-white px-6 py-2 font-inter text-[15px] font-semibold text-on-surface transition-all hover:bg-bg-light disabled:opacity-50"
+              className="inline-flex w-auto items-center justify-center gap-2 rounded-sm border border-outline bg-white px-6 py-2 font-inter text-[15px] font-medium text-on-surface transition-all hover:bg-bg-light disabled:opacity-50"
               style={{ padding: "10px 24px" }}
             >
               Cancel
@@ -379,13 +379,13 @@ const InstitutionProfileForm: React.FC<InstitutionProfileFormProps> = ({
           <button
             type="button"
             onClick={() => setShowPasswordSection(true)}
-            className="text-sm font-semibold text-gray-500 hover:text-green-800 transition-colors cursor-pointer"
+            className="text-sm font-medium text-gray-500 hover:text-green-700 transition-colors cursor-pointer"
           >
             Change Password
           </button>
         ) : (
           <div className="space-y-4">
-            <h3 className="text-md font-semibold text-gray-700 mt-6">Change Password</h3>
+            <h4 className="text-sm font-medium text-gray-700 mt-6">Change Password</h4>
 
             {/* Current Password */}
             <div className="grid grid-cols-1 gap-1 border-b border-card-border py-3.5 font-inter sm:grid-cols-[180px_1fr] sm:items-center sm:gap-3">
@@ -459,7 +459,7 @@ const InstitutionProfileForm: React.FC<InstitutionProfileFormProps> = ({
             {passwordMessage && (
               <div
                 className={`rounded-sm text-xs ${passwordMessage.type === "success"
-                  ? "bg-green-50 text-green-800 border border-green-200"
+                  ? "bg-green-50 text-green-700 border border-green-200"
                   : "bg-red-50 text-red-800 border border-red-200"
                   }`}
                 style={{ padding: "12px 16px", marginBottom: "16px" }}
@@ -471,7 +471,7 @@ const InstitutionProfileForm: React.FC<InstitutionProfileFormProps> = ({
               <button
                 onClick={handleChangePassword}
                 disabled={isChangingPassword}
-                className="inline-flex items-center justify-center gap-2 rounded-sm bg-primary px-4 py-1.5 font-inter text-sm font-semibold text-white transition-all hover:bg-primary-dark disabled:opacity-50 cursor-pointer"
+                className="inline-flex items-center justify-center gap-2 rounded-sm bg-primary px-4 py-2 font-medium font-inter text-sm text-white transition-all hover:bg-primary-dark disabled:opacity-50 cursor-pointer"
               >
                 {isChangingPassword ? (
                   <>
@@ -485,7 +485,7 @@ const InstitutionProfileForm: React.FC<InstitutionProfileFormProps> = ({
               <button
                 onClick={handleCancelPassword}
                 disabled={isChangingPassword}
-                className="inline-flex items-center justify-center gap-2 rounded-sm border border-outline bg-white px-4 py-1.5 font-inter text-sm font-semibold text-on-surface transition-all hover:bg-bg-light disabled:opacity-50 cursor-pointer"
+                className="inline-flex items-center justify-center gap-2 rounded-sm border border-outline font-medium bg-white px-4 py-2 font-inter text-sm text-on-surface transition-all hover:bg-bg-light disabled:opacity-50 cursor-pointer"
               >
                 Cancel
               </button>
@@ -498,7 +498,7 @@ const InstitutionProfileForm: React.FC<InstitutionProfileFormProps> = ({
       <div className="flex items-start gap-3 p-4 bg-yellow-50 rounded-sm text-sm text-gray-600 border border-yellow-200" style={{ padding: "18px 20px", marginTop: "18px" }}>
         <Info className="w-5 h-5 text-yellow-400 mt-0.5 shrink-0" />
         <div>
-          <p className="font-semibold text-gray-800">
+          <p className="font-medium text-gray-800">
             Address changes are not allowed. For verified information changes, please contact the administrator.
           </p>
           <p className="mt-1 text-xs text-gray-600">

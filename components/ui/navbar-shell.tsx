@@ -103,7 +103,7 @@ export function SignInButton({
       className={cn(
         "flex items-center gap-2 rounded-sm px-5 py-2 text-sm font-semibold no-underline transition-all",
         overlay
-          ? "bg-white text-primary-900 hover:bg-green-50"
+          ? "bg-white text-primary-dark hover:bg-green-50"
           : "bg-primary text-white hover:bg-primary-dark"
       )}
     >

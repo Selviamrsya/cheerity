@@ -217,7 +217,7 @@ const UserHistoryClient: React.FC<UserHistoryClientProps> = ({ records }) => {
                         <button
                           onClick={() => router.push(`/history/${r.id}`)}
                           title="View Details"
-                          className="inline-flex items-center justify-center bg-transparent p-1.5 text-text-muted shadow-none transition-colors hover:bg-transparent hover:text-primary-800 cursor-pointer"
+                          className="inline-flex items-center justify-center bg-transparent p-1.5 text-text-muted shadow-none transition-colors hover:bg-transparent hover:text-primary-500 cursor-pointer"
                         >
                           <Eye className="w-4 h-4 text-gray-700" />
                         </button>

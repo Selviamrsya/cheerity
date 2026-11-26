@@ -7,8 +7,8 @@ export function appTabClass(active?: boolean) {
   return cn(
     "shrink-0 border-b-2 pb-3 font-inter text-sm font-semibold no-underline whitespace-nowrap transition-colors",
     active
-      ? "border-primary-800 text-primary-800"
-      : "border-transparent text-text-muted hover:text-primary-800"
+      ? "border-primary-500 text-primary-500"
+      : "border-transparent text-text-muted hover:text-primary-500"
   );
 }
 
@@ -38,8 +38,8 @@ export function AppTab({
       className={cn(
         "shrink-0 border-b-2 pb-3 font-inter text-sm font-semibold whitespace-nowrap transition-colors",
         active
-          ? "border-primary-800 text-primary-800"
-          : "border-transparent text-text-muted hover:text-primary-800",
+          ? "border-primary-500 text-primary-500"
+          : "border-transparent text-text-muted hover:text-primary-500",
         className
       )}
       {...props}
@@ -57,8 +57,8 @@ export function AppTabLink({
       className={cn(
         "shrink-0 border-b-2 pb-3 font-inter text-sm font-semibold no-underline whitespace-nowrap transition-colors",
         active
-          ? "border-primary-800 text-primary-800"
-          : "border-transparent text-text-muted hover:text-primary-800",
+          ? "border-primary-500 text-primary-500"
+          : "border-transparent text-text-muted hover:text-primary-500",
         className
       )}
       {...props}

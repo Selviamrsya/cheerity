@@ -35,8 +35,8 @@ interface PieChartProps {
 const DEFAULT_COLORS = [
   "var(--color-primary)",      
   "var(--color-primary-600)",
-  "var(--color-primary)",   
-  "var(--color-primary-900)",     
+  "var(--color-primary-700)",   
+  "var(--color-primary-500)",     
 ];
 
 export default function PieChart({ data, title, subtitle, colors = DEFAULT_COLORS, compact = false, withPeriodFilter = false, periodData }: PieChartProps) {
@@ -131,7 +131,7 @@ export default function PieChart({ data, title, subtitle, colors = DEFAULT_COLOR
                     data-active={isActive}
                     className={`cursor-pointer rounded-md border-none px-4 py-1.5 font-inter text-xs font-medium capitalize transition-all ${
                       isActive
-                        ? "bg-surface text-primary-900 shadow-sm font-semibold"
+                        ? "bg-surface text-primary shadow-sm font-semibold"
                         : "bg-transparent text-text-muted hover:text-text-main"
                     }`}
                   >
@@ -244,7 +244,7 @@ export default function PieChart({ data, title, subtitle, colors = DEFAULT_COLOR
                   data-active={isActive}
                   className={`cursor-pointer rounded-md border-none px-4 py-1.5 font-inter text-xs font-medium capitalize transition-all ${
                     isActive
-                      ? "bg-surface text-primary-900 shadow-sm font-semibold"
+                      ? "bg-surface text-primary shadow-sm font-semibold"
                       : "bg-transparent text-text-muted hover:text-text-main"
                   }`}
                 >

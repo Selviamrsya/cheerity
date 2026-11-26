@@ -198,7 +198,7 @@ const InstitutionDashboardPage = async () => {
 
           <Link
             href="/institution/history"
-            className="text-xs font-bold --text-green-300 hover:text-green-900 flex items-center gap-1 self-start sm:self-auto"
+            className="text-xs font-bold --text-green-300 hover:text-green-500 flex items-center gap-1 self-start sm:self-auto"
           >
             <span>See All</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -262,7 +262,7 @@ const InstitutionDashboardPage = async () => {
                     <td data-label="Action" className="relative border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4 text-center">
                       <Link
                         href="/institution/history"
-                        className="inline-flex items-center justify-center bg-transparent p-1.5 text-text-muted shadow-none transition-colors hover:bg-transparent hover:text-primary-800"
+                        className="inline-flex items-center justify-center bg-transparent p-1.5 text-text-muted shadow-none transition-colors hover:bg-transparent hover:text-primary-500"
                         title="See history"
                         aria-label="See history"
                       >

@@ -77,23 +77,23 @@ const map = {
     "flex flex-col gap-2 border-b border-card-border pb-2 sm:flex-row sm:items-center sm:justify-between",
   "chart-title-group": "flex items-center gap-2.5",
   "chart-icon-box":
-    "flex h-[34px] w-[34px] items-center justify-center rounded-sm bg-primary-50 text-primary-800",
+    "flex h-[34px] w-[34px] items-center justify-center rounded-sm bg-primary-50 text-primary-500",
   "chart-title": "font-poppins text-lg font-medium text-text-main",
   "chart-subtitle": "mt-1 font-inter text-xs text-text-muted",
   "chart-filter-group":
     "inline-flex self-start rounded-lg border border-outline bg-surface-container p-1 sm:self-auto",
   "chart-filter-btn":
-    "cursor-pointer rounded-md border-none bg-transparent px-4 py-1.5 font-inter text-xs font-medium capitalize text-text-muted transition-all hover:text-text-main data-[active=true]:bg-surface data-[active=true]:text-primary-900 data-[active=true]:shadow-sm",
+    "cursor-pointer rounded-md border-none bg-transparent px-4 py-1.5 font-inter text-xs font-medium capitalize text-text-muted transition-all hover:text-text-main data-[active=true]:bg-surface data-[active=true]:text-primary-dark data-[active=true]:shadow-sm",
   "chart-svg-container": "relative w-full flex-1 overflow-x-auto",
   "chart-svg": "h-80 min-w-[600px] w-full overflow-visible",
   "chart-grid-line": "stroke-outline stroke-1",
   "chart-grid-text": "fill-text-subtle font-inter text-xs font-medium",
   "chart-line":
-    "fill-none stroke-primary-800 stroke-[3.5] [stroke-linecap:round] [stroke-linejoin:round]",
+    "fill-none stroke-primary-500 stroke-[3.5] [stroke-linecap:round] [stroke-linejoin:round]",
   "chart-point":
-    "fill-surface stroke-primary-800 stroke-[1.5] transition-all data-[active=true]:fill-primary-800 data-[active=true]:stroke-[2.5]",
+    "fill-surface stroke-primary-500 stroke-[1.5] transition-all data-[active=true]:fill-primary-500 data-[active=true]:stroke-[2.5]",
   "chart-axis-label":
-    "fill-text-subtle font-poppins text-xs font-medium transition-[fill] data-[active=true]:fill-primary-900",
+    "fill-text-subtle font-poppins text-xs font-medium transition-[fill] data-[active=true]:fill-primary-dark",
   "chart-tooltip":
     "pointer-events-none absolute z-10 mt-[-10px] -translate-x-1/2 -translate-y-full rounded-md bg-text-main px-3 py-2 font-inter text-[11.5px] text-surface shadow-lg",
   "chart-tooltip-count": "font-medium text-surface",
@@ -112,7 +112,7 @@ const map = {
   "admin-search-icon":
     "pointer-events-none absolute left-2.5 h-[15px] w-[15px] shrink-0 text-text-muted",
   "admin-search-input":
-    "w-full rounded-md border border-outline bg-bg-light py-2 pr-3 pl-8 font-inter text-[11px] text-text-main outline-none transition-all placeholder:text-text-muted focus:border-primary-800 focus:ring-2 focus:ring-primary-800/10",
+    "w-full rounded-md border border-outline bg-bg-light py-2 pr-3 pl-8 font-inter text-[11px] text-text-main outline-none transition-all placeholder:text-text-muted focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10",
   "admin-table-header":
     "flex flex-col border-b border-card-border sm:flex-row sm:items-center sm:justify-between",
   "institution-table-header":
@@ -136,9 +136,9 @@ const map = {
   "institution-table-td":
     "relative border-b border-card-border px-3 py-3.5 font-inter text-[11px] text-text-main sm:px-4",
   "admin-table-icon-btn":
-    "inline-flex items-center justify-center bg-transparent p-1.5 text-text-muted shadow-none transition-colors hover:bg-transparent hover:text-primary-800",
+    "inline-flex items-center justify-center bg-transparent p-1.5 text-text-muted shadow-none transition-colors hover:bg-transparent hover:text-primary-500",
   "institution-table-icon-btn":
-    "inline-flex items-center justify-center bg-transparent p-1.5 text-text-muted shadow-none transition-colors hover:bg-transparent hover:text-primary-800",
+    "inline-flex items-center justify-center bg-transparent p-1.5 text-text-muted shadow-none transition-colors hover:bg-transparent hover:text-primary-500",
   "admin-badge-pending":
     "border border-warning-border bg-warning-bg text-warning",
   "admin-badge-approved":
@@ -158,7 +158,7 @@ const map = {
   "admin-tabs":
     "mb-6 mt-4 flex flex-1 justify-start gap-4 overflow-x-auto border-b border-outline sm:gap-6",
   "admin-tab":
-    "shrink-0 border-b-2 border-transparent pb-3 font-inter text-sm font-semibold text-text-muted no-underline whitespace-nowrap transition-colors hover:text-primary-800 data-[active=true]:border-primary-800 data-[active=true]:text-primary-800",
+    "shrink-0 border-b-2 border-transparent pb-3 font-inter text-sm font-semibold text-text-muted no-underline whitespace-nowrap transition-colors hover:text-primary-500 data-[active=true]:border-primary-500 data-[active=true]:text-primary-500",
   "admin-detail-card":
     "flex w-full flex-col gap-6 px-0 py-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] sm:p-0",
   "admin-detail-row":
@@ -167,14 +167,14 @@ const map = {
     "text-[11.5px] font-bold tracking-wide text-text-subtle uppercase",
   "admin-detail-value": "text-[13.5px] font-medium text-text-main",
   "admin-btn-accept":
-    "inline-flex items-center gap-2 rounded-md border-none bg-primary px-6 py-2.5 font-inter text-[12.5px] font-medium text-surface transition-colors hover:bg-primary-900",
+    "inline-flex items-center gap-2 rounded-md border-none bg-primary px-6 py-2.5 font-inter text-[12.5px] font-medium text-surface transition-colors hover:bg-primary-dark",
   "admin-btn-reject":
     "cursor-pointer rounded-md border border-danger-border bg-danger-bg px-6 py-2.5 font-inter text-[12.5px] font-medium text-danger transition-all hover:bg-danger-border",
   "institution-banner-title": "mb-1 font-poppins text-lg font-medium",
   "institution-banner-desc":
     "font-inter text-[11px] leading-relaxed text-primary-100",
   "institution-banner-btn":
-    "inline-flex items-center gap-2 self-start rounded-md bg-surface px-[22px] py-2.5 font-inter text-[11px] font-medium whitespace-nowrap text-primary-900 no-underline shadow-sm transition-all hover:bg-primary-50 sm:self-auto",
+    "inline-flex items-center gap-2 self-start rounded-md bg-surface px-[22px] py-2.5 font-inter text-[11px] font-medium whitespace-nowrap text-primary-dark no-underline shadow-sm transition-all hover:bg-primary-50 sm:self-auto",
   "modal-backdrop":
     "fixed inset-0 z-999 bg-black/50 backdrop-blur-xs",
   "modal-container":
@@ -185,7 +185,7 @@ const map = {
   "modal-close-btn":
     "cursor-pointer border-none bg-transparent text-lg text-on-surface-variant",
   "modal-section-title":
-    "mt-4 mb-2 text-sm font-bold tracking-wide text-primary-900 uppercase",
+    "mt-4 mb-2 text-sm font-bold tracking-wide text-primary-dark uppercase",
   "modal-form": "flex flex-col gap-3.5",
   "modal-success": "p-5 text-center",
   "modal-success-icon":
@@ -226,7 +226,7 @@ const map = {
     "mt-0.5 truncate font-inter text-[11.5px] text-text-muted",
   "profile-dropdown-menu": "py-1",
   "profile-dropdown-item":
-    "flex w-full cursor-pointer items-center gap-2.5 rounded-sm border-none bg-transparent px-3 py-2 font-inter text-[12.5px] font-semibold text-text-main no-underline transition-all hover:bg-primary-50 hover:text-primary-800",
+    "flex w-full cursor-pointer items-center gap-2.5 rounded-sm border-none bg-transparent px-3 py-2 font-inter text-[12.5px] font-semibold text-text-main no-underline transition-all hover:bg-primary-50 hover:text-primary-500",
   "profile-dropdown-footer": "border-t border-outline pt-1",
   "profile-dropdown-signout":
     "flex w-full cursor-pointer items-center gap-2.5 rounded-sm border-none bg-transparent px-3 py-2 text-left font-inter text-[12.5px] font-semibold text-danger transition-all hover:bg-danger-bg",

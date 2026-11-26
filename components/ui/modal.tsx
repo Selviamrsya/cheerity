@@ -78,7 +78,7 @@ export function ModalSectionTitle({
   return (
     <div
       className={cn(
-        "mt-4 mb-2 text-sm font-bold tracking-wide text-primary-900 uppercase",
+        "mt-4 mb-2 text-sm font-bold tracking-wide text-primary-dark uppercase",
         className
       )}
       {...props}

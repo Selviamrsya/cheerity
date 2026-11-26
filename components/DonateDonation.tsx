@@ -82,7 +82,7 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
 
   if (!isOpen) {
     return (
-      <button className="relative flex w-full items-center justify-center overflow-hidden rounded-sm bg-primary px-6 py-2 font-inter text-[15px] font-semibold text-white transition-all hover:bg-primary-dark disabled:opacity-50" onClick={() => setIsOpen(true)} style={{ marginTop: 8 }}>
+      <button className="relative flex w-full items-center justify-center overflow-hidden rounded-sm bg-primary px-6 py-2 font-inter text-[15px] font-medium text-white transition-all hover:bg-primary-dark disabled:opacity-50" onClick={() => setIsOpen(true)} style={{ marginTop: 8 }}>
         Donate Now
       </button>
     );
@@ -116,7 +116,7 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
               </Link>{" "}
               for updates.
             </p>
-            <button className="relative flex w-full items-center justify-center overflow-hidden rounded-sm bg-primary px-6 py-2 font-inter text-[15px] font-semibold text-white transition-all hover:bg-primary-dark disabled:opacity-50" onClick={() => setIsOpen(false)}>
+            <button className="relative flex w-full items-center justify-center overflow-hidden rounded-sm bg-primary px-6 py-2 font-inter text-[15px] font-medium text-white transition-all hover:bg-primary-dark disabled:opacity-50" onClick={() => setIsOpen(false)}>
               Close
             </button>
           </div>
@@ -124,8 +124,8 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-3.5">
             <div className="mb-3 rounded-lg border border-green-200 bg-green-50 p-3.5">
               <div className="flex items-start gap-2">
-                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" style={{ color: "var(--color-primary-700)" }} />
-                <ul className="text-sm" style={{ color: "var(--color-primary-700)" }}>
+                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" style={{ color: "var(--color-primary)" }} />
+                <ul className="text-sm" style={{ color: "var(--color-primary)" }}>
                   <li>Your registration will be reviewed within 24 hours</li>
                   <li>You will receive a confirmation once reviewed</li>
                   <li>Track your donation history on the History page</li>
@@ -138,14 +138,14 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
               <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-[11px] text-red-800">{submitError}</p>
             )}
 
-            <div className="mt-4 mb-2 text-sm font-bold tracking-wide text-primary-900 uppercase">Personal Information</div>
+            <div className="mt-4 mb-2 text-sm font-bold tracking-wide text-primary uppercase">Personal Information</div>
             <div className="mb-5 flex flex-col gap-1.5">
-              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Phone Number <span className="text-red-500">*</span></label>
+              <label className="font-inter text-[13.5px] font-medium text-gray-700">Phone Number <span className="text-red-500">*</span></label>
               <input
                 type="tel"
                 {...form.register("phoneNumber")}
                 className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400"
-                placeholder="e.g. 081234567890"
+                placeholder="e.g. 081212345678"
               />
               {form.formState.errors.phoneNumber && (
                 <p className="mt-0.5 text-xs text-red-600">{form.formState.errors.phoneNumber.message}</p>
@@ -165,15 +165,15 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
             />
 
             <div className="mb-5 flex flex-col gap-1.5">
-              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Full Address <span className="text-red-500">*</span></label>
+              <label className="font-inter text-[13.5px] font-medium text-gray-700">Full Address <span className="text-red-500">*</span></label>
               <input type="text" {...form.register("address")} className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400" />
               {form.formState.errors.address && <p className="mt-0.5 text-xs text-red-600">{form.formState.errors.address.message}</p>}
             </div>
 
-            <div className="mt-4 mb-2 text-sm font-bold tracking-wide text-primary-900 uppercase">Donation Information</div>
+            <div className="mt-4 mb-2 text-sm font-bold tracking-wide text-primary uppercase">Donation Information</div>
 
             <div className="mb-5 flex flex-col gap-1.5">
-              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Quantity (max 10,000) <span className="text-red-500">*</span></label>
+              <label className="font-inter text-[13.5px] font-medium text-gray-700">Quantity (max 10,000) <span className="text-red-500">*</span></label>
               <input
                 type="number"
                 min={1}
@@ -187,7 +187,7 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
             </div>
 
             <div className="mb-5 flex flex-col gap-1.5">
-              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Notes (optional)</label>
+              <label className="font-inter text-[13.5px] font-medium text-gray-700">Notes (optional)</label>
               <textarea
                 {...form.register("notes")}
                 className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400 min-h-20 resize-none"
@@ -197,7 +197,7 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
             </div>
 
             <div className="mb-5 flex flex-col gap-1.5">
-              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Photo of Items (optional)</label>
+              <label className="font-inter text-[13.5px] font-medium text-gray-700">Photo of Items (optional)</label>
               <LocalImageUpload
                 value={form.watch("donorPhoto") ?? ""}
                 onChange={(url) => form.setValue("donorPhoto", url)}
@@ -207,7 +207,7 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
             </div>
 
             <div className="mb-5 flex flex-col gap-1.5">
-              <label className="font-inter text-[13.5px] font-semibold text-gray-700">Delivery Method <span className="text-red-500">*</span></label>
+              <label className="font-inter text-[13.5px] font-medium text-gray-700">Delivery Method <span className="text-red-500">*</span></label>
               <select {...form.register("deliveryMethod")} 
               className="w-full rounded-sm border-[1.5px] border-outline bg-surface px-4 py-2.75 font-inter text-sm text-on-surface outline-none transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-gray-400">
                 {availableDeliveryMethods.map((m) => (
@@ -223,10 +223,10 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
 
             {isPickup && (
               <div className="mb-3 rounded-lg border border-green-200 bg-green-50 p-3.5" style={{ background: "var(--color-primary-50)", borderColor: "var(--color-primary-100)" }}>
-                <div className="mt-4 mb-2 text-sm font-bold tracking-wide text-primary-900 uppercase" style={{ marginTop: 0 }}>Estimated Pickup Schedule</div>
+                <div className="mt-4 mb-2 text-sm font-bold tracking-wide text-primary uppercase" style={{ marginTop: 0 }}>Estimated Pickup Schedule</div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="mb-5 flex flex-col gap-1.5">
-                    <label className="font-inter text-[13.5px] font-semibold text-gray-700">Estimated Pickup Date</label>
+                    <label className="font-inter text-[13.5px] font-medium text-gray-700">Estimated Pickup Date</label>
                     <input
                       type="date"
                       {...form.register("estimatedPickupDate")}
@@ -235,7 +235,7 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
                     />
                   </div>
                   <div className="mb-5 flex flex-col gap-1.5">
-                    <label className="font-inter text-[13.5px] font-semibold text-gray-700">Estimated Pickup Time</label>
+                    <label className="font-inter text-[13.5px] font-medium text-gray-700">Estimated Pickup Time</label>
                     <input
                       type="time"
                       {...form.register("estimatedPickupTime")}
@@ -248,7 +248,7 @@ const DonateDonation: React.FC<DonateDonationProps> = ({
 
             <button 
              type="submit" 
-             className="text-white inline-flex w-auto items-center justify-center gap-2 rounded-sm bg-primary px-6 py-2 font-inter text-[15px] font-semibold transition-all hover:bg-primary-dark disabled:opacity-50"
+             className="text-white inline-flex w-auto items-center justify-center gap-2 rounded-sm bg-primary px-6 py-2 font-inter text-[15px] font-medium transition-all hover:bg-primary-dark disabled:opacity-50"
              style={{width:"auto", padding:"10px 24px"}}
              disabled={isSubmitting}>
               {isSubmitting ? "Submitting..." : "Submit Request"}

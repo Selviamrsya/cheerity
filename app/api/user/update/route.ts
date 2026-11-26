@@ -44,6 +44,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email is already in use by another account" }, { status: 400 });
     }
 
+    // Donor profile fields are required for USER role
+    if (session.user.role === "USER") {
+      if (!phoneNumber || phoneNumber.trim().length < 10) {
+        return NextResponse.json({ error: "Phone number is required (at least 10 digits)" }, { status: 400 });
+      }
+
+      if (!birthdate || birthdate.trim() === "") {
+        return NextResponse.json({ error: "Date of birth is required" }, { status: 400 });
+      }
+
+      if (!address || address.trim().length < 5) {
+        return NextResponse.json({ error: "Address is required" }, { status: 400 });
+      }
+
+      if (!city || !state) {
+        return NextResponse.json({ error: "City and state are required" }, { status: 400 });
+      }
+    }
+
     // Resolve coordinates
     let resolvedLat: number | null = null;
     let resolvedLng: number | null = null;

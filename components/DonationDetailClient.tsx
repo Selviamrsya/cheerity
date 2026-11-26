@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ArrowLeft, CheckCircle2, Clock } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Clock, FileText } from "lucide-react";
 import { CATEGORY_LABELS, DELIVERY_METHOD_LABELS } from "@/constants";
 import {
   approveDonationRequest,
@@ -179,7 +179,7 @@ const DonationDetailClient: React.FC<DonationDetailClientProps> = ({ record, use
     <div className="w-full">
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-2 text-sm font-medium text-gray-600 -mt-4 hover:text-green-900 mb-4 transition-colors"
+        className="flex items-center gap-2 text-sm font-medium text-gray-600 -mt-4 hover:text-green-500 mb-4 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to History
@@ -264,7 +264,7 @@ const DonationDetailClient: React.FC<DonationDetailClientProps> = ({ record, use
               <button
                 onClick={() => handleUploadDocumentationSubmit(record.id)}
                 disabled={loadingId === record.id}
-                className="mb-2 w-full py-2 bg-primary hover:bg-green-900 text-white text-sm font-semibold rounded-sm transition-colors disabled:opacity-50 cursor-pointer"
+                className="mb-2 w-full py-2 bg-primary hover:bg-green-500 text-white text-sm font-semibold rounded-sm transition-colors disabled:opacity-50 cursor-pointer"
               >
                 {loadingId === record.id ? "Submitting..." : "Submit Photo"}
               </button>
@@ -340,26 +340,49 @@ const DonationDetailClient: React.FC<DonationDetailClientProps> = ({ record, use
               <span className="text-gray-400 pt-1">:</span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {record.donorPhoto && (
-                  <div>
-                    <Image
-                      src={record.donorPhoto}
-                      alt="Donor item"
-                      width={640}
-                      height={160}
-                      className="w-full h-40 object-cover rounded-sm border border-gray-200"
-                    />
+                  <div className="space-y-2">
+                    <p className="text-xs text-gray-500">Donor Item Photo</p>
+                    <div className="rounded-sm border border-gray-200 overflow-hidden max-w-sm bg-gray-50 shadow-2xs">
+                      <Image
+                        src={record.donorPhoto}
+                        alt="Donor item"
+                        width={640}
+                        height={160}
+                        className="w-full max-h-72 object-cover"
+                      />
+                    </div>
+                    <a
+                      href={record.donorPhoto}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs font-bold text-black-600 hover:text-green-800 hover:underline"
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      <span>Open full-size file</span>
+                    </a>
                   </div>
                 )}
                 {record.documentationPhoto && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Documentation Photo</p>
-                    <Image
-                      src={record.documentationPhoto}
-                      alt="Documentation"
-                      width={640}
-                      height={160}
-                      className="w-full h-40 object-cover rounded-xl border border-gray-200"
-                    />
+                  <div className="space-y-2">
+                    <p className="text-xs text-gray-500">Documentation Photo</p>
+                    <div className="rounded-sm border border-gray-200 overflow-hidden max-w-sm bg-gray-50 shadow-2xs">
+                      <Image
+                        src={record.documentationPhoto}
+                        alt="Documentation"
+                        width={640}
+                        height={160}
+                        className="w-full max-h-72 object-cover"
+                      />
+                    </div>
+                    <a
+                      href={record.documentationPhoto}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs font-bold text-black-600 hover:text-green-800 hover:underline"
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      <span>Open full-size file</span>
+                    </a>
                   </div>
                 )}
               </div>
@@ -433,7 +456,7 @@ const DonationDetailClient: React.FC<DonationDetailClientProps> = ({ record, use
                 <button
                   onClick={() => handleApprove(record.id)}
                   disabled={loadingId === record.id}
-                  className="flex-1 px-9 py-2 bg-primary hover:bg-green-900 text-white font-semibold text-sm rounded-sm transition-colors disabled:opacity-50 cursor-pointer"
+                  className="flex-1 px-9 py-2 bg-primary hover:bg-green-500 text-white font-semibold text-sm rounded-sm transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   {loadingId === record.id ? "Accepting..." : "Accept Request"}
                 </button>
@@ -454,7 +477,7 @@ const DonationDetailClient: React.FC<DonationDetailClientProps> = ({ record, use
               <button
                 onClick={() => setConfirmingDoneId(record.id)}
                 disabled={loadingId === record.id}
-                className="flex-1 px-5 py-2 bg-primary hover:bg-green-900 text-white font-semibold text-sm rounded-sm transition-colors disabled:opacity-50 cursor-pointer"
+                className="flex-1 px-5 py-2 bg-primary hover:bg-green-500 text-white font-semibold text-sm rounded-sm transition-colors disabled:opacity-50 cursor-pointer"
               >
                 {loadingId === record.id ? "Updating..." : "Mark as done"}
               </button>
@@ -519,7 +542,7 @@ const DonationDetailClient: React.FC<DonationDetailClientProps> = ({ record, use
                   setConfirmingDoneId(null);
                 }}
                 disabled={loadingId === confirmingDoneId}
-                className="inline-flex cursor-pointer items-center gap-2 rounded-sm bg-primary px-5 py-2 text-xs font-semibold text-white transition-colors hover:bg-green-900 disabled:opacity-50"
+                className="inline-flex cursor-pointer items-center gap-2 rounded-sm bg-primary px-5 py-2 text-xs font-semibold text-white transition-colors hover:bg-green-500 disabled:opacity-50"
               >
                 {loadingId === confirmingDoneId ? "Updating..." : "Yes, Mark as Done"}
               </button>

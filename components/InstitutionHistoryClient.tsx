@@ -93,8 +93,8 @@ const InstitutionHistoryClient: React.FC<InstitutionHistoryClientProps> = ({
               onClick={() => setActiveTab(t.key)}
               className={`shrink-0 border-b-2 pb-3 font-inter text-sm font-semibold whitespace-nowrap transition-colors ${
                 isActive
-                  ? "border-primary-800 text-primary-800"
-                  : "border-transparent text-text-muted hover:text-primary-800"
+                  ? "border-primary-500 text-primary-500"
+                  : "border-transparent text-text-muted hover:text-primary-500"
               }`}
             >
               {t.label}

@@ -60,7 +60,7 @@ export const tableCardClass =
   "relative flex flex-col px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)] sm:px-6 md:px-9";
 
 export const tableIconBtnClass =
-  "inline-flex items-center justify-center bg-transparent p-1.5 text-text-muted shadow-none transition-colors hover:bg-transparent hover:text-primary-800";
+  "inline-flex items-center justify-center bg-transparent p-1.5 text-text-muted shadow-none transition-colors hover:bg-transparent hover:text-primary-500";
 
 export const navLinkClass = cva(
   "relative bg-transparent px-2.5 py-2 text-sm font-medium no-underline transition-colors after:absolute after:bottom-0 after:left-3.5 after:right-3.5 after:h-0.5 after:origin-center after:scale-x-0 after:rounded-t after:bg-primary after:transition-transform after:content-[''] hover:bg-transparent hover:after:scale-x-100 md:px-3.5",
